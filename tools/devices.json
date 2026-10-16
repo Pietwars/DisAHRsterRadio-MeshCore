@@ -807,11 +807,10 @@
   "device": "ThinkNode_M8",
   "chip": "nrf52",
   "envs": {
-   "companion": "dar_ThinkNode_M8_companion",
-   "repeater": "dar_ThinkNode_M8_repeater",
-   "room_server": "dar_ThinkNode_M8_room_server"
+   "companion": "dar_ThinkNode_M8_companion"
   },
-  "webui": false
+  "webui": false,
+  "note": "Repeater/Room-Server: Upstream-Linkfehler (EnvironmentSensorManager fehlt im Build)"
  },
  {
   "device": "Tiny_Relay",

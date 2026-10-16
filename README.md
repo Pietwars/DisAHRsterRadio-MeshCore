@@ -188,7 +188,7 @@ Gebaut werden alle 105 Geräte, für die MeshCore v1.18.0 Firmware anbietet (Que
 | ThinkNode_M5 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-ThinkNode_M5.zip` |
 | ThinkNode_M6 | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-ThinkNode_M6.zip` |
 | ThinkNode_M7 | esp32s3 | nein (ohne Web-Oberfläche: eigene Display-Oberfläche ohne Hinweisfunktion (showAlert) – Portal baut nicht) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-ThinkNode_M7.zip` |
-| ThinkNode_M8 | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-ThinkNode_M8.zip` |
+| ThinkNode_M8 | nrf52 | nein (ohne Web-Oberfläche: Repeater/Room-Server: Upstream-Linkfehler (EnvironmentSensorManager fehlt im Build)) | Companion | `DisAHRsterRadio-MeshCore-0.9.0-alpha-ThinkNode_M8.zip` |
 | Tiny_Relay | stm32 | nein (ohne Web-Oberfläche) | Companion, Repeater | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Tiny_Relay.zip` |
 | waveshare_rp2040_lora | rp2040 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-waveshare_rp2040_lora.zip` |
 | Waveshare_S3_LR1121 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Waveshare_S3_LR1121.zip` |

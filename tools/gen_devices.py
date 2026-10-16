@@ -23,6 +23,7 @@ def chip(e):
         if k in p: return v
     return '?'
 NOPORTAL={'ThinkNode_M7':'eigene Display-Oberfläche ohne Hinweisfunktion (showAlert) – Portal baut nicht','M5Stack_Unit_C6L':'ESP32-C6: WLAN-Bibliothek (Network.h) im Portal-Build nicht auflösbar'}
+NOROLES={'ThinkNode_M8':(['repeater','room_server'],'Repeater/Room-Server: Upstream-Linkfehler (EnvironmentSensorManager fehlt im Build)')}
 ini=['; Automatisch erzeugt von tools/gen_devices.py – nicht von Hand bearbeiten','']
 out=[]
 for d in sorted(devs,key=str.lower):
@@ -43,7 +44,9 @@ for d in sorted(devs,key=str.lower):
                   '  -D DISASTER_WIFI_DELAY_MS=1500',f"  -D FIRMWARE_VERSION='\"v1.18.0-dar{VER}-wifi\"'",
                   'lib_deps =',f'  ${{env:{base}.lib_deps}}','  densaugeo/base64 @ ~1.4.0','']
     else:
+        if d in NOROLES: entry['note']=NOROLES[d][1]
         for r in roles:
+            if d in NOROLES and r in NOROLES[d][0]: continue
             if r=='companion_radio_usb' and 'companion_radio_ble' in roles: continue
             base=f'{d}_{r}'; key='companion' if r.startswith('companion') else r
             e=f'dar_{d}_{key}'; entry['envs'][key]=e
