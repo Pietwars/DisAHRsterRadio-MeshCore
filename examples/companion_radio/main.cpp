@@ -218,7 +218,17 @@ void setup() {
   #error "need to define filesystem"
 #endif
 
-#ifdef BLE_PIN_CODE // 123456 by default
+#if defined(BLE_PIN_CODE) && defined(DISASTER_PORTAL)
+  // DisAHRsterRadio: zufaellige, pro Geraet dauerhaft gespeicherte BLE-PIN (seriell + Display)
+  if (the_mesh.getNodePrefs()->ble_pin == 0) {
+    uint32_t pin = 100000 + (esp_random() % 900000);
+    the_mesh.getNodePrefs()->ble_pin = pin;
+    the_mesh.savePrefs();
+  }
+  the_mesh.setBLEPin(the_mesh.getNodePrefs()->ble_pin);
+  disaster_portal.setBlePin(the_mesh.getBLEPin());
+  Serial.printf("[BLE] MeshCore-App: Bluetooth-PIN %06lu\n", (unsigned long)the_mesh.getBLEPin());
+#elif defined(BLE_PIN_CODE) // 123456 by default
   if (the_mesh.getNodePrefs()->ble_pin == 0) {
 #ifdef DISPLAY_CLASS
     if (disp != NULL && BLE_PIN_CODE == 123456) {

@@ -31,12 +31,12 @@ for d in sorted(devs,key=str.lower):
         entry['webui']=True
         if d in MANUAL: entry['envs']['wifi']=MANUAL[d]
         else:
-            base=f'{d}_companion_radio_usb' if 'companion_radio_usb' in roles else f'{d}_companion_radio_ble'
+            base=f'{d}_companion_radio_ble' if 'companion_radio_ble' in roles else f'{d}_companion_radio_usb'
             e=f'dar_{d}_wifi'; entry['envs']['wifi']=e
             flags=' '.join(c.get(f'env:{base}','build_flags',[]))
-            unf=sorted(set(m.group(0).strip() for m in re.finditer(r'-D\s*(BLE_PIN_CODE|ENABLE_USB_INTERFACE|WIFI_SSID|WIFI_PWD|ENABLE_PRIVATE_KEY_EXPORT|ENABLE_PRIVATE_KEY_IMPORT|LORA_TX_POWER)(=\S+)?',flags) if m.group(0).strip().replace(' ','')!='-DLORA_TX_POWER=10'))
+            unf=sorted(set(m.group(0).strip() for m in re.finditer(r'-D\s*(ENABLE_USB_INTERFACE|WIFI_SSID|WIFI_PWD|ENABLE_PRIVATE_KEY_EXPORT|ENABLE_PRIVATE_KEY_IMPORT|LORA_TX_POWER)(=\S+)?',flags) if m.group(0).strip().replace(' ','')!='-DLORA_TX_POWER=10'))
             ini+=[f'[env:{e}]',f'extends = env:{base}','test_framework = custom','lib_ldf_mode = deep+','build_unflags =',*['  '+u for u in unf],
-                  'board_build.partitions = min_spiffs.csv',
+                  'board_build.partitions = huge_app.csv',
                   'build_flags =',f'  ${{env:{base}.build_flags}}','  -D LORA_TX_POWER=10','  -D MAX_GROUP_CHANNELS=8','  -D DISASTER_PORTAL=1','  -D OFFLINE_QUEUE_SIZE=64',
                   '  -D DISASTER_WIFI_DELAY_MS=1500',f"  -D FIRMWARE_VERSION='\"v1.18.0-dar{VER}-wifi\"'",
                   'lib_deps =',f'  ${{env:{base}.lib_deps}}','  densaugeo/base64 @ ~1.4.0','']
