@@ -34,7 +34,7 @@ for d in sorted(devs,key=str.lower):
             base=f'{d}_companion_radio_usb' if 'companion_radio_usb' in roles else f'{d}_companion_radio_ble'
             e=f'dar_{d}_wifi'; entry['envs']['wifi']=e
             flags=' '.join(c.get(f'env:{base}','build_flags',[]))
-            unf=sorted(set(m.group(0).strip() for m in re.finditer(r'-D\s*(BLE_PIN_CODE|ENABLE_USB_INTERFACE|WIFI_SSID|WIFI_PWD|ENABLE_PRIVATE_KEY_EXPORT|ENABLE_PRIVATE_KEY_IMPORT|LORA_TX_POWER)(=\S+)?',flags)))
+            unf=sorted(set(m.group(0).strip() for m in re.finditer(r'-D\s*(BLE_PIN_CODE|ENABLE_USB_INTERFACE|WIFI_SSID|WIFI_PWD|ENABLE_PRIVATE_KEY_EXPORT|ENABLE_PRIVATE_KEY_IMPORT|LORA_TX_POWER)(=\S+)?',flags) if m.group(0).strip().replace(' ','')!='-DLORA_TX_POWER=10'))
             ini+=[f'[env:{e}]',f'extends = env:{base}','test_framework = custom','lib_ldf_mode = deep+','build_unflags =',*['  '+u for u in unf],
                   'board_build.partitions = min_spiffs.csv',
                   'build_flags =',f'  ${{env:{base}.build_flags}}','  -D LORA_TX_POWER=10','  -D MAX_GROUP_CHANNELS=8','  -D DISASTER_PORTAL=1','  -D OFFLINE_QUEUE_SIZE=64',

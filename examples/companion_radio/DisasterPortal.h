@@ -21,6 +21,12 @@
 #include "PortalAssets.h"
 #include "AdminSession.h"
 #include <mbedtls/sha256.h>
+#include <mbedtls/version.h>
+#if MBEDTLS_VERSION_MAJOR >= 3
+#define DAR_SHA256 mbedtls_sha256
+#else
+#define DAR_SHA256 mbedtls_sha256_ret
+#endif
 #include "HistoryRecord.h"
 #include "DeliveryOutbox.h"
 #include "ArchiveSd.h"
@@ -126,7 +132,7 @@ class DisasterPortal : public BaseSerialInterface {
   }
   String passwordHash(const String& pass) {
     String salted=adminSalt+pass;uint8_t out[32];
-    mbedtls_sha256_ret((const unsigned char*)salted.c_str(),salted.length(),out,0);
+    DAR_SHA256((const unsigned char*)salted.c_str(),salted.length(),out,0);
     return hex(out,sizeof(out));
   }
   void resetAdminPassword() {

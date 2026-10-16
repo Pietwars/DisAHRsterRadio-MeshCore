@@ -29,6 +29,7 @@ for i in range(0,len(d),32):
     $ESPTOOL --chip $CHIP merge-bin -o "$D/$NAME-$role-factory.bin" --flash-mode keep --flash-freq keep --flash-size keep $ARGS >/dev/null || { echo "FEHLER merge $DEV $role"; FAIL=1; continue; }
     echo "$role|$CHIP|$BOOT|$FSOFF" >> "$D/.offsets";;
    nrf52|rp2040)
+    [ $CHIP = nrf52 ] && [ ! -f $B/firmware.uf2 ] && python3 bin/uf2conv/uf2conv.py $B/firmware.hex -c -o $B/firmware.uf2 -f 0xADA52840 >/dev/null
     for f in $B/firmware.uf2 $B/firmware.zip; do [ -f $f ] && cp $f "$D/$NAME-$role.${f##*.}"; done
     ls "$D"/*-$role.uf2 >/dev/null 2>&1 || { echo "FEHLER keine UF2 $DEV $role"; FAIL=1; };;
    stm32)
