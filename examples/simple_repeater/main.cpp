@@ -3,6 +3,10 @@
 
 #include "MyMesh.h"
 
+#ifdef DISASTER_REPEATER
+#include "DisasterRepeater.h"
+#endif
+
 #ifdef DISPLAY_CLASS
   #include "UITask.h"
   static UITask ui_task(board, display);
@@ -73,7 +77,14 @@ void setup() {
   fs = &InternalFS;
   IdentityStore store(InternalFS, "");
 #elif defined(ESP32)
+#ifdef DISASTER_REPEATER
+  if (!SPIFFS.begin(false)) {
+    Serial.println("SPIFFS mount failed. First install: uploadfs, then reset. No automatic format.");
+    halt();
+  }
+#else
   SPIFFS.begin(true);
+#endif
   fs = &SPIFFS;
   IdentityStore store(SPIFFS, "/identity");
 #elif defined(RP2040_PLATFORM)
@@ -105,6 +116,9 @@ void setup() {
   sensors.begin();
 
   the_mesh.begin(fs);
+#ifdef DISASTER_REPEATER
+  disasterRepeaterCredentials(the_mesh);
+#endif
 
 #ifdef DISPLAY_CLASS
   ui_task.begin(the_mesh.getNodePrefs(), FIRMWARE_BUILD_DATE, FIRMWARE_VERSION);

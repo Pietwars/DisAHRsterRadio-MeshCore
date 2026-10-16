@@ -9,7 +9,14 @@ WRAPPER_CLASS radio_driver(radio, board);
 
 ESP32RTCClock fallback_clock;
 AutoDiscoverRTCClock rtc_clock(fallback_clock);
-SensorManager sensors;
+#if ENV_INCLUDE_GPS
+  // Optional external NMEA GPS on UART1 (DisAHRsterRadio *_wifi_gps profile).
+  #include <helpers/sensors/MicroNMEALocationProvider.h>
+  MicroNMEALocationProvider nmea = MicroNMEALocationProvider(Serial1, &rtc_clock);
+  EnvironmentSensorManager sensors = EnvironmentSensorManager(nmea);
+#else
+  SensorManager sensors;
+#endif
 
 #ifdef DISPLAY_CLASS
   DISPLAY_CLASS display;

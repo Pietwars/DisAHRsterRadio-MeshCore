@@ -2,6 +2,9 @@
 #include <Mesh.h>
 
 #include "MyMesh.h"
+#ifdef DISASTER_ROOM
+#include "../simple_repeater/DisasterRepeater.h"
+#endif
 
 #ifdef ETHERNET_ENABLED
   #define ETHERNET_CLI_BANNER "MeshCore Room Server CLI"
@@ -60,7 +63,11 @@ void setup() {
   IdentityStore store(LittleFS, "/identity");
   store.begin();
 #elif defined(ESP32)
+#ifdef DISASTER_ROOM
+  if(!SPIFFS.begin(false)){Serial.println("SPIFFS mount failed. First install: uploadfs, then reset.");halt();}
+#else
   SPIFFS.begin(true);
+#endif
   fs = &SPIFFS;
   IdentityStore store(SPIFFS, "/identity");
 #else
@@ -86,6 +93,18 @@ void setup() {
   sensors.begin();
 
   the_mesh.begin(fs);
+#ifdef DISASTER_ROOM
+  disasterRepeaterCredentials(the_mesh);
+  auto *prefs=the_mesh.getNodePrefs();
+  if(!prefs->guest_password[0]||strcmp(prefs->guest_password,"hello")==0){
+    uint8_t random[7];esp_fill_random(random,sizeof(random));
+    static const char digits[]="0123456789abcdef";
+    for(size_t i=0;i<7;++i){prefs->guest_password[2*i]=digits[random[i]>>4];prefs->guest_password[2*i+1]=digits[random[i]&15];}
+    prefs->guest_password[14]=0;the_mesh.savePrefs();
+  }
+  if(prefs->allow_read_only){prefs->allow_read_only=0;the_mesh.savePrefs();}
+  Serial.printf("Raum-Passwort (Lesen/Schreiben): %s\n",prefs->guest_password);
+#endif
 
 #ifdef DISPLAY_CLASS
   ui_task.begin(the_mesh.getNodePrefs(), FIRMWARE_BUILD_DATE, FIRMWARE_VERSION);

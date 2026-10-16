@@ -91,6 +91,11 @@ struct PostInfo {
 
 class MyMesh : public mesh::Mesh, public CommonCLICallbacks {
   FILESYSTEM* _fs;
+#ifdef DISASTER_ROOM
+  uint32_t disaster_post_seq=0;
+  void loadDisasterPosts();
+  void saveDisasterPost(const PostInfo &post);
+#endif
   uint32_t last_millis;
   uint64_t uptime_millis;
   unsigned long next_local_advert, next_flood_advert;
@@ -130,7 +135,11 @@ class MyMesh : public mesh::Mesh, public CommonCLICallbacks {
 
 protected:
   float getAirtimeBudgetFactor() const override {
+#ifdef DISASTER_ROOM
+    return 9.0f; // fixed internal 10% budget for the German project profiles
+#else
     return _prefs.airtime_factor;
+#endif
   }
 
   void logRxRaw(float snr, float rssi, const uint8_t raw[], int len) override;

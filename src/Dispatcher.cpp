@@ -273,18 +273,23 @@ void Dispatcher::processRecvPacket(Packet* pkt) {
 }
 
 void Dispatcher::checkSend() {
-  if (_mgr->getOutboundCount(_ms->getMillis()) == 0) return;
+  if (_mgr->getOutboundCount(_ms->getMillis()) == 0) {
+    budget_diagnostics.set(false, uint32_t(_ms->getMillis()));
+    return;
+  }
   
   updateTxBudget();
   
   uint32_t est_airtime = _radio->getEstAirtimeFor(MAX_TRANS_UNIT);
   if (tx_budget_ms < est_airtime / MIN_TX_BUDGET_AIRTIME_DIV) {
+    budget_diagnostics.set(true, uint32_t(_ms->getMillis()));
     float duty_cycle = 1.0f / (1.0f + getAirtimeBudgetFactor());
     unsigned long needed = est_airtime / MIN_TX_BUDGET_AIRTIME_DIV - tx_budget_ms;
     next_tx_time = futureMillis((unsigned long)(needed / duty_cycle));
     return;
   }
   
+  budget_diagnostics.set(false, uint32_t(_ms->getMillis()));
   if (!millisHasNowPassed(next_tx_time)) return;
   if (_radio->isReceiving()) {
     if (cad_busy_start == 0) {

@@ -1,3 +1,6 @@
+#ifdef DISASTER_ROOM
+#include "RoomRecord.h"
+#endif
 #include "MyMesh.h"
 
 #define REPLY_DELAY_MILLIS          1500
@@ -57,6 +60,9 @@ void MyMesh::storePost(const mesh::Identity &author, const char *postData) {
   StrHelper::strncpy(posts[idx].text, postData, MAX_POST_TEXT_LEN);
 
   posts[idx].post_timestamp = getRTCClock()->getCurrentTimeUnique();
+#ifdef DISASTER_ROOM
+  saveDisasterPost(posts[idx]);
+#endif
   MESH_DEBUG_PRINTLN("room.post: storePost idx=%d text=%s", idx, posts[idx].text);
   MESH_DEBUG_PRINTLN("room.post: timestamp=%u", posts[idx].post_timestamp);
   next_post_idx = (next_post_idx + 1) % MAX_UNSYNCED_POSTS;
@@ -698,6 +704,9 @@ void MyMesh::begin(FILESYSTEM *fs) {
   _fs = fs;
   // load persisted prefs
   _cli.loadPrefs(_fs);
+#ifdef DISASTER_ROOM
+  loadDisasterPosts();
+#endif
 
   acl.load(_fs, self_id);
   region_map.load(_fs);
@@ -1079,3 +1088,36 @@ void MyMesh::loop() {
   uptime_millis += now - last_millis;
   last_millis = now;
 }
+
+#ifdef DISASTER_ROOM
+// A fixed-size checksum journal. Never format or allocate unbounded storage.
+void MyMesh::saveDisasterPost(const PostInfo &post) {
+  static_assert(MAX_UNSYNCED_POSTS==disaster::ROOM_SLOTS,"Room slot count mismatch");
+  disaster::RoomRecord r{};r.seq=++disaster_post_seq;r.stamp=post.post_timestamp;
+  memcpy(r.author,post.author.pub_key,32);
+  strncpy(r.text,post.text,sizeof(r.text)-1);r.crc=disaster::roomChecksum(r);
+  auto f=_fs->open("/dr-room.bin","r+");
+  if(!f)f=_fs->open("/dr-room.bin","w+");
+  if(!f||!f.seek(disaster::roomOffset(r.seq))||f.write((const uint8_t*)&r,sizeof(r))!=sizeof(r))
+    Serial.println("Room journal write failed: post is RAM-only; inspect storage before relying on reboot retention.");
+  f.close();
+}
+void MyMesh::loadDisasterPosts() {
+  auto f=_fs->open("/dr-room.bin","r");disaster::RoomRecord r{};
+  while(f&&f.read((uint8_t*)&r,sizeof(r))==sizeof(r))
+    if(disaster::roomValid(r)&&r.seq>disaster_post_seq)disaster_post_seq=r.seq;
+  if(f)f.seek(0);
+  uint32_t latest=0;unsigned restored=0;
+  while(f&&f.read((uint8_t*)&r,sizeof(r))==sizeof(r)){
+    if(!disaster::roomValid(r)||disaster_post_seq-r.seq>=disaster::ROOM_SLOTS)continue;
+    auto &post=posts[(r.seq-1)%disaster::ROOM_SLOTS];
+    memcpy(post.author.pub_key,r.author,32);post.post_timestamp=r.stamp;
+    memcpy(post.text,r.text,sizeof(post.text));
+    if(r.stamp>latest)latest=r.stamp;++restored;
+  }
+  f.close();next_post_idx=disaster_post_seq%disaster::ROOM_SLOTS;
+  // Preserve monotonic sync cursors when an ESP32 has no battery-backed RTC.
+  if(latest&&getRTCClock()->getCurrentTime()<=latest)getRTCClock()->setCurrentTime(latest+1);
+  Serial.printf("Room journal: %u posts restored. Set real UTC time via USB after power loss.\n",restored);
+}
+#endif

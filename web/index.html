@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b141c">
+<title>DisAHRsterRadio · MeshCore · Ahrtal</title>
+<link rel="manifest" href="app.webmanifest"><link rel="icon" href="app-icon.png">
+<style>
+:root{font-family:system-ui,-apple-system,sans-serif;color:#eaf2f7;color-scheme:dark;--line:#294b3d;--mesh:#9ee576;--sage:#b7d6b7;--wine:#b7506b;--card:#14263ad9}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:flex;flex-direction:column}html{background:#0b141c}
+body::before{content:"";position:fixed;inset:0;z-index:-2;background:#0b141c url(bg.webp) 58% 80%/cover no-repeat;}
+body::after{content:"";position:fixed;inset:0;z-index:-1;background:linear-gradient(180deg,#0b141c55 0%,#0b141c00 40%,#0b141c00 70%,#0b141c88 100%)}
+@media (min-width:900px){body{max-width:900px;margin:0 auto;width:100%}body::before{background-position:center 55%}}
+header{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:8px;padding:8px 12px;background:#0b141ccc;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+header .t{flex:1}header h1{margin:0;font-size:1.15rem;line-height:1.1}header small{color:var(--sage)}
+#st{padding:3px 9px;border-radius:12px;font-size:.8rem;background:#0008}
+#st.ok{color:var(--mesh)}#st.bad{color:#ff9aa8}
+.warn{background:#3a1d26cc;border-left:4px solid var(--wine);padding:6px 10px;font-size:.85rem}
+nav{display:flex;background:#0b141cb0;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-bottom:1px solid var(--line);overflow-x:auto}nav button{flex:1 0 auto;background:none;border:0;color:#cfe;padding:10px 6px;font-size:.95rem;border-bottom:3px solid transparent}
+nav button.on{border-color:var(--mesh);color:var(--mesh)}
+main{flex:1;display:flex;flex-direction:column;min-height:0}section{display:none;padding:10px;margin:8px;border-radius:12px;background:#0b141c59;flex:1;flex-direction:column;gap:8px}section.on{display:flex}
+#log{flex:1;overflow-y:auto;min-height:200px;display:flex;flex-direction:column;gap:5px}
+.m{background:var(--card);border-radius:8px;padding:6px 9px;max-width:92%;word-wrap:break-word}.m.self{align-self:flex-end;background:#1f3d2cdd}.m.sys{align-self:center;background:#0b141c99;color:#9ab;font-size:.85rem}
+.m .n{color:var(--mesh);font-weight:600;margin-right:4px}.m .tm{color:#789;font-size:.7rem;margin-left:6px}.m .pend{color:#fc6}
+form{display:flex;gap:6px}input,select,textarea{flex:1;background:#0b141c;color:#eaf2f7;border:1px solid var(--line);border-radius:8px;padding:9px;font-size:1rem}
+button.b{background:var(--mesh);color:#102;border:0;border-radius:8px;padding:9px 14px;font-weight:600;font-size:1rem}button.b2{background:#24384a;color:#eaf2f7}
+.quick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}.quick-btn{background:var(--card);color:#eaf2f7;border:1px solid var(--line);border-radius:10px;padding:12px 8px;font-size:.95rem;text-align:left}.quick-btn b{display:block;font-size:1.4rem}
+.quick-btn.H{border-left:4px solid var(--wine)}.quick-btn.I{border-left:4px solid #6ab0e0}.quick-btn.A{border-left:4px solid var(--mesh)}
+.muted{color:#9ab;font-size:.85rem;margin:0}.places{display:flex;flex-direction:column;gap:4px}.places button{text-align:left}
+table{border-collapse:collapse;font-size:.9rem}td{padding:3px 8px;border-bottom:1px solid #1d3346}
+h2{margin:4px 0;font-size:1.05rem}
+.post{background:var(--card);border-radius:10px;padding:8px 10px;border-left:4px solid #3c5a6e}.post.pin{border-left-color:#ffb84d;background:#2a2618}
+.post .h{font-size:.78rem;color:#9ab;display:flex;justify-content:space-between;gap:6px}.post .tx{margin-top:3px;white-space:pre-wrap;word-wrap:break-word}
+#posts{display:flex;flex-direction:column;gap:6px;overflow-y:auto;flex:1}
+.row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.row label{font-size:.9rem;display:flex;gap:4px;align-items:center}.row select{flex:0 1 auto}
+#mapwrap{position:relative;flex:1;min-height:340px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#0d1a22;touch-action:none}
+#map{position:absolute;inset:0;width:100%;height:100%}#mapattr{position:absolute;right:4px;bottom:2px;font-size:.62rem;color:#9ab;background:#0009;padding:1px 4px}
+#mapctl{position:absolute;left:6px;top:6px;display:flex;flex-direction:column;gap:4px}#mapctl button{width:34px;height:34px;padding:0;font-size:1.1rem}
+.legend{font-size:.78rem;color:#9ab;display:flex;gap:10px;flex-wrap:wrap}.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:3px;vertical-align:-1px}
+.tgt{display:flex;gap:6px}.tgt select{flex:1}
+.lbl{font-size:.72rem;color:#9ab;display:block}
+.small{font-size:.8rem}
+#admin{display:none;flex-direction:column;gap:6px}
+section h2,section p,.row label{text-shadow:0 1px 3px #000,0 0 8px #000}
+</style></head><body>
+<header><div class="t"><h1>DisAHRsterRadio</h1><small>Ahrtal · MeshCore-Funknetz ohne Internet</small></div><div id="st" class="bad">getrennt</div></header>
+<div class="warn">Kein zertifiziertes Notrufsystem. In Lebensgefahr immer <b>112</b> wählen, wenn irgendwie möglich.</div>
+<nav><button data-tab="chat" class="on">Chat</button><button data-tab="quick">Schnellmeldung</button><button data-tab="board">Brett</button><button data-tab="map">Karte</button><button data-tab="loc">Standort</button><button data-tab="info">Gerät</button></nav>
+<main>
+<section id="chat" class="on"><div class="tgt"><select id="target"></select><button class="b b2" id="reload" type="button" title="Kontakte neu lesen">↻</button></div>
+<div id="log"></div>
+<form id="f"><input id="msg" maxlength="100" autocomplete="off" placeholder="Nachricht (max. 100 Byte) …"><button class="b">Senden</button></form>
+<p class="muted" id="fb"></p></section>
+<section id="quick"><h2>Schnellmeldung</h2><p class="muted">Vorlage antippen, Ort wählen, prüfen, dann an das gewählte Ziel senden (Standard: öffentlicher Kanal).</p>
+<div class="quick-grid" id="qg"></div>
+<textarea id="qtext" rows="3" maxlength="100"></textarea>
+<form id="qf"><select id="qplace"></select><select id="qtarget"></select><button class="b">Senden</button></form></section>
+<section id="board"><h2>Schwarzes Brett (Room-Server)</h2><p class="muted">Das Brett ist ein MeshCore-Room-Server im Funknetz. Beiträge liegen dort und werden nach der Anmeldung abgerufen.</p>
+<div class="tgt"><select id="room"></select></div>
+<form id="rf" onsubmit="return false"><input id="rpass" type="password" maxlength="15" placeholder="Raum-Passwort"><button class="b b2" id="rlogin" type="button">Anmelden</button></form>
+<p class="muted" id="rstate"></p>
+<div id="posts"></div>
+<textarea id="btext" rows="2" maxlength="100" placeholder="Aushang (max. 100 Byte)"></textarea>
+<div class="row"><button class="b" id="bsend" type="button">Aushängen</button></div></section>
+<section id="map"><div class="row"><select id="mapsel"><option value="ahrtal">Ahrtal (Übersicht)</option><option value="heimersheim">Heimersheim (Detail)</option><option value="dernau">Dernau · Ahrweiler</option><option value="altenahr">Altenahr · Mayschoß · Rech</option><option value="sinzig">Sinzig</option></select><button class="b b2" id="mapme" type="button">📍 Ich</button><button class="b b2" id="mapfit" type="button">Alles</button></div>
+<div id="mapwrap"><canvas id="cv"></canvas><div id="mapctl"><button class="b b2" id="zin" type="button">+</button><button class="b b2" id="zout" type="button">−</button></div><div id="mapattr">© OpenStreetMap-Mitwirkende · ODbL</div></div>
+<div class="legend"><span><i style="background:#9ee576"></i>ich</span><span><i style="background:#6ab0e0"></i>Knoten / Meldungen</span><span><i style="background:#ffb84d"></i>Brett</span><span><i style="background:#ff7d8f"></i>Apotheke/Arzt</span><span><i style="background:#4dd2ff"></i>Wasser</span></div>
+<p class="muted" id="mapinfo">Knoten mit Standort in ihrer Bekanntgabe und Positionen aus Nachrichten werden angezeigt. Keine Navigation.</p></section>
+<section id="loc"><h2>Standort</h2><p class="muted">GPS des Telefons funktioniert im Browser oft nur über HTTPS. Sonst bitte Ort aus der Liste wählen.</p>
+<form onsubmit="return false" class="row"><button class="b b2" id="gps" type="button">📍 GPS-Position holen</button></form>
+<p id="gpsres" class="muted"></p>
+<div class="row"><button class="b" id="psend" type="button">Position in Chat senden</button><button class="b b2" id="padv" type="button">Als Knoten-Standort setzen + bekanntgeben</button></div>
+<p class="muted small">„Bekanntgeben“ sendet eine MeshCore-Bekanntgabe (Advert) mit dieser Position an alle in Funkreichweite.</p>
+<h2>Orte im Ahrtal</h2><div class="places" id="pl"></div></section>
+<section id="info"><h2>Gerät</h2><table id="it"></table>
+<div class="row"><button class="b b2" id="refresh" type="button">Kontakte neu lesen</button><button class="b b2" id="adv" type="button">Bekanntgabe senden</button><button class="b b2" id="admbtn" type="button">Admin</button></div>
+<div id="admin"><input id="apass" type="password" placeholder="Admin-Passwort (seriell beim ersten Start)"><button class="b b2" id="alogin" type="button">Admin anmelden</button>
+<input id="nname" maxlength="24" placeholder="Knotenname"><button class="b b2" id="setname" type="button">Name setzen</button>
+<div class="row"><select id="cslot"></select><input id="cname" maxlength="24" placeholder="Kanalname"><input id="ckey" maxlength="32" placeholder="Schlüssel (32 Hex)"></div><button class="b b2" id="setch" type="button">Kanal speichern</button></div>
+<p class="muted" id="ifb"></p>
+<p class="muted">MeshCore (MIT) · Oberfläche aus <a href="https://github.com/Pietwars/DisAHRsterRadio" style="color:var(--sage)">DisAHRsterRadio</a> / <a href="https://github.com/Pietwars/DisasterMesh" style="color:var(--sage)">DisasterMesh</a>.</p></section>
+</main>
+<script>
+const PLACES=[['Ahrweiler',50.5430,7.0965],['Bad Bodendorf',50.5579,7.2200],['Bad Neuenahr',50.5449,7.1377],['Dernau',50.5344,7.0435],['Heimersheim',50.5426,7.1761],['Heppingen',50.5512,7.1646],['Kripp (Ahrmündung)',50.5609,7.2691],['Lohrsdorf',50.5515,7.1865],['Mayschoß',50.5220,7.0198],['Rech',50.5132,7.0369],['Sinzig',50.5452,7.2491],['Walporzheim',50.5312,7.0794]];
+const QUICK=[['H','Trinkwasser benötigt, Personen: ','💧','Trinkwasser'],['H','Strom zum Laden benötigt (Handy/Gerät)','⚡','Strom / Laden'],['H','Medikamente benötigt: ','💊','Medikamente'],['H','Verletzte Person, Hilfe benötigt','🚑','Verletzt'],['I','Evakuierung / Sammelpunkt: ','🏃','Evakuierung'],['I','Mir geht es gut, bin hier erreichbar','✅','Mir geht es gut'],['A','Biete Hilfe an: ','🤝','Ich biete Hilfe'],['A','Strom/Ladestation verfügbar','🔋','Strom vorhanden']];
+const KIND={H:'HILFE',I:'INFO',A:'ANGEBOT'};
+const $=s=>document.querySelector(s),enc=new TextEncoder(),dec=new TextDecoder();
+const DEMO=/[?&]demo/.test(location.search);
+let state=null,msgs=[],adminToken='',myPos=localStorage.getItem('dar-pos')||'',target=localStorage.getItem('mc-target')||'c0';
+function esc(t){return String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function cid(){let c=localStorage.getItem('mc-cid');if(!c){c=[...crypto.getRandomValues(new Uint8Array(8))].map(x=>x.toString(16).padStart(2,'0')).join('');localStorage.setItem('mc-cid',c)}return c}
+async function api(path,data){if(DEMO)return demoApi(path,data);const o={headers:{'X-Disaster-Request':'1','X-Disaster-Client':cid()},cache:'no-store'};if(adminToken)o.headers['X-Disaster-Admin']=adminToken;
+ if(data){o.method='POST';o.body=new URLSearchParams(data)}const r=await fetch('/api/'+path,o);if(!r.ok)throw Error(await r.text());return r}
+const now=()=>Math.floor(Date.now()/1000);
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button,section').forEach(e=>e.classList.remove('on'));b.classList.add('on');$('#'+b.dataset.tab).classList.add('on');if(b.dataset.tab=='map')loadMap();if(b.dataset.tab=='board')renderPosts();if(b.dataset.tab=='info')renderInfo()});
+/* ---------- MeshCore-Rahmen dekodieren ---------- */
+function bytes(h){return Uint8Array.from(h.match(/../g)||[],x=>parseInt(x,16))}
+function txt(p,a,b=p.length){return dec.decode(p.slice(a,b)).replace(/\0.*$/s,'')}
+function u32(p,i){return new DataView(p.buffer,p.byteOffset).getUint32(i,true)}
+function i32(p,i){return new DataView(p.buffer,p.byteOffset).getInt32(i,true)}
+function decodeRecord(hex){const p=bytes(hex);if(!p.length)return null;const c=p[0];let at,stamp,label,own=false,t='';
+ if(c===17&&p.length>=11){at=11;stamp=u32(p,7);t='c'+p[4]}
+ else if(c===16&&p.length>=16){at=16;stamp=u32(p,12);t='d'+hex.slice(8,20);if(p[11]===2){if(p.length<20)return null;at=20}}
+ else if(c===0xf3&&p.length>=7){at=7;stamp=u32(p,3);t='c'+p[2];own=true}
+ else if((c===0xf2&&p.length>=13)||(c===0xf4&&p.length>=17)){at=c===0xf4?17:13;stamp=u32(p,3);t='d'+hex.slice(14,26);own=true}
+ else return null;
+ return {t,stamp,own,room:c===16&&p[11]===2,author:c===16&&p[11]===2?hex.slice(32,40):null,body:txt(p,at)}}
+function contacts(kind){return (state?.contacts||[]).map(h=>{const p=bytes(h);if(p.length<132)return null;return{id:'d'+h.slice(2,14),type:p[33],name:txt(p,100,132),lat:p.length>=144?i32(p,136)/1e6:0,lon:p.length>=144?i32(p,140)/1e6:0}}).filter(c=>c&&(!kind||c.type===kind))}
+function channels(){return (state?.channels||[]).map((h,i)=>{if(!h)return null;const p=bytes(h);return{id:'c'+i,name:txt(p,2,34)||('Kanal '+i)}}).filter(Boolean)}
+function nameOf(t){if(t[0]=='c'){const c=channels().find(x=>x.id==t);return c?'# '+c.name:'Kanal '+t.slice(1)}const c=contacts().find(x=>x.id==t);return c?c.name:t.slice(1,7)}
+/* ---------- Chat ---------- */
+function targets(){const o=channels().map(c=>[c.id,'# '+c.name]).concat(contacts(1).map(c=>[c.id,'✉ '+c.name]));
+ for(const sel of ['#target','#qtarget']){const s=$(sel),v=sel=='#target'?target:(s.value||'c0');s.innerHTML=o.map(x=>'<option value="'+x[0]+'">'+esc(x[1])+'</option>').join('')||'<option value="c0"># Öffentlich</option>';if(o.some(x=>x[0]==v))s.value=v}
+ const r=$('#room'),rv=r.value;r.innerHTML=contacts(3).map(c=>'<option value="'+c.id+'">'+esc(c.name)+'</option>').join('')||'<option value="">– kein Room-Server bekannt –</option>';if(rv)r.value=rv}
+$('#target').onchange=e=>{target=e.target.value;localStorage.setItem('mc-target',target);renderChat()};
+function line(m,who){const d=document.createElement('div');d.className='m'+(m.own?' self':'');const tm=new Date(m.stamp*1000).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+ let b=m.body,n=who||'';const k=b.match(/^(.{1,32}?): ([\s\S]*)$/);if(!n&&k&&m.t[0]=='c'){n=k[1];b=k[2]}if(!n)n=m.own?'Du':nameOf(m.t);
+ b=esc(b).replace(/(-?\d{1,2}\.\d{3,})\s*,\s*(-?\d{1,3}\.\d{3,})/g,'<a style="color:var(--sage)" href="geo:$1,$2">$1,$2</a>');
+ d.innerHTML='<span class="n">'+esc(n)+'</span>'+b+'<span class="tm">'+tm+'</span>';return d}
+function renderChat(){const l=$('#log');l.innerHTML='';msgs.filter(m=>m.t==target&&!m.room).slice(-150).forEach(m=>l.append(line(m)));if(!l.children.length)l.innerHTML='<div class="m sys">Noch keine Nachrichten für „'+esc(nameOf(target))+'“.</div>';l.scrollTop=1e9}
+async function send(t,text){if(enc.encode(text).length>100)throw Error('max. 100 Byte');const r=await api('send',{target:t,text,time:now()});return r.text()}
+$('#f').onsubmit=async e=>{e.preventDefault();const v=$('#msg').value.trim();if(!v)return;try{$('#fb').textContent=await send(target,v);$('#msg').value='';setTimeout(poll,1500)}catch(x){$('#fb').textContent='Nicht gesendet: '+x.message}};
+/* ---------- Schnellmeldung ---------- */
+QUICK.forEach(q=>{const b=document.createElement('button');b.type='button';b.className='quick-btn '+q[0];b.innerHTML='<b>'+q[2]+'</b>'+q[3];b.onclick=()=>{$('#qtext').value='['+KIND[q[0]]+'] '+q[1];$('#qtext').focus()};$('#qg').append(b)});
+$('#qplace').innerHTML='<option value="">– Ort –</option><option value="own">Mein Standort</option>'+PLACES.map((p,i)=>'<option value="'+i+'">'+p[0]+'</option>').join('');
+$('#qf').onsubmit=async e=>{e.preventDefault();let t=$('#qtext').value.trim();if(!t)return;const v=$('#qplace').value;
+ if(v==='own'&&me)t+=' @ '+me[0].toFixed(4)+','+me[1].toFixed(4);else if(v!==''&&v!=='own'){const p=PLACES[v];t+=' @ '+p[0]+' '+p[1].toFixed(4)+','+p[2].toFixed(4)}
+ try{$('#fb').textContent=await send($('#qtarget').value,t);$('#qtext').value='';target=$('#qtarget').value;$('#target').value=target;document.querySelector('nav button').click();setTimeout(poll,1500)}catch(x){alert('Nicht gesendet: '+x.message)}};
+/* ---------- Brett (Room-Server) ---------- */
+function renderPosts(){const r=$('#room').value,l=msgs.filter(m=>m.t==r&&(m.room||m.own)).slice(-60).reverse();
+ $('#posts').innerHTML=l.length?l.map(m=>'<div class="post'+(/wichtig|\[HILFE\]|!/i.test(m.body.slice(0,12))?' pin':'')+'"><div class="h"><span><b>'+esc(m.own?'Du':(contacts().find(c=>c.id.slice(1,9)==m.author)?.name||m.author||'?'))+'</b></span><span>'+new Date(m.stamp*1000).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+'</span></div><div class="tx">'+esc(m.body)+'</div></div>').join(''):'<p class="muted">Keine Beiträge geladen. Room-Server wählen und anmelden.</p>';
+ const rs=state?.room;$('#rstate').textContent=!r?'':rs&&rs.target==r?(rs.pending?'Anmeldung läuft …':rs.rights>=2?'Angemeldet, Schreibrecht ✓':rs.rights?'Angemeldet (nur lesen)':'Nicht angemeldet'):'Nicht angemeldet'}
+$('#room').onchange=renderPosts;
+$('#rlogin').onclick=async()=>{const r=$('#room').value;if(!r)return;try{$('#rstate').textContent=await (await api('room-login',{target:r,password:$('#rpass').value,time:now()})).text()}catch(x){$('#rstate').textContent=x.message}};
+$('#bsend').onclick=async()=>{const r=$('#room').value,t=$('#btext').value.trim().replace(/\s*\n\s*/g,' ');if(!r||!t)return;try{$('#rstate').textContent=await send(r,t);$('#btext').value='';setTimeout(poll,2000)}catch(x){$('#rstate').textContent='Nicht gesendet: '+x.message}};
+/* ---------- Standort ---------- */
+function setPos(la,lo,label){myPos=(label?label+' ':'')+la.toFixed(5)+','+lo.toFixed(5);localStorage.setItem('dar-pos',myPos);setMe(la,lo);$('#gpsres').textContent='Standort: '+myPos}
+$('#pl').innerHTML=PLACES.map((p,i)=>'<button class="b b2" data-i="'+i+'">'+p[0]+' <span class="muted">'+p[1].toFixed(4)+', '+p[2].toFixed(4)+'</span></button>').join('');
+$('#pl').onclick=e=>{const b=e.target.closest('button');if(!b)return;const p=PLACES[b.dataset.i];setPos(p[1],p[2],p[0])};
+$('#gps').onclick=()=>{if(!navigator.geolocation)return $('#gpsres').textContent='Kein GPS im Browser verfügbar.';$('#gpsres').textContent='Suche Position …';
+ navigator.geolocation.getCurrentPosition(p=>setPos(p.coords.latitude,p.coords.longitude),e=>{$('#gpsres').textContent='GPS nicht möglich ('+e.message+'). Bitte Ort wählen.'},{enableHighAccuracy:true,timeout:15000})};
+$('#psend').onclick=async()=>{if(!me)return alert('Zuerst Standort holen oder Ort wählen.');const t='!DP1|'+me[0].toFixed(4)+','+me[1].toFixed(4)+'|'+now();try{$('#gpsres').textContent=await send(target,t)}catch(x){$('#gpsres').textContent='Nicht gesendet: '+x.message}};
+$('#padv').onclick=async()=>{if(!me)return alert('Zuerst Standort holen oder Ort wählen.');try{await api('position',{lat:Math.round(me[0]*1e6),lon:Math.round(me[1]*1e6)});setTimeout(async()=>{try{$('#gpsres').textContent='Position gesetzt. '+await (await api('advert',{})).text()}catch(x){$('#gpsres').textContent=x.message}},1500)}catch(x){$('#gpsres').textContent=x.message}};
+/* ---------- Gerät ---------- */
+function renderInfo(){const s=state||{},d=s.diagnostics||{};const rows=[['Firmware',d.firmware],['Bereit',s.ready?'ja':'nein'],['WLAN-Clients',d.wifiClients],['Kanäle',channels().map(c=>c.name).join(', ')],['Kontakte',contacts(1).length],['Repeater',contacts(2).length],['Room-Server',contacts(3).length],['Gesendet (Flood/Direkt)',(d.txFlood??'')+' / '+(d.txDirect??'')],['Empfangen (Flood/Direkt)',(d.rxFlood??'')+' / '+(d.rxDirect??'')],['Laufzeit (s)',d.uptimeSeconds],['Freier Speicher',s.heap],['Letztes Ergebnis',s.result]];
+ $('#it').innerHTML=rows.map(r=>'<tr><td>'+r[0]+'</td><td>'+esc(r[1]??'')+'</td></tr>').join('');$('#cslot').innerHTML=[0,1,2,3,4,5,6,7].map(i=>'<option>'+i+'</option>').join('')}
+const act=async(p,d)=>{try{$('#ifb').textContent=await (await api(p,d||{})).text();setTimeout(poll,1500)}catch(x){$('#ifb').textContent=x.message}};
+$('#refresh').onclick=$('#reload').onclick=()=>act('refresh');$('#adv').onclick=()=>act('advert');
+$('#admbtn').onclick=()=>{$('#admin').style.display='flex'};
+$('#alogin').onclick=async()=>{try{adminToken=(await (await api('admin/login',{password:$('#apass').value})).json()).token;$('#ifb').textContent='Admin angemeldet (15 min).'}catch(x){$('#ifb').textContent=x.message}};
+$('#setname').onclick=()=>act('name',{name:$('#nname').value});$('#setch').onclick=()=>act('channel',{slot:$('#cslot').value,name:$('#cname').value,key:$('#ckey').value});
+/* ---------- Abfrage ---------- */
+let lastSeq=-1;
+async function poll(){try{state=await (await api('state')).json();$('#st').textContent='verbunden';$('#st').className='ok';targets();
+ if(state.seq!==lastSeq){lastSeq=state.seq;const raw=await (await api('history')).text();msgs=[];for(const ln of raw.trim().split('\n')){const m=/^(\d+):([0-9a-f]+)$/i.exec(ln);if(!m)continue;try{const r=decodeRecord(m[2]);if(r){r.seq=+m[1];msgs.push(r)}}catch(e){}}
+  msgs.sort((a,b)=>a.seq-b.seq);msgs.forEach(m=>notePos(m.body,m.own?'Du':(m.t[0]=='c'?(m.body.match(/^(.{1,32}?): /)||[])[1]:nameOf(m.t)),m.room));renderChat();renderPosts()}
+ contacts().forEach(c=>{if(c.lat||c.lon)marks['n:'+c.id]={la:c.lat,lo:c.lon,n:c.name,brett:c.type==3,t:0}});if(M)drawMap();renderInfo()}
+ catch(e){$('#st').textContent='getrennt';$('#st').className='bad'}}
+/* ---------- Karte ---------- */
+const MAPS={},cv=$('#cv'),cx=cv.getContext('2d');let M=null,view=null,marks={},me=JSON.parse(localStorage.getItem('dar-me')||'null');
+function setMe(la,lo){me=[la,lo];localStorage.setItem('dar-me',JSON.stringify(me));drawMap()}
+function notePos(t,who,brett){const m=String(t).match(/(-?\d{1,2}\.\d{3,})\s*,\s*(-?\d{1,3}\.\d{3,})/);if(!m)return;let n=who;
+ if(!n){const k=String(t).match(/^<([^>]{1,32})>/);n=k?k[1]:'?'}const la=+m[1],lo=+m[2];if(la<47||la>56||lo<5||lo>16)return;
+ marks[(brett?'b:':'c:')+n]={la,lo,n,brett:!!brett,t:Date.now(),txt:String(t).replace(/^<[^>]*>\s*/,'').slice(0,60)};if(M)drawMap()}
+async function getMap(k){if(MAPS[k])return MAPS[k];let r=await fetch('map/'+k+'.json').catch(()=>null);let d;
+ if(r&&r.ok&&(r.headers.get('content-type')||'').includes('json'))d=await r.json();else{r=await fetch('map/'+k+'.json.gz');d=JSON.parse(await new Response(r.body.pipeThrough(new DecompressionStream('gzip'))).text())}
+ d.l.forEach(l=>{for(let i=3;i<l.length;i+=2){l[i]+=l[i-2];l[i+1]+=l[i-1]}});return MAPS[k]=d}
+async function loadMap(k){k=k||$('#mapsel').value;try{$('#mapinfo').textContent='Karte wird geladen …';M=await getMap(k);fit();if(DEMO&&me&&k=='ahrtal'){view.la=me[0];view.lo=me[1];view.s=12000;drawMap()}$('#mapinfo').textContent=M.name+' · '+M.l.length+' Linien · Positionen aus Nachrichten: '+Object.keys(marks).length}catch(e){$('#mapinfo').textContent='Karte nicht verfügbar: '+e.message}}
+function size(){const r=$('#mapwrap').getBoundingClientRect(),d=devicePixelRatio||1;cv.width=r.width*d;cv.height=r.height*d;cx.setTransform(d,0,0,d,0,0);return r}
+function fit(){const r=size(),b=M.view||M.bbox,k=Math.cos((b[1]+b[3])/2*Math.PI/180);const s=Math.min(r.width/((b[2]-b[0])*k),r.height/(b[3]-b[1]));view={lo:(b[0]+b[2])/2,la:(b[1]+b[3])/2,s:s*0.95,k};drawMap()}
+function P(lo,la){const r=cv.width/(devicePixelRatio||1),h=cv.height/(devicePixelRatio||1);return[r/2+(lo-view.lo)*view.k*view.s,h/2-(la-view.la)*view.s]}
+const ST={wd:['#163a26',0,1],v:['#3b3a1a',0,1],wa:['#1f4f74',0,1],b:['#3a4651',0,1],s:['#3d7fb0',1],w:['#4da3e0',3],f:['#54606a',.6],r:['#8a97a2',1],rw:['#b08ad0',1.4],h:['#e8c07a',2.2]};
+const ORDER=['wd','v','wa','b','s','w','f','r','rw','h'];const PC={apo:'#ff7d8f',med:'#ff7d8f',h2o:'#4dd2ff',fw:'#ff5a3c',pol:'#7aa0ff',sh:'#c9b38a',shop:'#d6a0ff',amt:'#cccccc',wc:'#888',sch:'#999'};
+function drawMap(){if(!M||!view||!cv.offsetParent)return;const W=cv.width/(devicePixelRatio||1),H=cv.height/(devicePixelRatio||1);cx.fillStyle='#0d1a22';cx.fillRect(0,0,W,H);
+ const z=view.s/1e5,ppd=view.s;// Pixel pro Grad
+ for(const o of ORDER){const st=ST[o];if((o=='f'||o=='b')&&ppd<20000)continue;if(o=='r'&&ppd<6000)continue;cx.beginPath();
+  for(const l of M.l){if(l[0]!==o)continue;let [x,y]=P(l[1]/1e5,l[2]/1e5);cx.moveTo(x,y);for(let i=3;i<l.length;i+=2){[x,y]=P(l[i]/1e5,l[i+1]/1e5);cx.lineTo(x,y)}if(!st[1])cx.closePath()}
+  if(st[1]){cx.strokeStyle=st[0];cx.lineWidth=st[1]*Math.max(1,Math.min(2.5,ppd/15000));cx.stroke()}else{cx.fillStyle=st[0];cx.fill()}}
+ cx.font='12px system-ui';cx.textAlign='center';
+ for(const p of M.p){const [x,y]=P(p[2]/1e5,p[3]/1e5);if(x<-20||y<-20||x>W+20||y>H+20)continue;
+  if(p[0].startsWith('pl:')){const big=/town|city/.test(p[0]),vil=/village|suburb/.test(p[0]);if(!big&&!(vil&&ppd>=6000)&&ppd<20000)continue;cx.fillStyle=big?'#eaf2f7':'#b7c7d0';cx.font=(big?'bold 13px':'11px')+' system-ui';cx.fillText(p[1],x,y)}
+  else if(ppd>9000){cx.fillStyle=PC[p[0]]||'#aaa';cx.beginPath();cx.arc(x,y,3.5,0,7);cx.fill();if(ppd>25000&&p[1]){cx.font='10px system-ui';cx.fillStyle='#cdd';cx.fillText(p[1].slice(0,24),x,y-6)}}}
+ if(ppd<8000)for(const q of PLACES){const [x,y]=P(q[2],q[1]);cx.fillStyle='#b7d6b7';cx.font='11px system-ui';cx.beginPath();cx.arc(x,y,2.5,0,7);cx.fill();cx.fillText(q[0],x,y-6)}
+ const pin=(la,lo,c,label)=>{const [x,y]=P(lo,la);cx.fillStyle=c;cx.strokeStyle='#000';cx.lineWidth=1.5;cx.beginPath();cx.arc(x,y,7,0,7);cx.fill();cx.stroke();
+  cx.font='bold 12px system-ui';cx.textAlign='left';cx.lineWidth=3;cx.strokeStyle='#0d1a22';cx.strokeText(label,x+10,y+4);cx.fillStyle='#fff';cx.fillText(label,x+10,y+4);cx.textAlign='center'};
+ for(const m of Object.values(marks))pin(m.la,m.lo,m.brett?'#ffb84d':'#6ab0e0',(m.brett?'📌 ':'')+m.n);
+ if(me)pin(me[0],me[1],'#9ee576','Ich')}
+let pts=new Map(),last=null;
+cv.onpointerdown=e=>{cv.setPointerCapture(e.pointerId);pts.set(e.pointerId,[e.clientX,e.clientY])};
+cv.onpointermove=e=>{if(!pts.has(e.pointerId)||!view)return;const o=pts.get(e.pointerId);
+ if(pts.size==1){view.lo-=(e.clientX-o[0])/(view.k*view.s);view.la+=(e.clientY-o[1])/view.s}
+ else if(pts.size==2){const [a,b]=[...pts.values()];const d0=Math.hypot(a[0]-b[0],a[1]-b[1]);pts.set(e.pointerId,[e.clientX,e.clientY]);const [c,d]=[...pts.values()];const d1=Math.hypot(c[0]-d[0],c[1]-d[1]);if(d0>0)zoom(d1/d0);return}
+ pts.set(e.pointerId,[e.clientX,e.clientY]);drawMap()};
+cv.onpointerup=cv.onpointercancel=e=>pts.delete(e.pointerId);
+cv.onwheel=e=>{e.preventDefault();zoom(e.deltaY<0?1.25:0.8)};
+function zoom(f){if(!view)return;view.s=Math.max(2000,Math.min(400000,view.s*f));drawMap()}
+$('#zin').onclick=()=>zoom(1.5);$('#zout').onclick=()=>zoom(1/1.5);$('#mapfit').onclick=()=>M&&fit();
+$('#mapme').onclick=()=>{if(!me)return alert('Noch kein Standort – unter „Standort“ GPS holen oder Ort wählen.');view.la=me[0];view.lo=me[1];view.s=Math.max(view.s,30000);drawMap()};
+$('#mapsel').onchange=()=>loadMap();addEventListener('resize',()=>{if(M&&view){size();drawMap()}});
+/* ---------- Demo ---------- */
+function hx(a){return [...a].map(x=>x.toString(16).padStart(2,'0')).join('')}
+function demoContact(id6,type,name,la,lo){const p=new Uint8Array(148);p[0]=3;for(let i=0;i<6;i++)p[1+i]=parseInt(id6.substr(i*2,2),16);p[33]=type;p.set(enc.encode(name),100);const dv=new DataView(p.buffer);dv.setInt32(136,Math.round(la*1e6),true);dv.setInt32(140,Math.round(lo*1e6),true);return hx(p)}
+function demoChan(i,name){const p=new Uint8Array(50);p[0]=18;p[1]=i;p.set(enc.encode(name),2);return hx(p)}
+function chMsg(ch,stamp,body){const b=enc.encode(body),p=new Uint8Array(11+b.length);p[0]=17;p[4]=ch;new DataView(p.buffer).setUint32(7,stamp,true);p.set(b,11);return hx(p)}
+function roomMsg(room6,author4,stamp,body){const b=enc.encode(body),p=new Uint8Array(20+b.length);p[0]=16;for(let i=0;i<6;i++)p[4+i]=parseInt(room6.substr(i*2,2),16);p[11]=2;new DataView(p.buffer).setUint32(12,stamp,true);for(let i=0;i<4;i++)p[16+i]=parseInt(author4.substr(i*2,2),16);p.set(b,20);return hx(p)}
+function demoApi(path){const t=now()-3600;const J=o=>({json:async()=>o,text:async()=>typeof o=='string'?o:JSON.stringify(o)});
+ if(path=='state')return J({ready:true,heap:142000,seq:7,result:'',channels:[demoChan(0,'Öffentlich'),demoChan(1,'Ahrtal-Hilfe'),'','','','','',''],contacts:[demoContact('a1b2c3d4e5f6',1,'Anna',50.5515,7.1865),demoContact('b2c3d4e5f6a7',1,'Jonas',50.5449,7.1377),demoContact('c3d4e5f6a7b8',3,'Brett Heimersheim',50.5426,7.1761),demoContact('d4e5f6a7b8c9',2,'Repeater Landskrone',50.5560,7.1520)],room:{target:'dc3d4e5f6a7b8',rights:2,pending:false},diagnostics:{firmware:'v1.18.0-dar0.1.0',wifiClients:2,txFlood:12,txDirect:3,rxFlood:40,rxDirect:5,uptimeSeconds:5321}});
+ if(path=='history')return J(['1:'+chMsg(0,t,'Anna: Heimersheim: Wasser steht in der Bachstraße, Brücke gesperrt.'),'2:'+chMsg(0,t+600,'Jonas: [HILFE] Trinkwasser benötigt, Personen: 4 @ Lohrsdorf 50.5515,7.1865'),'3:'+chMsg(0,t+900,'Peter: Bin auf dem Weg, bringe 2 Kanister mit.'),'4:'+chMsg(0,t+1500,'Mia: [ANGEBOT] Strom/Ladestation verfügbar @ Bad Neuenahr 50.5449,7.1377'),
+  '5:'+roomMsg('c3d4e5f6a7b8','a1b2c3d4',t-7200,'WICHTIG: Trinkwasser-Ausgabe am Bürgerhaus Heimersheim 14–17 Uhr 50.5426,7.1761'),'6:'+roomMsg('c3d4e5f6a7b8','b2c3d4e5',t-3000,'Apotheke Bad Neuenahr Notdienst bis 20 Uhr'),'7:'+roomMsg('c3d4e5f6a7b8','a1b2c3d4',t+100,'Brücke Bachstraße gesperrt, Umweg über Lohrsdorf.')].join('\n'));
+ return J('Demo: nicht gesendet')}
+targets();poll();setInterval(poll,4000);if(DEMO&&!me)me=[50.5440,7.1700];
+const h0=location.hash.slice(1);if(h0){const b=document.querySelector('nav button[data-tab="'+h0+'"]');if(b)b.click()}
+</script></body></html>

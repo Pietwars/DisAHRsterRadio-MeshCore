@@ -12,6 +12,11 @@ static uint32_t _atoi(const char* sp) {
   return n;
 }
 
+#ifdef DISASTER_PORTAL
+#include "DisasterPortal.h"
+DisasterPortal disaster_portal;
+#endif
+
 // interface manager
 #include <helpers/MultiSerialInterface.h>
 MultiSerialInterface interface_manager;
@@ -132,9 +137,27 @@ void halt() {
   bool wifi_enabled = false;   // set at boot from prefs; false also when the effective SSID is blank
 #endif
 
+#ifdef DISASTER_DIAG
+#include "soc/soc.h"
+#include "soc/rtc_cntl_reg.h"
+#define DIAG(m) do { Serial.printf("[DIAG %lu] %s heap=%u\n", millis(), m, (unsigned)ESP.getFreeHeap()); Serial.flush(); } while (0)
+#else
+#define DIAG(m) do {} while (0)
+#endif
+
 void setup() {
+#ifdef DISASTER_DIAG
+  WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
+#endif
   Serial.begin(115200);
+#ifdef DISASTER_DIAG
+  delay(300);
+  Serial.printf("\n[DIAG] boot, reset reason=%d\n", (int)esp_reset_reason());
+  Serial.flush();
+#endif
+  DIAG("board.begin");
   board.begin();
+  DIAG("board ok");
 
 #ifdef HAS_EXTERNAL_WATCHDOG
   external_watchdog.begin();
@@ -153,7 +176,9 @@ void setup() {
   }
 #endif
 
-  if (!radio_init()) { halt(); }
+  DIAG("display done, radio_init");
+  if (!radio_init()) { DIAG("radio_init FAILED -> halt"); halt(); }
+  DIAG("radio ok");
 
   fast_rng.begin(radio_driver.getRngSeed());
 
@@ -178,7 +203,15 @@ void setup() {
   store.begin();
   the_mesh.begin();
 #elif defined(ESP32)
+#ifdef DISASTER_PORTAL
+  DIAG("SPIFFS.begin");
+  if (!SPIFFS.begin(false)) {
+    Serial.println("SPIFFS mount failed. Initialize the filesystem with uploadfs (after backup).");
+    halt();
+  }
+#else
   SPIFFS.begin(true);
+#endif
   store.begin();
   the_mesh.begin();
 #else
@@ -274,11 +307,28 @@ void setup() {
   interface_manager.addInterface(InterfaceType::HardwareSerial, &hardware_serial_interface);
 #endif
 
+#ifdef DISASTER_PORTAL
+  board.setInhibitSleep(true);
+  DIAG("mesh ok, wait before WiFi");
+#ifdef DISASTER_WIFI_DELAY_MS
+  delay(DISASTER_WIFI_DELAY_MS);  // WLAN zuletzt und verzoegert (Brownout-Schutz)
+#elif defined(DISASTER_DIAG)
+  delay(1500);
+#endif
+  DIAG("portal.begin (softAP)");
+  disaster_portal.begin();
+  DIAG("portal ok");
+  interface_manager.addInterface(InterfaceType::WiFi, &disaster_portal);
+#endif
+
   the_mesh.startInterface(interface_manager);
   sensors.begin();
 
 #if ENV_INCLUDE_GPS == 1
   the_mesh.applyGpsPrefs();
+#endif
+#if defined(DISASTER_PORTAL) && defined(DISASTER_GPS)
+  sensors.setSettingValue("gps", "1");  // GPS profile: module on by default
 #endif
 
 #ifdef DISPLAY_CLASS
@@ -291,6 +341,28 @@ void setup() {
 
 void loop() {
   the_mesh.loop();
+#ifdef DISASTER_PORTAL
+  disaster_portal.serviceAP();
+#ifdef DISPLAY_CLASS
+  {
+    static unsigned long lastOled = 0; static bool showPw = false;
+    if (millis() - lastOled > 15000) {  // abwechselnd WLAN-Name und Passwort auf dem OLED
+      lastOled = millis(); showPw = !showPw;
+      String t = showPw ? String("PW: ") + disaster_portal.wifiPassword()
+                        : (disaster_portal.apRunning() ? String("WLAN ") : String("WLAN FEHLER ")) + disaster_portal.ssid().substring(16);
+      ui_task.showAlert(t.c_str(), 6000);
+    }
+  }
+#endif
+  disaster_portal.setRadioDiagnostics(the_mesh.getNumSentFlood(), the_mesh.getNumSentDirect(),
+    the_mesh.getNumRecvFlood(), the_mesh.getNumRecvDirect(), the_mesh.getTotalAirTime(),
+    the_mesh.getReceiveAirTime(), the_mesh.getRemainingTxBudget(),
+    the_mesh.isTxBudgetWaiting(), the_mesh.getTxBudgetWaitEvents(),
+    the_mesh.getTxBudgetWaitSeconds(), the_mesh.getTxQueuePackets());
+#if defined(DISASTER_GPS) && ENV_INCLUDE_GPS
+  disaster_portal.setGps(true, nmea.isValid(), sensors.node_lat, sensors.node_lon);
+#endif
+#endif
   interface_manager.loop();
   sensors.loop();
 #ifdef DISPLAY_CLASS

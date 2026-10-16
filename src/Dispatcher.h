@@ -4,6 +4,7 @@
 #include <Identity.h>
 #include <Packet.h>
 #include <Utils.h>
+#include "TxBudgetDiagnostics.h"
 #include <string.h>
 
 namespace mesh {
@@ -116,6 +117,7 @@ typedef uint32_t  DispatcherAction;
  *      and scheduling of outbound Packets.
 */
 class Dispatcher {
+  TxBudgetDiagnostics budget_diagnostics;
   Packet* outbound;  // current outbound packet
   unsigned long outbound_expiry, outbound_start, total_air_time, rx_air_time;
   unsigned long next_tx_time;
@@ -182,6 +184,10 @@ public:
 
   unsigned long getTotalAirTime() const { return total_air_time; }
   unsigned long getReceiveAirTime() const {return rx_air_time; }
+  bool isTxBudgetWaiting() const { return budget_diagnostics.waiting(); }
+  uint32_t getTxBudgetWaitEvents() const { return budget_diagnostics.events(); }
+  uint32_t getTxBudgetWaitSeconds() const { return budget_diagnostics.seconds(uint32_t(_ms->getMillis())); }
+  int getTxQueuePackets() const { return _mgr->getOutboundTotal(); }
   unsigned long getRemainingTxBudget() const { return tx_budget_ms; }
   uint32_t getNumSentFlood() const { return n_sent_flood; }
   uint32_t getNumSentDirect() const { return n_sent_direct; }

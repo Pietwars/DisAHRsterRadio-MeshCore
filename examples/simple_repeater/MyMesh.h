@@ -129,7 +129,11 @@ class MyMesh : public mesh::Mesh, public CommonCLICallbacks {
 
 protected:
   float getAirtimeBudgetFactor() const override {
+#ifdef DISASTER_REPEATER
+    return 9.0f; // fixed internal 10% budget for the German project profiles
+#else
     return _prefs.airtime_factor;
+#endif
   }
 
   bool allowPacketForward(const mesh::Packet* packet) override;

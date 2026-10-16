@@ -7,6 +7,10 @@
 #include <helpers/radiolib/CustomSX1262Wrapper.h>
 #include <helpers/AutoDiscoverRTCClock.h>
 #include <helpers/SensorManager.h>
+#if ENV_INCLUDE_GPS
+  #include <helpers/sensors/EnvironmentSensorManager.h>
+  #include <helpers/sensors/MicroNMEALocationProvider.h>
+#endif
 #ifdef DISPLAY_CLASS
   #include <helpers/ui/SSD1306Display.h>
   #include <helpers/ui/MomentaryButton.h>
@@ -15,7 +19,12 @@
 extern ESP32Board board;
 extern WRAPPER_CLASS radio_driver;
 extern AutoDiscoverRTCClock rtc_clock;
-extern SensorManager sensors;
+#if ENV_INCLUDE_GPS
+  extern EnvironmentSensorManager sensors;
+  extern MicroNMEALocationProvider nmea;
+#else
+  extern SensorManager sensors;
+#endif
 
 #ifdef DISPLAY_CLASS
   extern DISPLAY_CLASS display;
