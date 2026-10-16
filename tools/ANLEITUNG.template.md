@@ -1,6 +1,6 @@
-# DisAHRsterRadio-MeshCore für @BOARD@
+# @PREFIX@ für @BOARD@
 
-MeshCore-Companion mit WLAN-Weboberfläche · Commit @COMMIT@ · https://github.com/Pietwars/DisAHRsterRadio-MeshCore
+MeshCore-Companion mit WLAN-Weboberfläche · Version @VERSION@ · Commit @COMMIT@ · @REPO@
 
 > ⚠️ Kein zertifiziertes Notrufsystem. In Lebensgefahr immer **112** wählen. Diese Firmware ist **noch nicht auf echter Hardware getestet**.
 
@@ -13,10 +13,10 @@ MeshCore-Companion mit WLAN-Weboberfläche · Commit @COMMIT@ · https://github.
 1. Board per USB-Datenkabel anschließen, Chrome oder Edge am PC/Mac.
 2. https://espressif.github.io/esptool-js/ öffnen, **Connect**, Port wählen (T3-S3 ggf. mit BOOT gedrückt + RST einschalten).
 3. Optional **Erase Flash**.
-4. Flash Address **`0x0`**, Datei `DisAHRsterRadio-MeshCore-@ZIP@-factory.bin`, **Program**.
+4. Flash Address **`0x0`**, Datei `@PREFIX@-@ZIP@-factory.bin`, **Program**.
 5. Danach **RST** drücken.
 
-Enthalten: Bootloader (@BOOT@), Partitionen (0x8000), boot_app0 (0xe000), Firmware mit Weboberfläche und Karten (0x10000), SPIFFS-Dateisystem (0x3d0000).
+Enthalten: Bootloader (@BOOT@), Partitionen (0x8000), boot_app0 (0xe000), Firmware mit Weboberfläche (0x10000), SPIFFS-Dateisystem (@FSOFF@).
 
 ## 3. WLAN-Passwort und Admin-Passwort
 
@@ -47,6 +47,6 @@ Dann ins WLAN und `http://192.168.4.1` öffnen.
 | teile/partitions.bin | 0x8000 |
 | teile/boot_app0.bin | 0xe000 |
 | teile/firmware.bin | 0x10000 |
-| teile/spiffs.bin | 0x3d0000 |
+| teile/spiffs.bin | @FSOFF@ |
 
 MeshCore © Scott Powell / rippleradios.com u. a. (MIT). Karten © OpenStreetMap-Mitwirkende (ODbL).

@@ -222,11 +222,13 @@ public:
     });
     http.on("/app.webmanifest",HTTP_GET,[this](){http.send_P(200,"application/manifest+json",PORTAL_MANIFEST);});
     http.on("/app-icon.png",HTTP_GET,[this](){http.send_P(200,"image/png",(const char*)PORTAL_ICON,sizeof(PORTAL_ICON));});
+#ifdef PORTAL_HAS_BG
     http.on("/bg.webp",HTTP_GET,[this](){http.sendHeader("Cache-Control","max-age=86400");http.send_P(200,"image/webp",(const char*)PORTAL_BG_WEBP,sizeof(PORTAL_BG_WEBP));});
     for(const auto &m:PORTAL_MAPS){
       String path=String("/map/")+m.name+".json"; const PortalMap *mp=&m;
       http.on(path.c_str(),HTTP_GET,[this,mp](){http.sendHeader("Content-Encoding","gzip");http.sendHeader("Cache-Control","max-age=86400");http.send_P(200,"application/json",(const char*)mp->data,mp->len);});
     }
+#endif
     http.on("/api/position",HTTP_POST,[this](){
       if(!room())return;
       long lat=strtol(http.arg("lat").c_str(),nullptr,10),lon=strtol(http.arg("lon").c_str(),nullptr,10);
