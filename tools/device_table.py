@@ -11,5 +11,5 @@ L=['| Gerät | Chip | Web-Oberfläche | Inhalt | Datei |','|---|---|---|---|---|
 for e in devs:
     z=f'DisAHRsterRadio-MeshCore-{V}-{e["device"]}.zip'
     f=f'`{z}`' if built is None or z in built else '❌ Build fehlgeschlagen'
-    L.append(f'| {e["device"]} | {e["chip"]} | {"ja" if e["webui"] else "nein (ohne Web-Oberfläche)"} | {", ".join(ROLE[k] for k in e["envs"])} | {f} |')
+    L.append(f'| {e["device"]} | {e["chip"]} | {"ja" if e["webui"] else "nein (ohne Web-Oberfläche"+(": "+e["note"] if e.get("note") else "")+")"} | {", ".join(ROLE[k] for k in e["envs"])} | {f} |')
 print('\n'.join(L))

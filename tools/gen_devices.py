@@ -22,19 +22,21 @@ def chip(e):
     for k,v in (('nrf52','nrf52'),('raspberrypi','rp2040'),('ststm32','stm32')):
         if k in p: return v
     return '?'
+NOPORTAL={'ThinkNode_M7':'eigene Display-Oberfläche ohne Hinweisfunktion (showAlert) – Portal baut nicht','M5Stack_Unit_C6L':'ESP32-C6: WLAN-Bibliothek (Network.h) im Portal-Build nicht auflösbar'}
 ini=['; Automatisch erzeugt von tools/gen_devices.py – nicht von Hand bearbeiten','']
 out=[]
 for d in sorted(devs,key=str.lower):
     roles=devs[d]; first=f'{d}_{roles[0]}'; ch=chip(first)
     entry={'device':d,'chip':ch,'envs':{},'webui':False}
-    if ch.startswith('esp32') and any(r.startswith('companion') for r in roles):
+    if d in NOPORTAL: entry['note']=NOPORTAL[d]
+    if d not in NOPORTAL and ch.startswith('esp32') and any(r.startswith('companion') for r in roles):
         entry['webui']=True
         if d in MANUAL: entry['envs']['wifi']=MANUAL[d]
         else:
             base=f'{d}_companion_radio_ble' if 'companion_radio_ble' in roles else f'{d}_companion_radio_usb'
             e=f'dar_{d}_wifi'; entry['envs']['wifi']=e
             flags=' '.join(c.get(f'env:{base}','build_flags',[]))
-            unf=sorted(set(m.group(0).strip() for m in re.finditer(r'-D\s*(ENABLE_USB_INTERFACE|WIFI_SSID|WIFI_PWD|ENABLE_PRIVATE_KEY_EXPORT|ENABLE_PRIVATE_KEY_IMPORT|LORA_TX_POWER)(=\S+)?',flags) if m.group(0).strip().replace(' ','')!='-DLORA_TX_POWER=10'))
+            unf=sorted(set(m.group(0).strip() for m in re.finditer(r'-D\s*(ENABLE_USB_INTERFACE|ENABLE_WIFI_INTERFACE|WIFI_SSID|WIFI_PWD|ENABLE_PRIVATE_KEY_EXPORT|ENABLE_PRIVATE_KEY_IMPORT|LORA_TX_POWER)(=\S+)?',flags) if m.group(0).strip().replace(' ','')!='-DLORA_TX_POWER=10'))
             ini+=[f'[env:{e}]',f'extends = env:{base}','test_framework = custom','lib_ldf_mode = deep+','build_unflags =',*['  '+u for u in unf],
                   'board_build.partitions = huge_app.csv',
                   'build_flags =',f'  ${{env:{base}.build_flags}}','  -D LORA_TX_POWER=10','  -D MAX_GROUP_CHANNELS=8','  -D DISASTER_PORTAL=1','  -D OFFLINE_QUEUE_SIZE=64',

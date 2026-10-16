@@ -442,9 +442,12 @@
   "device": "M5Stack_Unit_C6L",
   "chip": "esp32c6",
   "envs": {
-   "wifi": "dar_M5Stack_Unit_C6L_wifi"
+   "companion": "dar_M5Stack_Unit_C6L_companion",
+   "repeater": "dar_M5Stack_Unit_C6L_repeater",
+   "room_server": "dar_M5Stack_Unit_C6L_room_server"
   },
-  "webui": true
+  "webui": false,
+  "note": "ESP32-C6: WLAN-Bibliothek (Network.h) im Portal-Build nicht aufl\u00f6sbar"
  },
  {
   "device": "Mesh_pocket",
@@ -793,9 +796,12 @@
   "device": "ThinkNode_M7",
   "chip": "esp32s3",
   "envs": {
-   "wifi": "dar_ThinkNode_M7_wifi"
+   "companion": "dar_ThinkNode_M7_companion",
+   "repeater": "dar_ThinkNode_M7_repeater",
+   "room_server": "dar_ThinkNode_M7_room_server"
   },
-  "webui": true
+  "webui": false,
+  "note": "eigene Display-Oberfl\u00e4che ohne Hinweisfunktion (showAlert) \u2013 Portal baut nicht"
  },
  {
   "device": "ThinkNode_M8",

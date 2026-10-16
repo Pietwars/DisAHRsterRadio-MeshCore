@@ -148,7 +148,7 @@ Gebaut werden alle 105 Geräte, für die MeshCore v1.18.0 Firmware anbietet (Que
 | LilyGo_TDeck | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-LilyGo_TDeck.zip` |
 | LilyGo_TETH_Elite_sx1262 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-LilyGo_TETH_Elite_sx1262.zip` |
 | LilyGo_TLora_V2_1_1_6 | esp32 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-LilyGo_TLora_V2_1_1_6.zip` |
-| M5Stack_Unit_C6L | esp32c6 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-M5Stack_Unit_C6L.zip` |
+| M5Stack_Unit_C6L | esp32c6 | nein (ohne Web-Oberfläche: ESP32-C6: WLAN-Bibliothek (Network.h) im Portal-Build nicht auflösbar) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-M5Stack_Unit_C6L.zip` |
 | Mesh_pocket | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Mesh_pocket.zip` |
 | Meshadventurer_sx1262 | esp32 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Meshadventurer_sx1262.zip` |
 | Meshadventurer_sx1268 | esp32 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Meshadventurer_sx1268.zip` |
@@ -187,7 +187,7 @@ Gebaut werden alle 105 Geräte, für die MeshCore v1.18.0 Firmware anbietet (Que
 | ThinkNode_M4 | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-ThinkNode_M4.zip` |
 | ThinkNode_M5 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-ThinkNode_M5.zip` |
 | ThinkNode_M6 | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-ThinkNode_M6.zip` |
-| ThinkNode_M7 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-ThinkNode_M7.zip` |
+| ThinkNode_M7 | esp32s3 | nein (ohne Web-Oberfläche: eigene Display-Oberfläche ohne Hinweisfunktion (showAlert) – Portal baut nicht) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-ThinkNode_M7.zip` |
 | ThinkNode_M8 | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-ThinkNode_M8.zip` |
 | Tiny_Relay | stm32 | nein (ohne Web-Oberfläche) | Companion, Repeater | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Tiny_Relay.zip` |
 | waveshare_rp2040_lora | rp2040 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-waveshare_rp2040_lora.zip` |
