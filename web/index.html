@@ -7,9 +7,9 @@
 <style>
 :root{font-family:system-ui,-apple-system,sans-serif;color:#eaf2f7;color-scheme:dark;--line:#294b3d;--mesh:#9ee576;--sage:#b7d6b7;--wine:#b7506b;--card:#14263ad9}
 *{box-sizing:border-box}body{margin:0;min-height:100vh;display:flex;flex-direction:column}html{background:#0b141c}
-body::before{content:"";position:fixed;inset:0;z-index:-2;background:#0b141c url(bg.webp) 58% 80%/cover no-repeat;}
-body::after{content:"";position:fixed;inset:0;z-index:-1;background:linear-gradient(180deg,#0b141c55 0%,#0b141c00 40%,#0b141c00 70%,#0b141c88 100%)}
-@media (min-width:900px){body{max-width:900px;margin:0 auto;width:100%}body::before{background-position:center 55%}}
+body::before{content:"";position:fixed;inset:0;z-index:-2;background:url(bg.webp) top center/min(100vw,1083px) auto no-repeat,linear-gradient(#0b141cb8,#0b141cb8),url(bg.webp) center 70%/cover no-repeat;}
+body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(180deg,#0b141c00 0,#0b141c00 min(24vw,260px),#0b141c66 min(40vw,430px),#0b141c33 100%)}
+@media (min-width:900px){body{max-width:900px;margin:0 auto;width:100%}}
 header{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:8px;padding:8px 12px;background:#0b141ccc;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 header .t{flex:1}header h1{margin:0;font-size:1.15rem;line-height:1.1}header small{color:var(--sage)}
 #st{padding:3px 9px;border-radius:12px;font-size:.8rem;background:#0008}
@@ -41,7 +41,10 @@ h2{margin:4px 0;font-size:1.05rem}
 .small{font-size:.8rem}
 #admin{display:none;flex-direction:column;gap:6px}
 section h2,section p,.row label{text-shadow:0 1px 3px #000,0 0 8px #000}
+.hero{height:min(24vw,260px);flex:none}
+@media (min-width:1100px){body::before{background:linear-gradient(#0b141c00 560px,#0b141c 722px) top center/100% 100% no-repeat,linear-gradient(90deg,#0b141c,#0b141c00 3%,#0b141c00 97%,#0b141c) top center/1083px 722px no-repeat,url(bg.webp) top center/1083px auto no-repeat,#0b141c}}
 </style></head><body>
+<div class="hero" aria-hidden="true"></div>
 <header><div class="t"><h1>DisAHRsterRadio</h1><small>Ahrtal · MeshCore-Funknetz ohne Internet</small></div><div id="st" class="bad">getrennt</div></header>
 <div class="warn">Kein zertifiziertes Notrufsystem. In Lebensgefahr immer <b>112</b> wählen, wenn irgendwie möglich.</div>
 <nav><button data-tab="chat" class="on">Chat</button><button data-tab="quick">Schnellmeldung</button><button data-tab="board">Brett</button><button data-tab="map">Karte</button><button data-tab="loc">Standort</button><button data-tab="info">Gerät</button></nav>
