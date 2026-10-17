@@ -117,7 +117,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           ASSETS="dist/*.zip dist/SHA256SUMS-*.txt"
-          for f in docs/flyer/*-Flyer.pdf docs/flyer/*-Flyer-digital.pdf; do [ -f "$f" ] && ASSETS="$ASSETS $f"; done
+          for f in docs/flyer/*-Flyer.pdf docs/flyer/*-Flyer-digital.pdf docs/flyer/*-Flyer-vorschau.jpg; do [ -f "$f" ] && ASSETS="$ASSETS $f"; done
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" $ASSETS --clobber
           else
