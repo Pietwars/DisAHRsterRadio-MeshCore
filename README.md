@@ -45,6 +45,25 @@ Verwandte Repositorys:
 | Auf echter Hardware getestet | ❌ **diese Firmware noch nicht.** LILYGO T3 V1.6.1 lief beim Nutzer mit der Schwester-Firmware DisAHRsterRadio vollständig; Heltec V2 zeigte dort ein Strom-/Brownout-Problem (WLAN-AP fehlte), Gegenmaßnahme hier enthalten, ungeprüft |
 | Kompatibel mit anderen MeshCore-Geräten/Apps | ✅ normales MeshCore-Funkprotokoll (gleiches Funkprofil vorausgesetzt) |
 
+## Kartenbedienung und Speicheroptimierung
+
+Die Navigation bleibt unten in zwei Reihen erreichbar (einschließlich iPhone-Safe-Area).
+Die Kartenzeichenfläche ist auf ihren Container begrenzt; Zoomtasten sind 44 × 44 Pixel groß.
+Im Browser werden maximal zwei Karten zwischengespeichert. Beim schnellen Wechsel gewinnt
+immer die zuletzt gewählte Karte. Gleichzeitige Statusabfragen werden vermieden.
+
+Die Weboberfläche wird beim Bauen gzip-komprimiert und direkt aus PROGMEM ausgeliefert.
+Die genauen Roh- und gzip-Größen zeigt `python tools/embed_web.py` an (derzeit rund 19,6 kB
+Ersparnis gegenüber derselben unkomprimierten Seite). `/api/state` überträgt Kontakte und
+Kanäle stückweise, statt dafür einen großen Gesamt-String im Geräte-RAM anzulegen.
+Unter „Gerät“ erscheinen freier RAM, bisheriges RAM-Minimum und größter freier Block.
+Karten, Bluetooth, Kontaktlimit und Nachrichtenwarteschlange bleiben erhalten.
+
+Regressionstest: `node tests/web_regression.cjs` (Node 22); prüft JavaScript-Syntax,
+gzip-Roundtrip, CSS-Selektoren, Kartencache und überholte Ladeantworten. Dies ersetzt
+keinen Safari-/Hardwaretest. Vor Freigabe auf iPhone Hoch-/Querformat, Tastatur,
+Karte → Chat/Brett und auf dem Board mehrere WLAN-Clients sowie BLE parallel prüfen.
+
 ## Boards
 
 | PlatformIO-Env | Board | Flash belegt |
@@ -92,7 +111,7 @@ pio run -e disaster_t3s3_sx1262_wifi -t uploadfs  # nur einmal! (Dateisystem, l�
 tools/package.sh                                 # Flashpakete DisAHRsterRadio-MeshCore-0.9.0-alpha-<board>.zip
 ```
 
-Die Weboberfläche liegt in `web/index.html`. `tools/embed_web.py` bettet Seite, Hintergrundbild (WebP, 38 KB) und Karten (gzip, 290 KB) in `examples/companion_radio/PortalPage.h` und `PortalAssets.h` ein. Demo ohne Gerät: `web/index.html?demo=1` lokal öffnen.
+Die Weboberfläche liegt in `web/index.html`. `tools/embed_web.py` bettet die gzip-komprimierte Seite, Hintergrundbild (WebP, 38 KB) und Karten (gzip, 290 KB) in `examples/companion_radio/PortalPage.h` und `PortalAssets.h` ein. Demo ohne Gerät: `web/index.html?demo=1` lokal öffnen.
 
 ## Alle Geräte (MeshCore-Konfigurator-Liste)
 

@@ -1,0 +1,31 @@
+// Node-only checks; physical iPhone layout still requires Safari testing.
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict'),zlib=require('node:zlib');
+const html=fs.readFileSync('web/index.html','utf8');
+const script=html.match(/<script>([\s\S]*?)<\/script>/)[1];
+new vm.Script(script);
+const header=fs.readFileSync('examples/companion_radio/PortalPage.h','utf8');
+const compressed=Buffer.from(header.match(/\{([\d,]+)\}/)[1].split(',').map(Number));
+assert.equal(zlib.gunzipSync(compressed).toString(),html);
+assert.ok(compressed.length < Buffer.byteLength(html)*0.5);
+assert.ok(!/#map\s*\{[^}]*position:absolute/.test(html));
+assert.match(html,/#cv\{[^}]*position:absolute/);
+assert.match(html,/nav\{[^}]*position:fixed[^}]*grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
+const info={textContent:''};
+const ctx=vm.createContext({Map,Response,DecompressionStream,JSON,fetch:async url=>({ok:true,headers:{get:()=> 'application/json'},json:async()=>({name:url,l:[['r',10,20,2,3]],bbox:[7,50,8,51]})}),$:()=>info,DEMO:false,me:null,fit:()=>{},marks:{},drawMap:()=>{}});
+vm.runInContext('const MAPS=new Map();let M=null,mapRequest=0;'+script.slice(script.indexOf('async function getMap('),script.indexOf('function size()')),ctx);
+(async()=>{
+ await vm.runInContext("getMap('a');",ctx);
+ await vm.runInContext("getMap('b');",ctx);
+ await vm.runInContext("getMap('a');",ctx);
+ await vm.runInContext("getMap('c');",ctx);
+ assert.equal(vm.runInContext('MAPS.size',ctx),2);
+ assert.equal(vm.runInContext("MAPS.has('b')",ctx),false);
+ assert.equal(vm.runInContext("MAPS.get('a').l[0][3]",ctx),12);
+ let release;
+ ctx.fetch=url=>new Promise(resolve=>{const done=()=>resolve({ok:true,headers:{get:()=> 'application/json'},json:async()=>({name:url,l:[]})});if(url.includes('slow'))release=done;else done();});
+ const slow=vm.runInContext("loadMap('slow')",ctx);
+ await vm.runInContext("loadMap('fast')",ctx);
+ release();await slow;
+ assert.equal(vm.runInContext('M.name',ctx),'map/fast.json');
+ console.log(`PASS: syntax, gzip roundtrip (${compressed.length} bytes), navigation selectors, bounded map cache, out-of-order map loading`);
+})().catch(e=>{console.error(e);process.exitCode=1;});

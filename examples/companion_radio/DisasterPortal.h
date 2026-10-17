@@ -225,7 +225,8 @@ public:
     http.on("/",HTTP_GET,[this](){
       http.sendHeader("Content-Security-Policy","default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'");
       http.sendHeader("X-Content-Type-Options","nosniff");
-      http.send_P(200,"text/html; charset=utf-8",PORTAL_PAGE);
+      http.sendHeader("Content-Encoding","gzip");
+      http.send_P(200,"text/html; charset=utf-8",(const char*)PORTAL_PAGE_GZ,sizeof(PORTAL_PAGE_GZ));
     });
     http.on("/app.webmanifest",HTTP_GET,[this](){http.send_P(200,"application/manifest+json",PORTAL_MANIFEST);});
     http.on("/app-icon.png",HTTP_GET,[this](){http.send_P(200,"image/png",(const char*)PORTAL_ICON,sizeof(PORTAL_ICON));});
@@ -265,10 +266,13 @@ public:
     });
     http.on("/api/state",HTTP_GET,[this](){
       if(!permitted())return;
+      http.setContentLength(CONTENT_LENGTH_UNKNOWN);
+      http.send(200,"application/json","");
       String s="{\"ready\":"+String(startup>=12?"true":"false")+",\"storage\":"+String(storageOK?"true":"false")+",\"heap\":"+String(ESP.getFreeHeap())+",\"seq\":"+String(seq)+",\"busy\":"+String((active||pendingLen||loginLen)?"true":"false")+",\"result\":\""+outcome+"\",\"info\":\""+info+"\",\"channels\":[";
-      for(int i=0;i<8;i++){if(i)s+=",";s+="\""+channels[i]+"\"";}
-      s+="],\"contacts\":["; bool first=true;
-      for(auto &c:contacts)if(c.length()){if(!first)s+=",";first=false;s+="\""+c+"\"";}
+      http.sendContent(s);s="";
+      for(int i=0;i<8;i++){http.sendContent((i?",\"":"\"")+channels[i]+"\"");}
+      http.sendContent("],\"contacts\":["); bool first=true;
+      for(auto &c:contacts)if(c.length()){http.sendContent((first?"\"":",\"")+c+"\"");first=false;}
       s+="],\"archive\":"+String(archive.ready()?"true":"false")+",\"queueReady\":"+String(delivery.ready()?"true":"false")+",\"queueStorage\":"+String(delivery.storageOK()?"true":"false")+",\"room\":{\"target\":\""+roomTarget+"\",\"rights\":"+String(roomRights)+",\"pending\":"+String(roomPending?"true":"false")+"}}";
       // Fixed keys and numeric values only; no passwords, contacts or chat texts.
       s.remove(s.length()-1);
@@ -280,7 +284,8 @@ public:
       s+=",\"gps\":{\"enabled\":"+String(gpsEnabled?"true":"false")+",\"fix\":"+String(gpsFix?"true":"false");
       if(gpsFix)s+=",\"lat\":"+String(gpsLat,5)+",\"lon\":"+String(gpsLon,5);
       s+="}}";
-      http.send(200,"application/json",s);
+      http.sendContent(s);
+      http.sendContent("");
     });
     http.on("/api/history",HTTP_GET,[this](){history();});
     http.on("/api/history-wipe",HTTP_POST,[this](){
