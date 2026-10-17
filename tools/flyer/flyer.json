@@ -1,0 +1,52 @@
+{
+ "name": "DisAHRsterRadio-MeshCore",
+ "hero": "docs/flyer/disahrsterradio-header.jpg",
+ "title_html": "Dis<span>AHR</span>sterRadio MeshCore",
+ "subtitle": "@VERSION@ · Web-Oberfläche + Bluetooth",
+ "intro": "<b>Das Ahrtal-Funknetz auf MeshCore-Basis.</b> Läuft auf vielen LoRa-Boards (868 MHz), z. B. LILYGO T3-S3, T3 V1.6.1, Heltec V2/V3 und RAK4631. Bedienung per WLAN im Browser oder per Bluetooth mit der originalen MeshCore-App.",
+ "features": [
+  "Web-UI im Browser über WLAN",
+  "Bluetooth + originale MeshCore-App",
+  "Viele Boards (ESP32 &amp; nRF52)",
+  "Kompatibel mit dem MeshCore-Netz",
+  "Chat und Standort",
+  "Open Source, Releases auf GitHub"
+ ],
+ "steps": [
+  "Passende Firmware aus den Releases auf das Board flashen.",
+  "WLAN <b>DisAHRsterRadio-XXXXXX</b> (Passwort: USB-Seriell/OLED) oder Bluetooth mit der MeshCore-App.",
+  "Im Browser <b>192.168.4.1</b> öffnen und Nachrichten senden."
+ ],
+ "repo": "https://github.com/Pietwars/DisAHRsterRadio-MeshCore",
+ "extra_urls": [
+  [
+   "Download",
+   "https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases"
+  ],
+  [
+   "Live-Demo",
+   "https://pietwars.github.io/DisAHRsterRadio-MeshCore/"
+  ]
+ ],
+ "links": [
+  [
+   "Repository",
+   "https://github.com/Pietwars/DisAHRsterRadio-MeshCore"
+  ],
+  [
+   "Release v@VERSION@",
+   "@RELEASE@"
+  ],
+  [
+   "Live-Demo",
+   "https://pietwars.github.io/DisAHRsterRadio-MeshCore/"
+  ],
+  [
+   "Projektseite",
+   "https://pietwars.github.io/DisasterMesh/"
+  ]
+ ],
+ "qr_url": "https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases",
+ "qr_label": "Download",
+ "demo": "https://pietwars.github.io/DisAHRsterRadio-MeshCore/"
+}
