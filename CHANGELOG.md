@@ -1,5 +1,9 @@
 # Änderungen
 
+## Unveröffentlicht · 17.10.2026 · Feste Versionen
+
+- **Bibliotheken festgelegt (Verbesserungsliste 6):** alle `^`/`~`-Bereiche in `platformio.ini` und allen `variants/*/platformio.ini` (105 Geräte) auf die heute aufgelöste Version gesetzt (z. B. Crypto 0.4.0, RTClib 2.1.4, Melopero RV3028 1.2.0, Adafruit SSD1306 2.5.17, base64 1.4.0) mit `tools/pin_libs.py`; CI prüft mit `--check`. Plattformen waren schon fest.
+
 ## Unveröffentlicht · 17.10.2026 · Verbesserungsliste
 
 - **Zentrale Version:** Datei `VERSION` (Version + MeshCore-Basis) ist die einzige Quelle. `tools/version.py` schreibt Fußzeile „Weboberfläche DisAHRsterRadio-MeshCore … · MeshCore v…“ im Gerät-Reiter, Demo-Firmwarekennung, `FIRMWARE_VERSION` aller Profile (local + devices), README (Versionszeile, Gerätetabelle); `gen_devices.py`, `device_table.py`, `package.sh`, `build_device.sh` lesen `VERSION`. `--check` + `tests/version.test.py` laufen in CI.
