@@ -19,6 +19,9 @@
 #include <esp_system.h>
 #include <esp_timer.h>
 #include "PortalPage.h"
+#ifndef HEAP_WARN_BYTES
+#define HEAP_WARN_BYTES 40960  // Warnschwelle freier Heap (Weboberfläche rot, serielles [HEAP]-Log mit WARNUNG)
+#endif
 #include "PortalAssets.h"
 #include "AdminSession.h"
 #include <mbedtls/sha256.h>
@@ -52,6 +55,7 @@ class DisasterPortal : public BaseSerialInterface {
   int activeJob=-1;
   uint32_t routeJob=0;uint8_t routeAttempt=255;
   WebServer http{80};
+  unsigned long heapLog=0;
   String apPassword; uint32_t blePin=0; bool apOk=false; unsigned long apRetry=0, apPrint=0;
   DNSServer dns;
   bool enabled = false, storageOK = true;
@@ -277,7 +281,7 @@ public:
       // Fixed keys and numeric values only; no passwords, contacts or chat texts.
       s.remove(s.length()-1);
       s+=",\"diagnostics\":{\"firmware\":\""+String(FIRMWARE_VERSION)+"\",\"uptimeSeconds\":"+String((uint32_t)(esp_timer_get_time()/1000000ULL));
-      s+=",\"resetReason\":"+String((int)esp_reset_reason())+",\"minHeapBytes\":"+String(ESP.getMinFreeHeap())+",\"largestHeapBlockBytes\":"+String(ESP.getMaxAllocHeap());
+      s+=",\"resetReason\":"+String((int)esp_reset_reason())+",\"minHeapBytes\":"+String(ESP.getMinFreeHeap())+",\"largestHeapBlockBytes\":"+String(ESP.getMaxAllocHeap())+",\"heapWarn\":"+String((unsigned)HEAP_WARN_BYTES);
       s+=",\"wifiClients\":"+String(WiFi.softAPgetStationNum())+",\"txFlood\":"+String(txFlood)+",\"txDirect\":"+String(txDirect)+",\"rxFlood\":"+String(rxFlood)+",\"rxDirect\":"+String(rxDirect);
       s+=",\"txAirMs\":"+String(txAirMs)+",\"rxAirMs\":"+String(rxAirMs)+",\"txBudgetMs\":"+String(txBudgetMs)+",\"txBudgetWaiting\":"+String(txBudgetWaiting?"true":"false")+",\"txBudgetWaitEvents\":"+String(txBudgetWaitEvents)+",\"txBudgetWaitSeconds\":"+String(txBudgetWaitSeconds)+",\"txQueuePackets\":"+String(txQueuePackets)+"}";
       // Optional board GPS: position only when the module reports a valid fix.
@@ -425,6 +429,8 @@ public:
       if(!adminButtonDone&&uint32_t(millis()-adminButtonSince)>=10000){adminButtonDone=true;resetAdminPassword();}
     } else {adminButtonHeld=false;adminButtonDone=false;}
 #endif
+    if(millis()-heapLog>=30000){heapLog=millis();uint32_t f=ESP.getFreeHeap();
+      Serial.printf("[HEAP] frei %u | Minimum %u | groesster Block %u%s\n",(unsigned)f,(unsigned)ESP.getMinFreeHeap(),(unsigned)ESP.getMaxAllocHeap(),f<HEAP_WARN_BYTES?" | WARNUNG: wenig freier Speicher":"");}
     if(roomPending&&millis()-roomSince>45000){roomPending=false;roomRights=0;outcome="Raumanmeldung ohne Antwort; Passwort, Funk und Uhrzeit pruefen";}
   }
   size_t checkRecvFrame(uint8_t *dest) override {
