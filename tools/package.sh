@@ -11,7 +11,9 @@ declare -A CHIP=([disaster_t3s3_sx1262_wifi]=esp32s3 [disaster_tlora_v2_1_sx1276
 declare -A BOOT=([disaster_t3s3_sx1262_wifi]=0x0 [disaster_tlora_v2_1_sx1276_wifi]=0x1000 [disaster_heltec_v2_sx1276_wifi]=0x1000)
 declare -A NAME=([disaster_t3s3_sx1262_wifi]="LILYGO T3-S3 (SX1262)" [disaster_tlora_v2_1_sx1276_wifi]="LILYGO T3 V1.6.1 (SX1276)" [disaster_heltec_v2_sx1276_wifi]="Heltec WiFi LoRa 32 V2 (SX1276, WLAN-Fix 8,5 dBm)")
 declare -A ZIP=([disaster_t3s3_sx1262_wifi]=t3s3 [disaster_tlora_v2_1_sx1276_wifi]=t3-v161 [disaster_heltec_v2_sx1276_wifi]=heltec-v2)
-for env in disaster_t3s3_sx1262_wifi disaster_tlora_v2_1_sx1276_wifi disaster_heltec_v2_sx1276_wifi; do
+# ENVS: Auswahl (Leerzeichen-getrennt), Standard alle drei Haupt-Boards
+for env in ${ENVS:-disaster_t3s3_sx1262_wifi disaster_tlora_v2_1_sx1276_wifi disaster_heltec_v2_sx1276_wifi}; do
+  [ -n "${ZIP[$env]:-}" ] || { echo "Unbekanntes Env $env"; exit 1; }
   pio run -e $env >/dev/null && pio run -e $env -t buildfs >/dev/null
   B=.pio/build/$env; Z=$VERSION-${ZIP[$env]}; D=$OUT/$PREFIX-$Z; rm -rf "$D"; mkdir -p "$D/teile"
   BOOTAPP0=$(find ~/.platformio/packages/ -path '*framework-arduinoespressif32*' -name boot_app0.bin | head -1)

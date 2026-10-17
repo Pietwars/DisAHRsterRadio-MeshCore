@@ -31,7 +31,7 @@ jobs:
         with:
           path: ~/.platformio
           key: pio-mc-${{ matrix.env }}-${{ hashFiles('platformio.ini', 'platformio.local.ini', 'variants/**/platformio.ini') }}
-      - run: pip install -U platformio
+      - run: pip install platformio==6.2.0 esptool==5.6.0
       - name: Weboberfläche einbetten (Prüfung)
         run: python tools/embed_web.py && git diff --exit-code -- examples/companion_radio/PortalPage.h examples/companion_radio/PortalAssets.h
       - name: Firmware bauen

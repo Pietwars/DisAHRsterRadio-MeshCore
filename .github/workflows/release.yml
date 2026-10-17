@@ -1,0 +1,126 @@
+name: Release
+# Baut bei jedem Versions-Tag v* die drei Haupt-Boards (tools/package.sh) und alle Geräte aus tools/devices.json
+# (tools/build_device.sh), prüft jedes Paket (Vollständigkeit, Prüfsummen, Version) und veröffentlicht eine
+# GitHub-Vorabversion. Fehlt ein Paket oder eine Datei, bricht der Lauf vor der Veröffentlichung ab.
+on:
+  push:
+    tags: ['v*']
+  pull_request:
+    # Probelauf (nur Haupt-Boards, ohne Veröffentlichung), wenn sich Paketierung oder dieser Workflow ändern
+    paths: ['tools/package.sh', 'tools/verify_release.py', 'tools/verify_devices.py', 'tools/release_notes.py', 'tools/ANLEITUNG.template.md', '.github/workflows/release.yml']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Vorhandener Tag, z. B. v0.9.1-alpha'
+        required: true
+permissions:
+  contents: write
+env:
+  TAG: ${{ github.event.inputs.tag || (startsWith(github.ref, 'refs/tags/') && github.ref_name) || '' }}
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      devices: ${{ steps.m.outputs.devices }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+      - name: Tag passt zur Datei VERSION
+        run: |
+          python3 tools/version.py --check
+          V=$(python3 tools/version.py --get)
+          [ -z "$TAG" ] || [ "$TAG" = "v$V" ] || { echo "Tag $TAG passt nicht zu VERSION=$V"; exit 1; }
+      - id: m
+        run: |
+          if [ -n "$TAG" ]; then
+            echo "devices=$(python3 -c "import json;print(json.dumps([d['device'] for d in json.load(open('tools/devices.json'))]))")" >> "$GITHUB_OUTPUT"
+          else
+            echo 'devices=[]' >> "$GITHUB_OUTPUT"
+          fi
+  boards:
+    needs: check
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        env: [disaster_t3s3_sx1262_wifi, disaster_tlora_v2_1_sx1276_wifi, disaster_heltec_v2_sx1276_wifi]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install platformio==6.2.0 esptool==5.6.0
+      - name: Weboberfläche eingebettet und aktuell
+        run: python tools/embed_web.py && git diff --exit-code -- examples/companion_radio/PortalPage.h examples/companion_radio/PortalAssets.h
+      - name: Bauen und packen
+        run: ENVS="${{ matrix.env }}" tools/package.sh dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: paket-${{ matrix.env }}
+          path: dist/*.zip
+          if-no-files-found: error
+  devices:
+    needs: check
+    if: needs.check.outputs.devices != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      max-parallel: 20
+      matrix:
+        device: ${{ fromJson(needs.check.outputs.devices) }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install platformio==6.2.0 esptool==5.6.0
+      - name: Bauen und packen
+        run: tools/build_device.sh "${{ matrix.device }}" dist/devices
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dev-${{ matrix.device }}
+          path: dist/devices/*.zip
+          if-no-files-found: error
+  release:
+    needs: [check, boards, devices]
+    if: always() && needs.check.result == 'success' && needs.boards.result == 'success' && (needs.devices.result == 'success' || (needs.devices.result == 'skipped' && needs.check.outputs.devices == '[]'))
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Pakete prüfen (Vollständigkeit, Prüfsummen, Version)
+        run: |
+          V=$(python3 tools/version.py --get)
+          python3 tools/verify_release.py dist DisAHRsterRadio-MeshCore "$V" spiffs.bin t3s3 t3-v161 heltec-v2
+          if [ -n "$TAG" ]; then python3 tools/verify_devices.py dist "$V"; fi
+          (cd dist && sha256sum *.zip > SHA256SUMS-DisAHRsterRadio-MeshCore-$V.txt)
+          ls dist | wc -l
+      - name: Release-Text erzeugen
+        run: |
+          python3 tools/release_notes.py "$(python3 tools/version.py --get)" "${{ github.repository }}" DisAHRsterRadio-MeshCore \
+            "t3s3=LILYGO T3-S3 V1.3 (SX1262)" "t3-v161=LILYGO T3 V1.6.1 (SX1276)" "heltec-v2=Heltec WiFi LoRa 32 V2 (SX1276)" | tee notes.md
+          echo "" >> notes.md
+          echo "Zusätzlich je ein Paket pro Gerät aus der MeshCore-Konfigurator-Liste (\`DisAHRsterRadio-MeshCore-<Version>-<Gerät>.zip\`, $(python3 -c "import json;print(len(json.load(open('tools/devices.json'))))") Geräte); Übersicht in der README." >> notes.md
+      - name: Vorabversion veröffentlichen
+        if: env.TAG != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ASSETS="dist/*.zip dist/SHA256SUMS-*.txt"
+          for f in docs/flyer/*-Flyer.pdf docs/flyer/*-Flyer-digital.pdf; do [ -f "$f" ] && ASSETS="$ASSETS $f"; done
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" $ASSETS --clobber
+          else
+            gh release create "$TAG" --prerelease --verify-tag --title "DisAHRsterRadio-MeshCore $TAG (Vorabversion)" --notes-file notes.md $ASSETS
+          fi
+          gh release view "$TAG" --json assets --jq '.assets | length'
