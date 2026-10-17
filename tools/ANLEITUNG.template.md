@@ -1,3 +1,5 @@
+> Offenes WLAN, MeshCore-Bluetooth ohne Zahlencode – einfach verbinden. Alte Kopplungen bei Bedarf am Handy entfernen. Details: https://github.com/Pietwars/DisAHRsterRadio-MeshCore/blob/main/docs/OFFENER_ZUGANG.md
+
 # @PREFIX@ für @BOARD@
 
 MeshCore-Companion mit WLAN-Weboberfläche · Version @VERSION@ · Commit @COMMIT@ · @REPO@
@@ -10,7 +12,7 @@ MeshCore-Companion mit WLAN-Weboberfläche · Version @VERSION@ · Commit @COMMI
 
 ## Neu in 0.9.0-alpha
 
-- Parallel zum WLAN-Portal kann sich die offizielle MeshCore-App per **Bluetooth** verbinden. Die PIN ist pro Gerät zufällig und steht seriell (`[BLE] MeshCore-App: Bluetooth-PIN …`) und auf dem Display.
+- Parallel zum WLAN-Portal kann sich die offizielle MeshCore-App per **Bluetooth** verbinden. Kopplung ohne Zahlencode; Funkkonfiguration bleibt USB/Admin-Bereich vorbehalten.
 - Neue Partitionstabelle (3 MB App, kein OTA): beim Umstieg von einer älteren Version **einmal komplett mit der factory-Datei** flashen.
 
 ## 2. Erstinstallation
@@ -23,19 +25,11 @@ MeshCore-Companion mit WLAN-Weboberfläche · Version @VERSION@ · Commit @COMMI
 
 Enthalten: Bootloader (@BOOT@), Partitionen (0x8000), boot_app0 (0xe000), Firmware mit Weboberfläche (0x10000), SPIFFS-Dateisystem (@FSOFF@).
 
-## 3. WLAN-Passwort und Admin-Passwort
+## 3. Verbinden
 
-Seriell mit **115200** Baud verbinden (esptool-js → Disconnect → Console) und **RST** drücken:
+Am Handy das offene WLAN `DisAHRsterRadio-XXXXXX` auswählen und verbinden (höchstens 4 Handys, nichts eingeben). Bei „Kein Internet“ verbunden bleiben, dann `http://192.168.4.1` öffnen. Achtung: offenes, unverschlüsseltes WLAN – jede Person in Reichweite kann mitlesen und senden. Bluetooth (MeshCore-App) koppelt ohne Zahlencode; bei alten Kopplungen am Handy entkoppeln und neu verbinden.
 
-```
-WLAN: DisAHRsterRadio-XXXXXX
-Passwort: xxxxxxxxxxxxxxxx
-ADMIN-PASSWORT (nur lokal aufbewahren): ...
-```
-
-Das WLAN-Passwort wird außerdem alle 30 s seriell ausgegeben und abwechselnd mit dem WLAN-Namen auf dem OLED angezeigt. Das Admin-Passwort erscheint nur beim allerersten Start – notieren! (Neu setzen: BOOT-Taste 10 s halten.)
-
-Dann ins WLAN und `http://192.168.4.1` öffnen.
+Nur für Betreiber: Die Admin-Zugangsdaten für den Admin-Bereich (Knotenname, Kanäle, Funkprofil) erscheinen einmalig beim ersten Start über USB (115200 Baud); neu erzeugen mit 10 s BOOT-Taste.
 
 ## 4. Update (nur Firmware)
 
@@ -55,3 +49,4 @@ Dann ins WLAN und `http://192.168.4.1` öffnen.
 | teile/spiffs.bin | @FSOFF@ |
 
 MeshCore © Scott Powell / rippleradios.com u. a. (MIT). Karten © OpenStreetMap-Mitwirkende (ODbL).
+
