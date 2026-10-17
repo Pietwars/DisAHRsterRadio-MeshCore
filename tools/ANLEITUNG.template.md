@@ -8,6 +8,11 @@ MeshCore-Companion mit WLAN-Weboberfläche · Version @VERSION@ · Commit @COMMI
 
 **Antenne anschrauben, bevor das Board Strom bekommt.**
 
+## Neu in 0.9.0-alpha
+
+- Parallel zum WLAN-Portal kann sich die offizielle MeshCore-App per **Bluetooth** verbinden. Die PIN ist pro Gerät zufällig und steht seriell (`[BLE] MeshCore-App: Bluetooth-PIN …`) und auf dem Display.
+- Neue Partitionstabelle (3 MB App, kein OTA): beim Umstieg von einer älteren Version **einmal komplett mit der factory-Datei** flashen.
+
 ## 2. Erstinstallation
 
 1. Board per USB-Datenkabel anschließen, Chrome oder Edge am PC/Mac.

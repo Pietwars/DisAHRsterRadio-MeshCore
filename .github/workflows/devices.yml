@@ -1,0 +1,45 @@
+name: Alle Geräte (MeshCore-Konfigurator-Liste)
+on:
+  push:
+    branches: [main]
+    paths: ['tools/devices.json', 'platformio.devices.ini', 'tools/build_device.sh', 'examples/**', 'src/**', 'variants/**', '.github/workflows/devices.yml']
+  pull_request:
+  workflow_dispatch:
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      devices: ${{ steps.m.outputs.devices }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: m
+        run: echo "devices=$(python3 -c "import json;print(json.dumps([d['device'] for d in json.load(open('tools/devices.json'))]))")" >> "$GITHUB_OUTPUT"
+  build:
+    needs: setup
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix:
+        device: ${{ fromJson(needs.setup.outputs.devices) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - id: chip
+        run: echo "chip=$(python3 -c "import json;print({d['device']:d for d in json.load(open('tools/devices.json'))}['${{ matrix.device }}']['chip'])")" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        with:
+          path: ~/.platformio
+          key: pio-dev-${{ steps.chip.outputs.chip }}-${{ hashFiles('platformio.ini', 'variants/**/platformio.ini') }}
+      - run: pip install -U platformio esptool
+      - name: Bauen und packen
+        run: tools/build_device.sh "${{ matrix.device }}" dist/devices
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dev-${{ matrix.device }}
+          path: |
+            dist/devices/*.zip
+            dist/devices/*.log

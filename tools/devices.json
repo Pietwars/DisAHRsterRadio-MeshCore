@@ -1,0 +1,942 @@
+[
+ {
+  "device": "Ebyte_EoRa-S3",
+  "chip": "esp32s3",
+  "envs": {
+   "wifi": "dar_Ebyte_EoRa-S3_wifi"
+  },
+  "webui": true
+ },
+ {
+  "device": "GAT562_30S_Mesh_Kit",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_GAT562_30S_Mesh_Kit_companion",
+   "repeater": "dar_GAT562_30S_Mesh_Kit_repeater",
+   "room_server": "dar_GAT562_30S_Mesh_Kit_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "GAT562_Mesh_EVB_Pro",
+  "chip": "nrf52",
+  "envs": {
+   "repeater": "dar_GAT562_Mesh_EVB_Pro_repeater",
+   "room_server": "dar_GAT562_Mesh_EVB_Pro_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "GAT562_Mesh_Tracker_Pro",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_GAT562_Mesh_Tracker_Pro_companion",
+   "repeater": "dar_GAT562_Mesh_Tracker_Pro_repeater",
+   "room_server": "dar_GAT562_Mesh_Tracker_Pro_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "GAT562_Mesh_Watch13",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_GAT562_Mesh_Watch13_companion"
+  },
+  "webui": false
+ },
+ {
+  "device": "Generic_E22_sx1262",
+  "chip": "esp32",
+  "envs": {
+   "repeater": "dar_Generic_E22_sx1262_repeater"
+  },
+  "webui": false
+ },
+ {
+  "device": "Generic_E22_sx1268",
+  "chip": "esp32",
+  "envs": {
+   "repeater": "dar_Generic_E22_sx1268_repeater"
+  },
+  "webui": false
+ },
+ {
+  "device": "Heltec_ct62",
+  "chip": "esp32c3",
+  "envs": {
+   "wifi": "dar_Heltec_ct62_wifi"
+  },
+  "webui": true
+ },
+ {
+  "device": "Heltec_E213",
+  "chip": "esp32s3",
+  "envs": {
+   "wifi": "dar_Heltec_E213_wifi"
+  },
+  "webui": true
+ },
+ {
+  "device": "Heltec_E290",
+  "chip": "esp32s3",
+  "envs": {
+   "repeater": "dar_Heltec_E290_repeater",
+   "room_server": "dar_Heltec_E290_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "Heltec_mesh_solar",
+  "chip": "nrf52",
+  "envs": {
+   "repeater": "dar_Heltec_mesh_solar_repeater",
+   "room_server": "dar_Heltec_mesh_solar_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "heltec_rc32",
+  "chip": "esp32s3",
+  "envs": {
+   "wifi": "dar_heltec_rc32_wifi"
+  },
+  "webui": true
+ },
+ {
+  "device": "heltec_rc32_without_display",
+  "chip": "esp32s3",
+  "envs": {
+   "wifi": "dar_heltec_rc32_without_display_wifi"
+  },
+  "webui": true
+ },
+ {
+  "device": "Heltec_t096",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_Heltec_t096_companion",
+   "repeater": "dar_Heltec_t096_repeater",
+   "room_server": "dar_Heltec_t096_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "Heltec_t1",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_Heltec_t1_companion",
+   "repeater": "dar_Heltec_t1_repeater",
+   "room_server": "dar_Heltec_t1_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "Heltec_t114",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_Heltec_t114_companion",
+   "repeater": "dar_Heltec_t114_repeater",
+   "room_server": "dar_Heltec_t114_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "Heltec_t114_without_display",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_Heltec_t114_without_display_companion",
+   "repeater": "dar_Heltec_t114_without_display_repeater",
+   "room_server": "dar_Heltec_t114_without_display_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "Heltec_tower_v2",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_Heltec_tower_v2_companion",
+   "repeater": "dar_Heltec_tower_v2_repeater",
+   "room_server": "dar_Heltec_tower_v2_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "heltec_tracker_v2",
+  "chip": "esp32s3",
+  "envs": {
+   "wifi": "dar_heltec_tracker_v2_wifi"
+  },
+  "webui": true
+ },
+ {
+  "device": "Heltec_v2",
+  "chip": "esp32",
+  "envs": {
+   "wifi": "disaster_heltec_v2_sx1276_wifi"
+  },
+  "webui": true
+ },
+ {
+  "device": "Heltec_v3",
+  "chip": "esp32s3",
+  "envs": {
+   "wifi": "dar_Heltec_v3_wifi"
+  },
+  "webui": true
+ },
+ {
+  "device": "heltec_v4",
+  "chip": "esp32s3",
+  "envs": {
+   "wifi": "dar_heltec_v4_wifi"
+  },
+  "webui": true
+ },
+ {
+  "device": "heltec_v4_expansionkit",
+  "chip": "esp32s3",
+  "envs": {
+   "repeater": "dar_heltec_v4_expansionkit_repeater"
+  },
+  "webui": false
+ },
+ {
+  "device": "heltec_v4_r8",
+  "chip": "esp32s3",
+  "envs": {
+   "wifi": "dar_heltec_v4_r8_wifi"
+  },
+  "webui": true
+ },
+ {
+  "device": "heltec_v4_r8_tft",
+  "chip": "esp32s3",
+  "envs": {
+   "wifi": "dar_heltec_v4_r8_tft_wifi"
+  },
+  "webui": true
+ },
+ {
+  "device": "heltec_v4_tft",
+  "chip": "esp32s3",
+  "envs": {
+   "wifi": "dar_heltec_v4_tft_wifi"
+  },
+  "webui": true
+ },
+ {
+  "device": "Heltec_Wireless_Paper",
+  "chip": "esp32s3",
+  "envs": {
+   "wifi": "dar_Heltec_Wireless_Paper_wifi"
+  },
+  "webui": true
+ },
+ {
+  "device": "Heltec_Wireless_Tracker",
+  "chip": "esp32s3",
+  "envs": {
+   "wifi": "dar_Heltec_Wireless_Tracker_wifi"
+  },
+  "webui": true
+ },
+ {
+  "device": "Heltec_WSL3",
+  "chip": "esp32s3",
+  "envs": {
+   "wifi": "dar_Heltec_WSL3_wifi"
+  },
+  "webui": true
+ },
+ {
+  "device": "ikoka_handheld_nrf_e22_30dbm",
+  "chip": "nrf52",
+  "envs": {
+   "repeater": "dar_ikoka_handheld_nrf_e22_30dbm_repeater",
+   "room_server": "dar_ikoka_handheld_nrf_e22_30dbm_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "ikoka_handheld_nrf_e22_30dbm_096",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_ikoka_handheld_nrf_e22_30dbm_096_companion"
+  },
+  "webui": false
+ },
+ {
+  "device": "ikoka_handheld_nrf_e22_30dbm_096_rotated",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_ikoka_handheld_nrf_e22_30dbm_096_rotated_companion"
+  },
+  "webui": false
+ },
+ {
+  "device": "ikoka_nano_nrf_22dbm",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_ikoka_nano_nrf_22dbm_companion",
+   "repeater": "dar_ikoka_nano_nrf_22dbm_repeater",
+   "room_server": "dar_ikoka_nano_nrf_22dbm_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "ikoka_nano_nrf_30dbm",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_ikoka_nano_nrf_30dbm_companion",
+   "repeater": "dar_ikoka_nano_nrf_30dbm_repeater",
+   "room_server": "dar_ikoka_nano_nrf_30dbm_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "ikoka_nano_nrf_33dbm",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_ikoka_nano_nrf_33dbm_companion",
+   "repeater": "dar_ikoka_nano_nrf_33dbm_repeater",
+   "room_server": "dar_ikoka_nano_nrf_33dbm_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "ikoka_stick_nrf_22dbm",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_ikoka_stick_nrf_22dbm_companion",
+   "repeater": "dar_ikoka_stick_nrf_22dbm_repeater",
+   "room_server": "dar_ikoka_stick_nrf_22dbm_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "ikoka_stick_nrf_30dbm",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_ikoka_stick_nrf_30dbm_companion",
+   "repeater": "dar_ikoka_stick_nrf_30dbm_repeater",
+   "room_server": "dar_ikoka_stick_nrf_30dbm_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "ikoka_stick_nrf_33dbm",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_ikoka_stick_nrf_33dbm_companion",
+   "repeater": "dar_ikoka_stick_nrf_33dbm_repeater",
+   "room_server": "dar_ikoka_stick_nrf_33dbm_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "KeepteenLT1",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_KeepteenLT1_companion",
+   "repeater": "dar_KeepteenLT1_repeater",
+   "room_server": "dar_KeepteenLT1_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "LilyGo_T-Echo",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_LilyGo_T-Echo_companion",
+   "repeater": "dar_LilyGo_T-Echo_repeater",
+   "room_server": "dar_LilyGo_T-Echo_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "LilyGo_T-Echo-Lite",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_LilyGo_T-Echo-Lite_companion",
+   "repeater": "dar_LilyGo_T-Echo-Lite_repeater",
+   "room_server": "dar_LilyGo_T-Echo-Lite_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "LilyGo_T-Echo-Lite_non_shell",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_LilyGo_T-Echo-Lite_non_shell_companion"
+  },
+  "webui": false
+ },
+ {
+  "device": "LilyGo_T-Echo_Card",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_LilyGo_T-Echo_Card_companion",
+   "repeater": "dar_LilyGo_T-Echo_Card_repeater",
+   "room_server": "dar_LilyGo_T-Echo_Card_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "LilyGo_T3S3_sx1262",
+  "chip": "esp32s3",
+  "envs": {
+   "wifi": "disaster_t3s3_sx1262_wifi"
+  },
+  "webui": true
+ },
+ {
+  "device": "LilyGo_T3S3_sx1276",
+  "chip": "esp32s3",
+  "envs": {
+   "wifi": "dar_LilyGo_T3S3_sx1276_wifi"
+  },
+  "webui": true
+ },
+ {
+  "device": "LilyGo_T_Impulse_Plus",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_LilyGo_T_Impulse_Plus_companion",
+   "repeater": "dar_LilyGo_T_Impulse_Plus_repeater"
+  },
+  "webui": false
+ },
+ {
+  "device": "LilyGo_TBeam_1W",
+  "chip": "esp32s3",
+  "envs": {
+   "wifi": "dar_LilyGo_TBeam_1W_wifi"
+  },
+  "webui": true
+ },
+ {
+  "device": "LilyGo_TDeck",
+  "chip": "esp32s3",
+  "envs": {
+   "wifi": "dar_LilyGo_TDeck_wifi"
+  },
+  "webui": true
+ },
+ {
+  "device": "LilyGo_TETH_Elite_sx1262",
+  "chip": "esp32s3",
+  "envs": {
+   "wifi": "dar_LilyGo_TETH_Elite_sx1262_wifi"
+  },
+  "webui": true
+ },
+ {
+  "device": "LilyGo_TLora_V2_1_1_6",
+  "chip": "esp32",
+  "envs": {
+   "wifi": "disaster_tlora_v2_1_sx1276_wifi"
+  },
+  "webui": true
+ },
+ {
+  "device": "M5Stack_Unit_C6L",
+  "chip": "esp32c6",
+  "envs": {
+   "companion": "dar_M5Stack_Unit_C6L_companion",
+   "repeater": "dar_M5Stack_Unit_C6L_repeater",
+   "room_server": "dar_M5Stack_Unit_C6L_room_server"
+  },
+  "webui": false,
+  "note": "ESP32-C6: WLAN-Bibliothek (Network.h) im Portal-Build nicht aufl\u00f6sbar"
+ },
+ {
+  "device": "Mesh_pocket",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_Mesh_pocket_companion",
+   "repeater": "dar_Mesh_pocket_repeater",
+   "room_server": "dar_Mesh_pocket_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "Meshadventurer_sx1262",
+  "chip": "esp32",
+  "envs": {
+   "wifi": "dar_Meshadventurer_sx1262_wifi"
+  },
+  "webui": true
+ },
+ {
+  "device": "Meshadventurer_sx1268",
+  "chip": "esp32",
+  "envs": {
+   "wifi": "dar_Meshadventurer_sx1268_wifi"
+  },
+  "webui": true
+ },
+ {
+  "device": "meshnology_w12",
+  "chip": "esp32s3",
+  "envs": {
+   "wifi": "dar_meshnology_w12_wifi"
+  },
+  "webui": true
+ },
+ {
+  "device": "Meshtiny",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_Meshtiny_companion"
+  },
+  "webui": false
+ },
+ {
+  "device": "MeshTracker_X1",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_MeshTracker_X1_companion",
+   "repeater": "dar_MeshTracker_X1_repeater",
+   "room_server": "dar_MeshTracker_X1_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "Minewsemi_me25ls01",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_Minewsemi_me25ls01_companion",
+   "repeater": "dar_Minewsemi_me25ls01_repeater",
+   "room_server": "dar_Minewsemi_me25ls01_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "muzi_base_duo",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_muzi_base_duo_companion",
+   "repeater": "dar_muzi_base_duo_repeater",
+   "room_server": "dar_muzi_base_duo_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "muzi_base_duo_superIO",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_muzi_base_duo_superIO_companion"
+  },
+  "webui": false
+ },
+ {
+  "device": "muzi_base_uno",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_muzi_base_uno_companion",
+   "repeater": "dar_muzi_base_uno_repeater",
+   "room_server": "dar_muzi_base_uno_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "muzi_base_uno_superIO",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_muzi_base_uno_superIO_companion"
+  },
+  "webui": false
+ },
+ {
+  "device": "Nano_G2_Ultra",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_Nano_G2_Ultra_companion",
+   "repeater": "dar_Nano_G2_Ultra_repeater",
+   "room_server": "dar_Nano_G2_Ultra_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "PicoW",
+  "chip": "rp2040",
+  "envs": {
+   "companion": "dar_PicoW_companion",
+   "repeater": "dar_PicoW_repeater",
+   "room_server": "dar_PicoW_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "ProMicro",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_ProMicro_companion",
+   "repeater": "dar_ProMicro_repeater",
+   "room_server": "dar_ProMicro_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "R1Neo",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_R1Neo_companion",
+   "repeater": "dar_R1Neo_repeater",
+   "room_server": "dar_R1Neo_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "RAK_11310",
+  "chip": "rp2040",
+  "envs": {
+   "companion": "dar_RAK_11310_companion",
+   "repeater": "dar_RAK_11310_repeater",
+   "room_server": "dar_RAK_11310_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "RAK_3112",
+  "chip": "esp32s3",
+  "envs": {
+   "wifi": "dar_RAK_3112_wifi"
+  },
+  "webui": true
+ },
+ {
+  "device": "RAK_3401",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_RAK_3401_companion",
+   "repeater": "dar_RAK_3401_repeater",
+   "room_server": "dar_RAK_3401_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "RAK_3x72",
+  "chip": "stm32",
+  "envs": {
+   "companion": "dar_RAK_3x72_companion",
+   "repeater": "dar_RAK_3x72_repeater"
+  },
+  "webui": false
+ },
+ {
+  "device": "RAK_4631",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_RAK_4631_companion",
+   "repeater": "dar_RAK_4631_repeater",
+   "room_server": "dar_RAK_4631_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "RAK_WisMesh_Tag",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_RAK_WisMesh_Tag_companion",
+   "repeater": "dar_RAK_WisMesh_Tag_repeater",
+   "room_server": "dar_RAK_WisMesh_Tag_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "SenseCap_Solar",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_SenseCap_Solar_companion",
+   "repeater": "dar_SenseCap_Solar_repeater",
+   "room_server": "dar_SenseCap_Solar_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "Station_G2",
+  "chip": "esp32s3",
+  "envs": {
+   "wifi": "dar_Station_G2_wifi"
+  },
+  "webui": true
+ },
+ {
+  "device": "Station_G2_logging",
+  "chip": "esp32s3",
+  "envs": {
+   "repeater": "dar_Station_G2_logging_repeater"
+  },
+  "webui": false
+ },
+ {
+  "device": "Station_G3_ESP32",
+  "chip": "esp32s3",
+  "envs": {
+   "wifi": "dar_Station_G3_ESP32_wifi"
+  },
+  "webui": true
+ },
+ {
+  "device": "Station_G3_ESP32_logging",
+  "chip": "esp32s3",
+  "envs": {
+   "repeater": "dar_Station_G3_ESP32_logging_repeater"
+  },
+  "webui": false
+ },
+ {
+  "device": "t1000e",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_t1000e_companion",
+   "repeater": "dar_t1000e_repeater",
+   "room_server": "dar_t1000e_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "T_Beam_S3_Supreme_SX1262",
+  "chip": "esp32s3",
+  "envs": {
+   "wifi": "dar_T_Beam_S3_Supreme_SX1262_wifi"
+  },
+  "webui": true
+ },
+ {
+  "device": "Tbeam_SX1262",
+  "chip": "esp32",
+  "envs": {
+   "wifi": "dar_Tbeam_SX1262_wifi"
+  },
+  "webui": true
+ },
+ {
+  "device": "Tbeam_SX1276",
+  "chip": "esp32",
+  "envs": {
+   "wifi": "dar_Tbeam_SX1276_wifi"
+  },
+  "webui": true
+ },
+ {
+  "device": "Tenstar_C3_sx1262",
+  "chip": "esp32c3",
+  "envs": {
+   "repeater": "dar_Tenstar_C3_sx1262_repeater"
+  },
+  "webui": false
+ },
+ {
+  "device": "Tenstar_C3_sx1268",
+  "chip": "esp32c3",
+  "envs": {
+   "repeater": "dar_Tenstar_C3_sx1268_repeater"
+  },
+  "webui": false
+ },
+ {
+  "device": "ThinkNode_M1",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_ThinkNode_M1_companion",
+   "repeater": "dar_ThinkNode_M1_repeater",
+   "room_server": "dar_ThinkNode_M1_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "ThinkNode_M2",
+  "chip": "esp32s3",
+  "envs": {
+   "wifi": "dar_ThinkNode_M2_wifi"
+  },
+  "webui": true
+ },
+ {
+  "device": "ThinkNode_M3",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_ThinkNode_M3_companion",
+   "repeater": "dar_ThinkNode_M3_repeater",
+   "room_server": "dar_ThinkNode_M3_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "ThinkNode_M4",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_ThinkNode_M4_companion",
+   "repeater": "dar_ThinkNode_M4_repeater",
+   "room_server": "dar_ThinkNode_M4_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "ThinkNode_M5",
+  "chip": "esp32s3",
+  "envs": {
+   "wifi": "dar_ThinkNode_M5_wifi"
+  },
+  "webui": true
+ },
+ {
+  "device": "ThinkNode_M6",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_ThinkNode_M6_companion",
+   "repeater": "dar_ThinkNode_M6_repeater",
+   "room_server": "dar_ThinkNode_M6_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "ThinkNode_M7",
+  "chip": "esp32s3",
+  "envs": {
+   "companion": "dar_ThinkNode_M7_companion",
+   "repeater": "dar_ThinkNode_M7_repeater",
+   "room_server": "dar_ThinkNode_M7_room_server"
+  },
+  "webui": false,
+  "note": "eigene Display-Oberfl\u00e4che ohne Hinweisfunktion (showAlert) \u2013 Portal baut nicht"
+ },
+ {
+  "device": "ThinkNode_M8",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_ThinkNode_M8_companion"
+  },
+  "webui": false,
+  "note": "Repeater/Room-Server: Upstream-Linkfehler (EnvironmentSensorManager fehlt im Build)"
+ },
+ {
+  "device": "Tiny_Relay",
+  "chip": "stm32",
+  "envs": {
+   "companion": "dar_Tiny_Relay_companion",
+   "repeater": "dar_Tiny_Relay_repeater"
+  },
+  "webui": false
+ },
+ {
+  "device": "waveshare_rp2040_lora",
+  "chip": "rp2040",
+  "envs": {
+   "companion": "dar_waveshare_rp2040_lora_companion",
+   "repeater": "dar_waveshare_rp2040_lora_repeater",
+   "room_server": "dar_waveshare_rp2040_lora_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "Waveshare_S3_LR1121",
+  "chip": "esp32s3",
+  "envs": {
+   "wifi": "dar_Waveshare_S3_LR1121_wifi"
+  },
+  "webui": true
+ },
+ {
+  "device": "wio-e5",
+  "chip": "stm32",
+  "envs": {
+   "companion": "dar_wio-e5_companion",
+   "repeater": "dar_wio-e5_repeater"
+  },
+  "webui": false
+ },
+ {
+  "device": "wio-e5-mini",
+  "chip": "stm32",
+  "envs": {
+   "companion": "dar_wio-e5-mini_companion",
+   "repeater": "dar_wio-e5-mini_repeater"
+  },
+  "webui": false
+ },
+ {
+  "device": "wio_wm1110",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_wio_wm1110_companion",
+   "repeater": "dar_wio_wm1110_repeater",
+   "room_server": "dar_wio_wm1110_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "WioTrackerL1",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_WioTrackerL1_companion",
+   "repeater": "dar_WioTrackerL1_repeater",
+   "room_server": "dar_WioTrackerL1_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "WioTrackerL1-1W",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_WioTrackerL1-1W_companion",
+   "repeater": "dar_WioTrackerL1-1W_repeater",
+   "room_server": "dar_WioTrackerL1-1W_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "WioTrackerL1Eink",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_WioTrackerL1Eink_companion"
+  },
+  "webui": false
+ },
+ {
+  "device": "Xiao_C3",
+  "chip": "esp32c3",
+  "envs": {
+   "wifi": "dar_Xiao_C3_wifi"
+  },
+  "webui": true
+ },
+ {
+  "device": "Xiao_nrf52",
+  "chip": "nrf52",
+  "envs": {
+   "companion": "dar_Xiao_nrf52_companion",
+   "repeater": "dar_Xiao_nrf52_repeater",
+   "room_server": "dar_Xiao_nrf52_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "Xiao_rp2040",
+  "chip": "rp2040",
+  "envs": {
+   "companion": "dar_Xiao_rp2040_companion",
+   "repeater": "dar_Xiao_rp2040_repeater",
+   "room_server": "dar_Xiao_rp2040_room_server"
+  },
+  "webui": false
+ },
+ {
+  "device": "Xiao_S3",
+  "chip": "esp32s3",
+  "envs": {
+   "wifi": "dar_Xiao_S3_wifi"
+  },
+  "webui": true
+ },
+ {
+  "device": "Xiao_S3_WIO",
+  "chip": "esp32s3",
+  "envs": {
+   "wifi": "dar_Xiao_S3_WIO_wifi"
+  },
+  "webui": true
+ }
+]

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
-#if defined(ENABLE_USB_INTERFACE) || defined(BLE_PIN_CODE) || defined(WIFI_SSID)
+// BLE (MeshCore-App) darf parallel laufen: MultiSerialInterface verteilt alle Antworten an Portal und BLE.
+#if defined(ENABLE_USB_INTERFACE) || defined(WIFI_SSID)
 #error "The local portal must own the Companion interface in this profile"
 #endif
 #if LORA_TX_POWER != 10
@@ -21,6 +22,12 @@
 #include "PortalAssets.h"
 #include "AdminSession.h"
 #include <mbedtls/sha256.h>
+#include <mbedtls/version.h>
+#if MBEDTLS_VERSION_MAJOR >= 3
+#define DAR_SHA256 mbedtls_sha256
+#else
+#define DAR_SHA256 mbedtls_sha256_ret
+#endif
 #include "HistoryRecord.h"
 #include "DeliveryOutbox.h"
 #include "ArchiveSd.h"
@@ -45,7 +52,7 @@ class DisasterPortal : public BaseSerialInterface {
   int activeJob=-1;
   uint32_t routeJob=0;uint8_t routeAttempt=255;
   WebServer http{80};
-  String apPassword; bool apOk=false; unsigned long apRetry=0, apPrint=0;
+  String apPassword; uint32_t blePin=0; bool apOk=false; unsigned long apRetry=0, apPrint=0;
   DNSServer dns;
   bool enabled = false, storageOK = true;
   uint8_t startup = 0, active = 0;
@@ -126,7 +133,7 @@ class DisasterPortal : public BaseSerialInterface {
   }
   String passwordHash(const String& pass) {
     String salted=adminSalt+pass;uint8_t out[32];
-    mbedtls_sha256_ret((const unsigned char*)salted.c_str(),salted.length(),out,0);
+    DAR_SHA256((const unsigned char*)salted.c_str(),salted.length(),out,0);
     return hex(out,sizeof(out));
   }
   void resetAdminPassword() {
@@ -388,6 +395,7 @@ public:
     Serial.printf("[WLAN] softAP(\"%s\", Kanal 1) -> %s, TX %d (0,25 dBm)\n",apName.c_str(),ok?"OK":"FEHLER",(int)WiFi.getTxPower());Serial.flush();
     return ok;
   }
+  void setBlePin(uint32_t p){blePin=p;}
   const String &ssid() const {return apName;}
   const String &wifiPassword() const {return apPassword;}
   bool apRunning() const {return apOk;}
@@ -395,7 +403,8 @@ public:
   void serviceAP() {
     if(!apOk&&millis()-apRetry>5000){apRetry=millis();apOk=startAP();}
     if(millis()-apPrint>30000||!apPrint){apPrint=millis()|1;
-      Serial.printf("[WLAN] %s | SSID: %s | Passwort: %s | http://192.168.4.1 | Clients: %d\n",apOk?"AP aktiv":"AP FEHLER",apName.c_str(),apPassword.c_str(),WiFi.softAPgetStationNum());}
+      Serial.printf("[WLAN] %s | SSID: %s | Passwort: %s | http://192.168.4.1 | Clients: %d\n",apOk?"AP aktiv":"AP FEHLER",apName.c_str(),apPassword.c_str(),WiFi.softAPgetStationNum());
+      if(blePin)Serial.printf("[BLE] MeshCore-App: Bluetooth-PIN %06lu\n",(unsigned long)blePin);}
   }
   void enable() override {enabled=true;}
   void disable() override {enabled=false;}
