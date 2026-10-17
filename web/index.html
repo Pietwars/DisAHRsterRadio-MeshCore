@@ -6,7 +6,7 @@
 <link rel="manifest" href="app.webmanifest"><link rel="icon" href="app-icon.png">
 <style>
 :root{font-family:system-ui,-apple-system,sans-serif;color:#eaf2f7;color-scheme:dark;--line:#294b3d;--mesh:#9ee576;--sage:#b7d6b7;--wine:#b7506b;--card:#14263ad9}
-*{box-sizing:border-box}body{margin:0;min-height:100vh;display:flex;flex-direction:column}html{background:#0b141c}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;min-height:100dvh;padding-bottom:calc(112px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column}html{background:#0b141c}
 body::before{content:"";position:fixed;inset:0;z-index:-2;background:url(bg.webp) top center/min(100vw,1083px) auto no-repeat,linear-gradient(#0b141cb8,#0b141cb8),url(bg.webp) center 70%/cover no-repeat;}
 body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(180deg,#0b141c00 0,#0b141c00 min(24vw,260px),#0b141c66 min(40vw,430px),#0b141c33 100%)}
 @media (min-width:900px){body{max-width:900px;margin:0 auto;width:100%}}
@@ -15,7 +15,7 @@ header .t{flex:1}header h1{margin:0;font-size:1.15rem;line-height:1.1}header sma
 #st{padding:3px 9px;border-radius:12px;font-size:.8rem;background:#0008}
 #st.ok{color:var(--mesh)}#st.bad{color:#ff9aa8}
 .warn{background:#3a1d26cc;border-left:4px solid var(--wine);padding:6px 10px;font-size:.85rem}
-nav{display:flex;background:#0b141cb0;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-bottom:1px solid var(--line);overflow-x:auto}nav button{flex:1 0 auto;background:none;border:0;color:#cfe;padding:10px 6px;font-size:.95rem;border-bottom:3px solid transparent}
+nav{position:fixed;bottom:0;left:0;right:0;z-index:20;padding-bottom:env(safe-area-inset-bottom,0px);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));max-width:900px;margin:auto;background:#0b141cf2;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-bottom:1px solid var(--line);overflow-x:auto}nav button{flex:1 0 auto;background:none;border:0;color:#cfe;min-width:0;min-height:48px;padding:10px 4px;font-size:.85rem;border-bottom:3px solid transparent}
 nav button.on{border-color:var(--mesh);color:var(--mesh)}
 main{flex:1;display:flex;flex-direction:column;min-height:0}section{display:none;padding:10px;margin:8px;border-radius:12px;background:#0b141c59;flex:1;flex-direction:column;gap:8px}section.on{display:flex}
 #log{flex:1;overflow-y:auto;min-height:200px;display:flex;flex-direction:column;gap:5px}
@@ -32,9 +32,9 @@ h2{margin:4px 0;font-size:1.05rem}
 .post .h{font-size:.78rem;color:#9ab;display:flex;justify-content:space-between;gap:6px}.post .tx{margin-top:3px;white-space:pre-wrap;word-wrap:break-word}
 #posts{display:flex;flex-direction:column;gap:6px;overflow-y:auto;flex:1}
 .row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.row label{font-size:.9rem;display:flex;gap:4px;align-items:center}.row select{flex:0 1 auto}
-#mapwrap{position:relative;flex:1;min-height:340px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#0d1a22;touch-action:none}
-#map{position:absolute;inset:0;width:100%;height:100%}#mapattr{position:absolute;right:4px;bottom:2px;font-size:.62rem;color:#9ab;background:#0009;padding:1px 4px}
-#mapctl{position:absolute;left:6px;top:6px;display:flex;flex-direction:column;gap:4px}#mapctl button{width:34px;height:34px;padding:0;font-size:1.1rem}
+#mapwrap{position:relative;min-height:200px;height:55vh;height:55dvh;flex:none;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#0d1a22;touch-action:none}
+#cv{display:block;position:absolute;inset:0;width:100%;height:100%}#mapattr{position:absolute;right:4px;bottom:2px;font-size:.62rem;color:#9ab;background:#0009;padding:1px 4px}
+#mapctl{position:absolute;left:6px;top:6px;display:flex;flex-direction:column;gap:4px}#mapctl button{width:44px;height:44px;padding:0;font-size:1.1rem}
 .legend{font-size:.78rem;color:#9ab;display:flex;gap:10px;flex-wrap:wrap}.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:3px;vertical-align:-1px}
 .tgt{display:flex;gap:6px}.tgt select{flex:1}
 .lbl{font-size:.72rem;color:#9ab;display:block}
@@ -144,7 +144,7 @@ $('#gps').onclick=()=>{if(!navigator.geolocation)return $('#gpsres').textContent
 $('#psend').onclick=async()=>{if(!me)return alert('Zuerst Standort holen oder Ort wählen.');const t='!DP1|'+me[0].toFixed(4)+','+me[1].toFixed(4)+'|'+now();try{$('#gpsres').textContent=await send(target,t)}catch(x){$('#gpsres').textContent='Nicht gesendet: '+x.message}};
 $('#padv').onclick=async()=>{if(!me)return alert('Zuerst Standort holen oder Ort wählen.');try{await api('position',{lat:Math.round(me[0]*1e6),lon:Math.round(me[1]*1e6)});setTimeout(async()=>{try{$('#gpsres').textContent='Position gesetzt. '+await (await api('advert',{})).text()}catch(x){$('#gpsres').textContent=x.message}},1500)}catch(x){$('#gpsres').textContent=x.message}};
 /* ---------- Gerät ---------- */
-function renderInfo(){const s=state||{},d=s.diagnostics||{};const rows=[['Firmware',d.firmware],['Bereit',s.ready?'ja':'nein'],['WLAN-Clients',d.wifiClients],['Kanäle',channels().map(c=>c.name).join(', ')],['Kontakte',contacts(1).length],['Repeater',contacts(2).length],['Room-Server',contacts(3).length],['Gesendet (Flood/Direkt)',(d.txFlood??'')+' / '+(d.txDirect??'')],['Empfangen (Flood/Direkt)',(d.rxFlood??'')+' / '+(d.rxDirect??'')],['Laufzeit (s)',d.uptimeSeconds],['Freier Speicher',s.heap],['Letztes Ergebnis',s.result]];
+function renderInfo(){const s=state||{},d=s.diagnostics||{};const rows=[['Firmware',d.firmware],['Bereit',s.ready?'ja':'nein'],['WLAN-Clients',d.wifiClients],['Kanäle',channels().map(c=>c.name).join(', ')],['Kontakte',contacts(1).length],['Repeater',contacts(2).length],['Room-Server',contacts(3).length],['Gesendet (Flood/Direkt)',(d.txFlood??'')+' / '+(d.txDirect??'')],['Empfangen (Flood/Direkt)',(d.rxFlood??'')+' / '+(d.rxDirect??'')],['Laufzeit (s)',d.uptimeSeconds],['Freier RAM (Byte)',s.heap],['Niedrigster freier RAM (Byte)',d.minHeapBytes],['Größter freier RAM-Block (Byte)',d.largestHeapBlockBytes],['Letztes Ergebnis',s.result]];
  $('#it').innerHTML=rows.map(r=>'<tr><td>'+r[0]+'</td><td>'+esc(r[1]??'')+'</td></tr>').join('');$('#cslot').innerHTML=[0,1,2,3,4,5,6,7].map(i=>'<option>'+i+'</option>').join('')}
 const act=async(p,d)=>{try{$('#ifb').textContent=await (await api(p,d||{})).text();setTimeout(poll,1500)}catch(x){$('#ifb').textContent=x.message}};
 $('#refresh').onclick=$('#reload').onclick=()=>act('refresh');$('#adv').onclick=()=>act('advert');
@@ -152,22 +152,22 @@ $('#admbtn').onclick=()=>{$('#admin').style.display='flex'};
 $('#alogin').onclick=async()=>{try{adminToken=(await (await api('admin/login',{password:$('#apass').value})).json()).token;$('#ifb').textContent='Admin angemeldet (15 min).'}catch(x){$('#ifb').textContent=x.message}};
 $('#setname').onclick=()=>act('name',{name:$('#nname').value});$('#setch').onclick=()=>act('channel',{slot:$('#cslot').value,name:$('#cname').value,key:$('#ckey').value});
 /* ---------- Abfrage ---------- */
-let lastSeq=-1;
-async function poll(){try{state=await (await api('state')).json();$('#st').textContent='verbunden';$('#st').className='ok';targets();
- if(state.seq!==lastSeq){lastSeq=state.seq;const raw=await (await api('history')).text();msgs=[];for(const ln of raw.trim().split('\n')){const m=/^(\d+):([0-9a-f]+)$/i.exec(ln);if(!m)continue;try{const r=decodeRecord(m[2]);if(r){r.seq=+m[1];msgs.push(r)}}catch(e){}}
-  msgs.sort((a,b)=>a.seq-b.seq);msgs.forEach(m=>notePos(m.body,m.own?'Du':(m.t[0]=='c'?(m.body.match(/^(.{1,32}?): /)||[])[1]:nameOf(m.t)),m.room));renderChat();renderPosts()}
+let lastSeq=-1,polling=false;
+async function poll(){if(polling)return;polling=true;try{state=await (await api('state')).json();$('#st').textContent='verbunden';$('#st').className='ok';targets();
+ if(state.seq!==lastSeq){const raw=await (await api('history')).text();msgs=[];for(const ln of raw.trim().split('\n')){const m=/^(\d+):([0-9a-f]+)$/i.exec(ln);if(!m)continue;try{const r=decodeRecord(m[2]);if(r){r.seq=+m[1];msgs.push(r)}}catch(e){}}
+  lastSeq=state.seq;msgs.sort((a,b)=>a.seq-b.seq);msgs.forEach(m=>notePos(m.body,m.own?'Du':(m.t[0]=='c'?(m.body.match(/^(.{1,32}?): /)||[])[1]:nameOf(m.t)),m.room));renderChat();renderPosts()}
  contacts().forEach(c=>{if(c.lat||c.lon)marks['n:'+c.id]={la:c.lat,lo:c.lon,n:c.name,brett:c.type==3,t:0}});if(M)drawMap();renderInfo()}
- catch(e){$('#st').textContent='getrennt';$('#st').className='bad'}}
+ catch(e){$('#st').textContent='getrennt';$('#st').className='bad'}finally{polling=false}}
 /* ---------- Karte ---------- */
-const MAPS={},cv=$('#cv'),cx=cv.getContext('2d');let M=null,view=null,marks={},me=JSON.parse(localStorage.getItem('dar-me')||'null');
+let mapRequest=0;const MAPS=new Map(),cv=$('#cv'),cx=cv.getContext('2d');let M=null,view=null,marks={},me=JSON.parse(localStorage.getItem('dar-me')||'null');
 function setMe(la,lo){me=[la,lo];localStorage.setItem('dar-me',JSON.stringify(me));drawMap()}
 function notePos(t,who,brett){const m=String(t).match(/(-?\d{1,2}\.\d{3,})\s*,\s*(-?\d{1,3}\.\d{3,})/);if(!m)return;let n=who;
  if(!n){const k=String(t).match(/^<([^>]{1,32})>/);n=k?k[1]:'?'}const la=+m[1],lo=+m[2];if(la<47||la>56||lo<5||lo>16)return;
  marks[(brett?'b:':'c:')+n]={la,lo,n,brett:!!brett,t:Date.now(),txt:String(t).replace(/^<[^>]*>\s*/,'').slice(0,60)};if(M)drawMap()}
-async function getMap(k){if(MAPS[k])return MAPS[k];let r=await fetch('map/'+k+'.json').catch(()=>null);let d;
+async function getMap(k){if(MAPS.has(k)){const d=MAPS.get(k);MAPS.delete(k);MAPS.set(k,d);return d;}let r=await fetch('map/'+k+'.json').catch(()=>null);let d;
  if(r&&r.ok&&(r.headers.get('content-type')||'').includes('json'))d=await r.json();else{r=await fetch('map/'+k+'.json.gz');d=JSON.parse(await new Response(r.body.pipeThrough(new DecompressionStream('gzip'))).text())}
- d.l.forEach(l=>{for(let i=3;i<l.length;i+=2){l[i]+=l[i-2];l[i+1]+=l[i-1]}});return MAPS[k]=d}
-async function loadMap(k){k=k||$('#mapsel').value;try{$('#mapinfo').textContent='Karte wird geladen …';M=await getMap(k);fit();if(DEMO&&me&&k=='ahrtal'){view.la=me[0];view.lo=me[1];view.s=12000;drawMap()}$('#mapinfo').textContent=M.name+' · '+M.l.length+' Linien · Positionen aus Nachrichten: '+Object.keys(marks).length}catch(e){$('#mapinfo').textContent='Karte nicht verfügbar: '+e.message}}
+ d.l.forEach(l=>{for(let i=3;i<l.length;i+=2){l[i]+=l[i-2];l[i+1]+=l[i-1]}});MAPS.set(k,d);while(MAPS.size>2)MAPS.delete(MAPS.keys().next().value);return d}
+async function loadMap(k){k=k||$('#mapsel').value;const request=++mapRequest;try{$('#mapinfo').textContent='Karte wird geladen …';const data=await getMap(k);if(request!==mapRequest)return;M=data;fit();if(DEMO&&me&&k=='ahrtal'){view.la=me[0];view.lo=me[1];view.s=12000;drawMap()}$('#mapinfo').textContent=M.name+' · '+M.l.length+' Linien · Positionen aus Nachrichten: '+Object.keys(marks).length}catch(e){if(request===mapRequest)$('#mapinfo').textContent='Karte nicht verfügbar: '+e.message}}
 function size(){const r=$('#mapwrap').getBoundingClientRect(),d=devicePixelRatio||1;cv.width=r.width*d;cv.height=r.height*d;cx.setTransform(d,0,0,d,0,0);return r}
 function fit(){const r=size(),b=M.view||M.bbox,k=Math.cos((b[1]+b[3])/2*Math.PI/180);const s=Math.min(r.width/((b[2]-b[0])*k),r.height/(b[3]-b[1]));view={lo:(b[0]+b[2])/2,la:(b[1]+b[3])/2,s:s*0.95,k};drawMap()}
 function P(lo,la){const r=cv.width/(devicePixelRatio||1),h=cv.height/(devicePixelRatio||1);return[r/2+(lo-view.lo)*view.k*view.s,h/2-(la-view.la)*view.s]}
@@ -197,7 +197,7 @@ cv.onpointerup=cv.onpointercancel=e=>pts.delete(e.pointerId);
 cv.onwheel=e=>{e.preventDefault();zoom(e.deltaY<0?1.25:0.8)};
 function zoom(f){if(!view)return;view.s=Math.max(2000,Math.min(400000,view.s*f));drawMap()}
 $('#zin').onclick=()=>zoom(1.5);$('#zout').onclick=()=>zoom(1/1.5);$('#mapfit').onclick=()=>M&&fit();
-$('#mapme').onclick=()=>{if(!me)return alert('Noch kein Standort – unter „Standort“ GPS holen oder Ort wählen.');view.la=me[0];view.lo=me[1];view.s=Math.max(view.s,30000);drawMap()};
+$('#mapme').onclick=()=>{if(!me)return alert('Noch kein Standort – unter „Standort“ GPS holen oder Ort wählen.');if(!view)return;view.la=me[0];view.lo=me[1];view.s=Math.max(view.s,30000);drawMap()};
 $('#mapsel').onchange=()=>loadMap();addEventListener('resize',()=>{if(M&&view){size();drawMap()}});
 /* ---------- Demo ---------- */
 function hx(a){return [...a].map(x=>x.toString(16).padStart(2,'0')).join('')}
