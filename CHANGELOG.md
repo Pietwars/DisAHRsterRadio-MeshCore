@@ -1,5 +1,14 @@
 # Änderungen
 
+## Unveröffentlicht – offener Zugang
+
+- Offenes WLAN ohne Passwort, auch bei bestehenden Installationen.
+- MeshCore: PIN-freies BLE und Trennung von Teilnehmer- und Betreiberbefehlen.
+- Verkürzte Companion-Steuerbefehle und Pfadlängen vor Zugriff prüfen.
+- LoRaLayer2: Telnet deaktiviert und kombinierte BLE-UART-Testprofile ergänzt.
+- Zugangsanleitung und Regressionstests ergänzt; Hardwareabnahme steht aus.
+
+
 ## Unveröffentlicht · 17.10.2026 · Feste Versionen
 
 - **Bibliotheken festgelegt (Verbesserungsliste 6):** alle `^`/`~`-Bereiche in `platformio.ini` und allen `variants/*/platformio.ini` (105 Geräte) auf die heute aufgelöste Version gesetzt (z. B. Crypto 0.4.0, RTClib 2.1.4, Melopero RV3028 1.2.0, Adafruit SSD1306 2.5.17, base64 1.4.0) mit `tools/pin_libs.py`; CI prüft mit `--check`. Plattformen waren schon fest.
