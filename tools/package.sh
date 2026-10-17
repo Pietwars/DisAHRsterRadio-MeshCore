@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Flashpakete je Board: factory.bin (ab 0x0) + Teile + SHA256SUMS + ANLEITUNG.md
 set -euo pipefail
-ROOT=$(cd "$(dirname "$0")/.." && pwd); OUT=${1:-$ROOT/dist}
+ROOT=$(cd "$(dirname "$0")/.." && pwd); OUT=$(realpath -m "${1:-$ROOT/dist}")  # absolut, weil unten ins PlatformIO-Verzeichnis gewechselt wird
 PREFIX=${PREFIX:-DisAHRsterRadio-MeshCore}; VERSION=${VERSION:-$(python3 "$ROOT/tools/version.py" --get)}; REPO=${REPO:-https://github.com/Pietwars/DisAHRsterRadio-MeshCore}
 TEMPLATE=${TEMPLATE:-$ROOT/tools/ANLEITUNG.template.md}; PIODIR=${PIODIR:-$ROOT}; cd "$PIODIR"
 ESPTOOL=${ESPTOOL:-"python3 -m esptool"}
