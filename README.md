@@ -70,6 +70,7 @@ Ersparnis gegenüber derselben unkomprimierten Seite). `/api/state` überträgt 
 Kanäle stückweise, statt dafür einen großen Gesamt-String im Geräte-RAM anzulegen.
 Unter „Gerät“ erscheinen freier RAM, bisheriges RAM-Minimum und größter freier Block.
 Karten, Bluetooth, Kontaktlimit und Nachrichtenwarteschlange bleiben erhalten.
+Die fünf Ahrtal-Karten sind mit `tools/shrink_maps.py` vereinfacht (zusammen ca. 190 KB gzip statt 290 KB; Orte und POIs vollständig). Neu erzeugen: `python3 tools/make_map.py <DisasterMesh/maps> /tmp/roh && python3 tools/shrink_maps.py /tmp/roh web/map && python3 tools/embed_web.py`.
 
 Regressionstest: `node tests/web_regression.cjs` (Node 22); prüft JavaScript-Syntax,
 gzip-Roundtrip, CSS-Selektoren, Kartencache und überholte Ladeantworten. Dies ersetzt

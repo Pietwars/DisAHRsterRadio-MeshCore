@@ -14,6 +14,8 @@ jobs:
       - run: node tests/web_regression.cjs
       - name: Versionsprüfung (VERSION ist die einzige Quelle)
         run: python3 tools/version.py --check && python3 tests/version.test.py
+      - name: Kartenprüfung
+        run: python3 tests/maps.test.py
   build:
     runs-on: ubuntu-latest
     strategy:
