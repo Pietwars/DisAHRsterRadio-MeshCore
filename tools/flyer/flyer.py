@@ -11,6 +11,7 @@ Benötigt: Python-Paket qrcode (pip install qrcode pillow) und Chrome/Chromium (
           gefunden über $CHROME, google-chrome, chromium, chromium-browser oder Playwright-Browser.
 Platzhalter in flyer.json: @VERSION@ (aus der Datei VERSION), @RELEASE@ (Release-URL des Tags v@VERSION@).
 Optional "keep_html": Pfad, unter dem die Druck-HTML im Repository bleibt (z. B. docs/flyer/flyer.html).
+Optional "theme" ({"#b9f48d": "#e8955a", …} ersetzt Farben des Standard-Looks) und "extra_css".
 Optional "credit": Fußzeile links (Standard: © Pietwars · Bild © Pietwars · Kartendaten © OpenStreetMap).
 """
 import argparse, glob, html, json, os, shutil, subprocess, sys, tempfile
@@ -60,6 +61,11 @@ def qr(data, path, level):
     q = qrcode.QRCode(error_correction=level, border=2, box_size=12); q.add_data(data); q.make(fit=True)
     q.make_image(fill_color='black', back_color='white').save(path)
 
+def css(f):  # optionales Farbschema: "theme" {alte Farbe: neue Farbe}, "extra_css" für Zusatzregeln
+    c = CSS
+    for k, v in f.get('theme', {}).items(): c = c.replace(k, v)
+    return c + f.get('extra_css', '')
+
 def short(u): return u.replace('https://', '').rstrip('/')
 
 def page(f, digital):
@@ -72,7 +78,7 @@ def page(f, digital):
         urls += '<div class="links">Links: ' + ' · '.join(f'<a href="{u}">{k}</a>' for k, u in f['links']) + '</div>'
     q1 = f'<img src="qr-projekt.png" alt="QR {html.escape(f["qr_label"])}">'
     q2 = '<img src="qr-demo.png" alt="QR Demo">'
-    return f"""<!doctype html><html lang="de"><meta charset="utf-8"><title>{f['name']} · Flyer</title><style>{CSS}</style><div class="page">
+    return f"""<!doctype html><html lang="de"><meta charset="utf-8"><title>{f['name']} · Flyer</title><style>{css(f)}</style><div class="page">
 <div class="hero"><div class="bg" style="--h:url(hero.jpg)"></div><img src="hero.jpg" alt="{f['name']}"></div>
 <div><h1>{f['title_html']}</h1><p class="sub">{f['subtitle']}</p></div><p>{f['intro']}</p>
 <div><h2>Funktionen</h2><ul class="feat">{feats}</ul></div>
