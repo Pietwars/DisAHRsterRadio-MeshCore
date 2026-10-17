@@ -4,6 +4,8 @@ on:
     branches: [main]
     paths: ['tools/devices.json', 'platformio.devices.ini', 'tools/build_device.sh', 'examples/**', 'src/**', 'variants/**', '.github/workflows/devices.yml']
   pull_request:
+    # nur wenn sich Geräte-Builds ändern können (spart über 100 Jobs pro PR; reine Weboberflächen-Änderungen prüft build.yml)
+    paths: ['tools/devices.json', 'platformio.devices.ini', 'platformio.ini', 'tools/build_device.sh', 'tools/write_liesmich.py', 'examples/**', '!examples/companion_radio/PortalPage.h', '!examples/companion_radio/PortalAssets.h', 'src/**', 'variants/**', '.github/workflows/devices.yml']
   workflow_dispatch:
 jobs:
   setup:
@@ -33,7 +35,7 @@ jobs:
         with:
           path: ~/.platformio
           key: pio-dev-${{ steps.chip.outputs.chip }}-${{ hashFiles('platformio.ini', 'variants/**/platformio.ini') }}
-      - run: pip install -U platformio esptool
+      - run: pip install platformio==6.2.0 esptool==5.6.0
       - name: Bauen und packen
         run: tools/build_device.sh "${{ matrix.device }}" dist/devices
       - uses: actions/upload-artifact@v4
