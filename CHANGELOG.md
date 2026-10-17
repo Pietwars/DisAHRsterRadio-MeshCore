@@ -8,6 +8,11 @@
 - **Karten verkleinert** mit `tools/shrink_maps.py` (aus HaldenFunk, Profil `ahrtal`; dieselben Dateien wie in DisAHRsterRadio): zusammen ca. 290 → 190 KB im Firmware-Abbild (≈100 KB weniger Flash). Orte und POIs unverändert, Vorher/Nachher-Screenshots verglichen.
 - **Fehler behoben:** Dernau, Altenahr und Sinzig zeigten „Karte nicht verfügbar“ (fehlende bbox); die Grenzen werden jetzt beim Erzeugen (`tools/make_map.py`) ergänzt. Neuer Test `tests/maps.test.py` in der CI.
 
+## Unveröffentlicht · 17.10.2026 · Funkprofil EU/UK (Narrow)
+
+- Standard-Funkprofil vereinheitlicht auf das MeshCore-Preset **EU/UK (Narrow): 869,618 MHz, 62,5 kHz, SF8, CR 4/8**. Neu: `-D LORA_CR=8` global in `platformio.ini` – bisher bekamen nur die eigenen Profile CR 4/8, die übrigen Geräte der Matrix fielen auf CR 4/5 zurück. Sendeleistung unverändert (nicht erhöht), Syncword MeshCore-Standard.
+- Doku (`docs/cli_commands.md` u. a.): Standardwerte `869.618,62.5,8,8`.
+
 ## Unveröffentlicht · Schlanke TTGO-/T3-V1.6.1-Profile
 
 - **T3 V1.6.1 / TLora V2.1-1.6 wurde ohne Optimierung gebaut (-O0):** Die Upstream-Variante `LilyGo_TLora_V2_1_1_6` entfernt mit `build_unflags = -Os` die Optimierung, dabei fällt auch das `-Os` aus `build_flags` weg. `disaster_ttgo_wifi` (= `disaster_tlora_v2_1_sx1276_wifi`, `_wifi_sd`), `disaster_ttgo_repeater` und `disaster_ttgo_room` übernehmen dieses `build_unflags` nicht mehr → `-Os` wie bei allen anderen Boards.
