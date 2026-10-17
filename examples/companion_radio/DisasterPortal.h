@@ -333,7 +333,7 @@ public:
       String target=http.arg("target"),password=http.arg("password");
       const String *contact=roomContact(target);
       uint32_t stamp=strtoul(http.arg("time").c_str(),nullptr,10);
-      if(!contact||password.length()<1||password.length()>15||hasNull(password)||stamp<1700000000u||stamp>4102444800u){http.send(400,"text/plain","Raum, Passwort (1-15 Bytes) und Uhrzeit pruefen");return;}
+      if(!contact||password.length()>15||hasNull(password)||stamp<1700000000u||stamp>4102444800u){http.send(400,"text/plain","Raum, Raum-Code (0-15 Bytes) und Uhrzeit pruefen");return;}
       memset(loginFrame,0,sizeof(loginFrame));loginFrame[0]=26;
       for(int i=0;i<32;++i)loginFrame[1+i]=(nibble((*contact)[2+i*2])<<4)|nibble((*contact)[3+i*2]);
       memcpy(loginFrame+33,password.c_str(),password.length());loginLen=33+password.length();
@@ -425,7 +425,7 @@ public:
 #endif
     if(millis()-heapLog>=30000){heapLog=millis();uint32_t f=ESP.getFreeHeap();
       Serial.printf("[HEAP] frei %u | Minimum %u | groesster Block %u%s\n",(unsigned)f,(unsigned)ESP.getMinFreeHeap(),(unsigned)ESP.getMaxAllocHeap(),f<HEAP_WARN_BYTES?" | WARNUNG: wenig freier Speicher":"");}
-    if(roomPending&&millis()-roomSince>45000){roomPending=false;roomRights=0;outcome="Raumanmeldung ohne Antwort; Passwort, Funk und Uhrzeit pruefen";}
+    if(roomPending&&millis()-roomSince>45000){roomPending=false;roomRights=0;outcome="Raumanmeldung ohne Antwort; Raum-Code, Funk und Uhrzeit pruefen";}
   }
   size_t checkRecvFrame(uint8_t *dest) override {
     if(!enabled)return 0;

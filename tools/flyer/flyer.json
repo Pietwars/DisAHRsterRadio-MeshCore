@@ -14,7 +14,7 @@
  ],
  "steps": [
   "Passende Firmware aus den Releases auf das Board flashen.",
-  "WLAN <b>DisAHRsterRadio-XXXXXX</b> (Passwort: USB-Seriell/OLED) oder Bluetooth mit der MeshCore-App.",
+  "Offenes WLAN <b>DisAHRsterRadio-XXXXXX</b> oder Bluetooth mit der MeshCore-App – ohne Zahlencode.",
   "Im Browser <b>192.168.4.1</b> öffnen und Nachrichten senden."
  ],
  "repo": "https://github.com/Pietwars/DisAHRsterRadio-MeshCore",

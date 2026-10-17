@@ -2,12 +2,10 @@
 
 ## Unveröffentlicht – offener Zugang
 
-- Offenes WLAN ohne Passwort, auch bei bestehenden Installationen.
-- MeshCore: PIN-freies BLE und Trennung von Teilnehmer- und Betreiberbefehlen.
-- Verkürzte Companion-Steuerbefehle und Pfadlängen vor Zugriff prüfen.
-- LoRaLayer2: Telnet deaktiviert und kombinierte BLE-UART-Testprofile ergänzt.
-- Zugangsanleitung und Regressionstests ergänzt; Hardwareabnahme steht aus.
-
+- **Offenes WLAN:** `softAP(ssid, nullptr, 1, false, 4)`, gespeichertes `ap-pass` wird beim Start gelöscht; seriell/OLED „offen“.
+- **Bluetooth ohne PIN:** Just Works (ESP32/nRF52/RP2040), gespeicherte BLE-PIN wird auf 0 gesetzt, keine Zufalls-PIN mehr, App kann keine PIN setzen; nRF52 ohne Bluetooth-DFU.
+- Offene Bluetooth-/Netzwerk-Companions: Nachrichten, Kontakte, Uhrzeit-Abgleich, Status; Betreiberbefehle (Funk, Name, Kanäle, Schlüssel, Reset, CLI) nur USB/Admin-Bereich. Längen-/Pfadprüfungen für Companion-Befehle.
+- Doku, Flash-Anleitung, LIESMICH und Flyer ohne Zugangsdaten-Hinweise; Hosttest `tests/open_access.test.cpp`. Hardwareabnahme steht aus.
 
 ## Unveröffentlicht · 17.10.2026 · Feste Versionen
 
