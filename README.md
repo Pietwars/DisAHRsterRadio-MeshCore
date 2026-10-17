@@ -76,10 +76,10 @@ Karte → Chat/Brett und auf dem Board mehrere WLAN-Clients sowie BLE parallel p
 | PlatformIO-Env | Board | App-Partition belegt (3 MB, `huge_app.csv`) |
 |---|---|---|
 | `disaster_t3s3_sx1262_wifi` | LILYGO T3-S3 SX1262 | ca. 65 % |
-| `disaster_tlora_v2_1_sx1276_wifi` | LILYGO T3 V1.6.1 SX1276 | ca. 87 % |
+| `disaster_tlora_v2_1_sx1276_wifi` | LILYGO T3 V1.6.1 SX1276 | ca. 72 % (vorher 87 %: -O0 und Sensorbibliotheken, siehe CHANGELOG) |
 | `disaster_heltec_v2_sx1276_wifi` | Heltec WiFi LoRa 32 V2 SX1276 | ca. 72 % |
 | `disaster_t3s3_sx1262_repeater` / `_room` | T3-S3 SX1262 als Repeater / Room-Server (Brett) | ca. 29 % |
-| `disaster_ttgo_repeater` / `_room` | T3 V1.6.1 / TTGO LoRa32 als Repeater / Room-Server | ca. 44 % |
+| `disaster_ttgo_repeater` / `_room` | T3 V1.6.1 / TTGO LoRa32 als Repeater / Room-Server | ca. 30 % (vorher 44 %) |
 
 Weitere Profile (T3-S3 SX1276, SD-Archiv, Heltec-Diagnose) sind in `platformio.local.ini` enthalten, aber nicht im CI.
 
@@ -93,7 +93,7 @@ Auf ESP32-Geräten mit Bluetooth sind Web-Portal und BLE-Companion beide am selb
 
 - **Bluetooth-PIN:** pro Gerät zufällig (6-stellig), beim ersten Start erzeugt und gespeichert. Steht seriell (115200 Baud, Zeile `[BLE] MeshCore-App: Bluetooth-PIN …`, alle 30 s wiederholt) und auf dem Display.
 - **Grenzen:** Ruft die App Nachrichten aus der Warteschlange ab, sieht das Portal sie im Verlauf mit, die App aber nicht umgekehrt die Abrufe des Portals. Gleichzeitige Befehle aus App und Portal können sich in seltenen Fällen kreuzen. WLAN + Bluetooth + Webserver brauchen viel RAM; auf klassischen ESP32 (T3 V1.6.1, Heltec V2) ist das auf Hardware **nicht geprüft**.
-- **Speicher:** Portal-Profile nutzen jetzt die Partition `huge_app.csv` (3 MB App, kein OTA, 896 KB SPIFFS). T3 V1.6.1: 87 % von 3 MB, T3-S3: 65 %, Heltec V2: 72 %. Nach dem Wechsel von 0.1.0/älter einmal komplett mit `factory.bin` flashen (Partitionstabelle ändert sich, Identität wird neu erzeugt).
+- **Speicher:** Portal-Profile nutzen jetzt die Partition `huge_app.csv` (3 MB App, kein OTA, 896 KB SPIFFS). T3 V1.6.1: 72 % von 3 MB, T3-S3: 65 %, Heltec V2: 72 %. Nach dem Wechsel von 0.1.0/älter einmal komplett mit `factory.bin` flashen (Partitionstabelle ändert sich, Identität wird neu erzeugt).
 
 ## So wird die Oberfläche auf MeshCore abgebildet
 
