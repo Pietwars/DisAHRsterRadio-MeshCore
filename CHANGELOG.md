@@ -1,5 +1,13 @@
 # Änderungen
 
+## Unveröffentlicht · 17.10.2026 · Verbesserungsliste
+
+- **Zentrale Version:** Datei `VERSION` (Version + MeshCore-Basis) ist die einzige Quelle. `tools/version.py` schreibt Fußzeile „Weboberfläche DisAHRsterRadio-MeshCore … · MeshCore v…“ im Gerät-Reiter, Demo-Firmwarekennung, `FIRMWARE_VERSION` aller Profile (local + devices), README (Versionszeile, Gerätetabelle); `gen_devices.py`, `device_table.py`, `package.sh`, `build_device.sh` lesen `VERSION`. `--check` + `tests/version.test.py` laufen in CI.
+- Projektfamilie: gemeinsame Tabelle mit allen fünf Repositorys.
+- **Freier Speicher (Heap):** Gerät-Reiter zeigt freien RAM, Minimum und größten Block in KB; unter der Warnschwelle (`HEAP_WARN_BYTES`, Standard 40 KB, auch als `heapWarn` in `/api/state` → `diagnostics`) rot mit ⚠. Seriell alle 30 s `[HEAP] frei … | Minimum … | groesster Block …`, unter der Schwelle mit `WARNUNG: wenig freier Speicher`.
+- **Karten verkleinert** mit `tools/shrink_maps.py` (aus HaldenFunk, Profil `ahrtal`; dieselben Dateien wie in DisAHRsterRadio): zusammen ca. 290 → 190 KB im Firmware-Abbild (≈100 KB weniger Flash). Orte und POIs unverändert, Vorher/Nachher-Screenshots verglichen.
+- **Fehler behoben:** Dernau, Altenahr und Sinzig zeigten „Karte nicht verfügbar“ (fehlende bbox); die Grenzen werden jetzt beim Erzeugen (`tools/make_map.py`) ergänzt. Neuer Test `tests/maps.test.py` in der CI.
+
 ## Unveröffentlicht · Schlanke TTGO-/T3-V1.6.1-Profile
 
 - **T3 V1.6.1 / TLora V2.1-1.6 wurde ohne Optimierung gebaut (-O0):** Die Upstream-Variante `LilyGo_TLora_V2_1_1_6` entfernt mit `build_unflags = -Os` die Optimierung, dabei fällt auch das `-Os` aus `build_flags` weg. `disaster_ttgo_wifi` (= `disaster_tlora_v2_1_sx1276_wifi`, `_wifi_sd`), `disaster_ttgo_repeater` und `disaster_ttgo_room` übernehmen dieses `build_unflags` nicht mehr → `-Os` wie bei allen anderen Boards.
