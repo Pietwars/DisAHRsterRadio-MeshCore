@@ -1,5 +1,14 @@
 # Änderungen
 
+## Unveröffentlicht – offener Zugang
+
+- Offenes WLAN ohne Passwort, auch bei bestehenden Installationen.
+- MeshCore: PIN-freies BLE und Trennung von Teilnehmer- und Betreiberbefehlen.
+- Verkürzte Companion-Steuerbefehle und Pfadlängen vor Zugriff prüfen.
+- LoRaLayer2: Telnet deaktiviert und kombinierte BLE-UART-Testprofile ergänzt.
+- Zugangsanleitung und Regressionstests ergänzt; Hardwareabnahme steht aus.
+
+
 
 ## Unveröffentlicht · 17.10.2026 · Verbesserungsliste
 
