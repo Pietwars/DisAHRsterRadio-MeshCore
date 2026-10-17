@@ -5,7 +5,7 @@ import json,re
 from pathlib import Path
 from platformio.project.config import ProjectConfig
 ROOT=Path(__file__).resolve().parents[1]
-VER='0.9.0-alpha'
+VER=dict(l.split('=',1) for l in (Path(__file__).resolve().parents[1]/'VERSION').read_text().split())['VERSION']  # zentrale Versionsquelle: VERSION
 devs=json.loads((ROOT/'tools/devices.upstream.json').read_text())
 # Bereits handgepflegte Portal-Profile
 MANUAL={'LilyGo_T3S3_sx1262':'disaster_t3s3_sx1262_wifi','LilyGo_TLora_V2_1_1_6':'disaster_tlora_v2_1_sx1276_wifi','Heltec_v2':'disaster_heltec_v2_sx1276_wifi'}

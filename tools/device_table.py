@@ -2,7 +2,7 @@
 """Markdown-Geraetetabelle. Aufruf: device_table.py [Ordner mit gebauten Zips]"""
 import json,sys
 from pathlib import Path
-V='0.9.0-alpha'
+V=dict(l.split('=',1) for l in (Path(__file__).resolve().parents[1]/'VERSION').read_text().split())['VERSION']  # zentrale Versionsquelle: VERSION
 devs=json.load(open(Path(__file__).parent/'devices.json'))
 built=None
 if len(sys.argv)>1: built={p.name for p in Path(sys.argv[1]).glob('*.zip')}
