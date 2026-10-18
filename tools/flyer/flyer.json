@@ -2,19 +2,19 @@
  "name": "DisAHRsterRadio-MeshCore",
  "hero": "docs/flyer/disahrsterradio-header.jpg",
  "title_html": "Dis<span>AHR</span>sterRadio MeshCore",
- "subtitle": "@VERSION@ · MeshCore 1.18 · WLAN-Oberfläche + Bluetooth",
- "intro": "<b>Das Ahrtal-Funknetz auf MeshCore-Basis.</b> Release @VERSION@ für <b>LILYGO T-Deck Plus</b> und <b>LILYGO T-Watch S3</b> (868 MHz). Am Gerät: Logo und Knopf „Advert senden“. Bedienung im Browser über offenes WLAN – ohne Anmeldung – oder per Bluetooth mit der MeshCore-App.",
+ "subtitle": "@VERSION@ · MeshCore 1.18 · WLAN-Oberfläche + Bluetooth · EU/UK Narrow",
+ "intro": "<b>Das Ahrtal-Funknetz auf MeshCore-Basis.</b> Release @VERSION@ für <b>LILYGO T-Deck Plus</b> und <b>LILYGO T-Watch S3</b> (868 MHz). Das Display zeigt nur das DisAHRsterRadio-Logo und den Knopf <b>„Advert senden“</b>. Chatten und melden im Browser über offenes WLAN – ohne Anmeldung – oder per Bluetooth mit der MeshCore-App.",
  "features": [
   "Geräte: T-Deck Plus, T-Watch S3",
+  "Display: Logo + „Advert senden“",
   "Web-Oberfläche, offenes WLAN",
-  "Bluetooth mit PIN-Kopplung",
-  "Chat, Meldungen, Brett, Karte",
-  "Kompatibel mit MeshCore",
-  "Open Source auf GitHub"
+  "Bluetooth: MeshCore-App",
+  "Funk: EU/UK Narrow",
+  "Chat, Meldungen, Brett, Karte"
  ],
  "steps": [
   "Firmware aus dem Release v@VERSION@ flashen (<b>factory.bin</b> an 0x0).",
-  "Offenes WLAN <b>DisAHRsterRadio-XXXXXX</b> (ohne Passwort) – oder MeshCore-App per Bluetooth mit PIN koppeln.",
+  "Offenes WLAN <b>DisAHRsterRadio-XXXXXX</b> (ohne Passwort) – oder MeshCore-App per Bluetooth koppeln (PIN steht beim Koppeln auf dem Display).",
   "Im Browser <b>192.168.4.1</b> öffnen – ohne Anmeldung chatten und melden."
  ],
  "repo": "https://github.com/Pietwars/DisAHRsterRadio-MeshCore",
@@ -24,7 +24,7 @@
    "@RELEASE@"
   ],
   [
-   "Live-Demo",
+   "Projektseite",
    "https://pietwars.github.io/DisAHRsterRadio-MeshCore/"
   ]
  ],
@@ -38,11 +38,7 @@
    "@RELEASE@"
   ],
   [
-   "Live-Demo",
-   "https://pietwars.github.io/DisAHRsterRadio-MeshCore/"
-  ],
-  [
-   "Projektseite",
+   "Projektseite / Live-Demo",
    "https://pietwars.github.io/DisAHRsterRadio-MeshCore/"
   ]
  ],
