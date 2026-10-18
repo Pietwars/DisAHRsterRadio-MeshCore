@@ -14,6 +14,8 @@
 
 **Version 0.9.2** · MeshCore 1.18.0 · Weboberfläche MeshAhrtal · 868 MHz · Firmwarekennung `v1.18.0-dar0.9.2`
 
+**Release v0.9.2** vom 18.10.2026 – auf echter Hardware getestet (LILYGO T-Deck Plus und LILYGO T-Watch S3).
+
 [![Release](https://img.shields.io/github/v/release/Pietwars/DisAHRsterRadio-MeshCore?label=Release)](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/latest)
 [![Live-Demo](https://img.shields.io/badge/Live--Demo-online-2ea44f)](https://pietwars.github.io/DisAHRsterRadio-MeshCore/)
 [![Flyer](https://img.shields.io/badge/Flyer-PDF-blue)](docs/flyer/DisAHRsterRadio-MeshCore-Flyer-digital.pdf)
@@ -42,11 +44,16 @@ Jedes Paket enthält `…-factory.bin` (komplett an **0x0**), `…-firmware.bin`
 
 ## Anzeige am Gerät
 
-<img src="docs/images/anzeige-tdeck.png" width="320" alt="T-Deck Plus: Logo und Knopf Advert senden"> <img src="docs/images/anzeige-twatch.png" width="240" alt="T-Watch S3: Logo und Knopf Advert senden">
+<img src="docs/images/anzeige-tdeck.png" width="320" alt="T-Deck Plus: Ahrtal-Bild und Knopf Advert senden"> <img src="docs/images/anzeige-twatch.png" width="240" alt="T-Watch S3: Ahrtal-Bild und Knopf Advert senden">
 
 <sub>Simulation der Anzeige (links T-Deck Plus, rechts T-Watch S3).</sub>
 
-Das Display zeigt nur den Schriftzug **DisAHRsterRadio** mit Logo und einen Knopf **„Advert senden“**. Es gibt keine weiteren Seiten, keine Nachrichtenvorschau und keine Tastatur-/Touch-Nachrichten am Gerät. Jeder Advert ist ein **Flood-Advert** (wie „Advert senden → Flood“ in der App); danach steht kurz **„Advert gesendet“** im Knopf. Höchstens ein Advert je 10 s (sonst „Bitte N s warten“). Das Display geht nach 30 s ohne Bedienung aus. Die **Bluetooth-PIN** erscheint nur während einer laufenden Kopplung (höchstens 60 s) und verschwindet danach.
+Das Display zeigt nur zwei Dinge:
+
+- **Bild:** das Ahrtal bei Nacht – Lichter der Orte im Tal, ein Berg vor rötlichem Himmel, links eine Person auf einem Holzgerüst mit leuchtendem Funkgerät, darüber eingezeichnete Funkwellen und Mesh-Verbindungen; oben rechts der Schriftzug **DisAHRsterRadio** mit „MeshCore-Funknetz fürs Ahrtal“ (T-Deck 320×180, T-Watch 240×140 Pixel).
+- **Knopf „Advert senden“** darunter, mit Hinweis „Trackball 2,5 s halten“ (T-Deck, Pixelschrift) bzw. „antippen“ (T-Watch, glatte Schrift FreeSans).
+
+Jeder Advert ist ein **Flood-Advert**; danach steht kurz „Advert gesendet“ im Knopf. Höchstens ein Advert je 10 s (sonst „Bitte N s warten“). Das Display geht nach 30 s ohne Bedienung aus. Die **Bluetooth-PIN** erscheint nur während einer laufenden Kopplung (höchstens 60 s).
 
 **LILYGO T-Deck Plus**
 
@@ -55,7 +62,7 @@ Das Display zeigt nur den Schriftzug **DisAHRsterRadio** mit Logo und einen Knop
 | Trackball kurz klicken | Display an/aus |
 | Trackball 2,5 s gedrückt halten | Flood-Advert senden |
 | Tastatur (auch Enter) | keine Funktion |
-| Ein/Aus | Schiebeschalter (kein Abschalten per Trackball) |
+| Ein/Aus | Schiebeschalter (kein Ausschalten per Trackball) |
 
 **LILYGO T-Watch S3**
 
@@ -63,15 +70,15 @@ Das Display zeigt nur den Schriftzug **DisAHRsterRadio** mit Logo und einen Knop
 |---|---|
 | Seitentaste kurz | Display an/aus (bei ausgeschalteter Uhr: einschalten) |
 | Seitentaste ca. 2 s halten | Flood-Advert senden |
-| Seitentaste ca. 6 s halten | Uhr ausschalten (Abschaltung des Power-Chips) – 2 s schaltet **nicht** aus |
+| Seitentaste ca. 6 s halten | Uhr ausschalten (Power-Chip) |
 | Knopf „Advert senden“ antippen | Flood-Advert senden |
 | Antippen bei dunklem Display | nur aufwecken |
 
 ## Schnellstart
 
-1. **Flashen:** am einfachsten mit dem [Web-Flasher](https://pietwars.github.io/DisAHRsterRadio-MeshCore/flasher/) (Chrome/Edge am Computer; „Update“ behält die Einstellungen, „Neuinstallation“ löscht alles). Oder Paket aus dem Release laden, `…-factory.bin` mit esptool oder [esptool-js](https://espressif.github.io/esptool-js/) an Adresse **0x0** schreiben – [Anleitung Flashen](docs/FLASHEN.md). Die `factory.bin` löscht Einstellungen, Identität und Verlauf; Update ohne Datenverlust: nur `…-firmware.bin` an 0x10000.
+1. **Flashen:** am einfachsten mit dem [Web-Flasher](https://pietwars.github.io/DisAHRsterRadio-MeshCore/flasher/) (Chrome/Edge am Computer). Grüner Knopf **„Update auf 0.9.2 – … (Einstellungen bleiben)“** (empfohlen, schreibt nur `…-firmware.bin` an 0x10000) oder orange umrandeter Knopf **„Neuinstallation – … (alles löschen)“** (`…-factory.bin` an 0x0, löscht Identität, Kontakte und Verlauf). Ohne Web-Flasher: [Anleitung Flashen](docs/FLASHEN.md) (esptool).
 2. **Verbinden:** Handy mit dem offenen WLAN `DisAHRsterRadio-XXXXXX` verbinden, **http://192.168.4.1** öffnen – kein Passwort, höchstens 4 Handys.
-3. **MeshCore-App (optional):** per Bluetooth koppeln; die PIN zeigt das Display während der Kopplung an. Danach in der App eine eigene PIN setzen. Details: [Offener Zugang](docs/OFFENER_ZUGANG.md)
+3. **MeshCore-App (optional):** per Bluetooth koppeln; die PIN zeigt das Display nur während der Kopplung an. Danach in der App eine eigene PIN setzen. Details: [Offener Zugang](docs/OFFENER_ZUGANG.md)
 
 ## Funk
 
