@@ -64,7 +64,7 @@ RULES = [
     ('README.md', r'^(\*\*Version )[^*]+(\*\* · MeshCore )[0-9.]+( .*· Firmwarekennung `v)[0-9.]+-dar[^`]+(`)', r'\g<1>@VERSION@\g<2>@MESHCORE@\g<3>@MESHCORE@-dar@VERSION@\g<4>'),
     ('README.md', r'(in Handygröße, Stand )[^;]+(; alle Daten simuliert)', r'\g<1>@VERSION@\g<2>'),
     ('README.md', ROW, r'\g<1>@VERSION@\g<2>'),
-    ('README.md', ZIP, r'\g<1>@VERSION@\g<2>', 2),  # 0.9.1: nur T-Deck Plus und Heltec V2 im README
+    ('docs/DETAILS.md', ZIP, r'\g<1>@VERSION@\g<2>', 2),  # Build-Beispiele in docs/DETAILS.md (README ab 0.9.1 kurz)
 ]
 
 if __name__ == '__main__':
