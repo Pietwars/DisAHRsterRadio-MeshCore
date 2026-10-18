@@ -89,6 +89,9 @@ public:
 class HomeScreen : public UIScreen {
   enum HomePage {
     FIRST,
+#if UI_HAS_KEYBOARD
+    MESSAGES,
+#endif
     RECENT,
     RADIO,
     BLUETOOTH,
@@ -328,6 +331,18 @@ public:
         display.drawTextCentered(display.width() / 2, 43, tmp);
         #endif
       }
+#if UI_HAS_KEYBOARD
+    } else if (_page == HomePage::MESSAGES) {
+      display.setColor(UIColor::primary_txt);
+      display.setTextSize(2);
+      display.drawTextCentered(display.width() / 2, 22, "Nachrichten");
+      display.setTextSize(1);
+      display.setColor(UIColor::secondary_txt);
+      display.drawTextCentered(display.width() / 2, 40, "Enter: Kanal/Kontakt waehlen");
+      display.drawTextCentered(display.width() / 2, 47, "und auf der Tastatur tippen");
+      display.setColor(tdeck_input.hasKeyboard() ? UIColor::corp_blue : UIColor::warning_txt);
+      display.drawTextCentered(display.width() / 2, 56, tdeck_input.hasKeyboard() ? "Tastatur bereit" : "Tastatur nicht gefunden");
+#endif
     } else if (_page == HomePage::RECENT) {
       the_mesh.getRecentlyHeard(recent, UI_RECENT_LIST_SIZE);
       display.setColor(UIColor::primary_txt);
@@ -575,6 +590,12 @@ public:
 #endif
       return true;
     }
+#if UI_HAS_KEYBOARD
+    if (c == KEY_ENTER && _page == HomePage::MESSAGES) {
+      _task->openChat();
+      return true;
+    }
+#endif
     if (c == KEY_ENTER && _page == HomePage::BLUETOOTH) {
       if (_task->isBluetoothEnabled()) {  // toggle Bluetooth on/off
         _task->disableBluetooth();
@@ -722,6 +743,26 @@ public:
   }
 };
 
+#if UI_HAS_KEYBOARD
+  #include "ChatScreen.h"
+#endif
+
+void UITask::openChat() {
+#if UI_HAS_KEYBOARD
+  if (chat) {
+    ((ChatScreen *) chat)->open();
+    setCurrScreen(chat);
+  }
+#endif
+}
+
+void UITask::onACKRecv(uint32_t ack_crc) {
+#if UI_HAS_KEYBOARD
+  if (chat) ((ChatScreen *) chat)->onAck(ack_crc);
+  if (isChatOpen()) _next_refresh = 100;
+#endif
+}
+
 void UITask::begin(DisplayDriver* display, SensorManager* sensors, NodePrefs* node_prefs) {
   _display = display;
   _sensors = sensors;
@@ -756,6 +797,10 @@ void UITask::begin(DisplayDriver* display, SensorManager* sensors, NodePrefs* no
   splash = new SplashScreen(this);
   home = new HomeScreen(this, &rtc_clock, sensors, node_prefs);
   msg_preview = new MsgPreviewScreen(this, &rtc_clock);
+#if UI_HAS_KEYBOARD
+  chat = new ChatScreen(this, node_prefs);
+  tdeck_input.begin();
+#endif
   setCurrScreen(splash);
 }
 
@@ -798,8 +843,17 @@ void UITask::onMessageRecv(mesh::Packet *pkt, const ContactInfo &from, uint8_t t
   if (!(txt_type == TXT_TYPE_PLAIN || txt_type == TXT_TYPE_SIGNED_PLAIN)) return;
 
   uint8_t path_len = pkt->isRouteFlood() ? pkt->path_len : 0xFF;
+#if UI_HAS_KEYBOARD
+  if (chat) ((ChatScreen *) chat)->onContactMsg(from, text);
+  if (isChatOpen()) {   // beim Tippen nicht in die Vorschau springen
+    _next_refresh = 100;
+    if (!((ChatScreen *) chat)->isShowing(1, 0, from.id.pub_key)) showAlert("Neue Direktnachricht", 1200);
+  } else
+#endif
+  {
   ((MsgPreviewScreen *) msg_preview)->addPreview(path_len, from.name, text);
   setCurrScreen(msg_preview);
+  }
 
   if (_display != NULL) {
     if (!_display->isOn() && !hasConnection()) {
@@ -818,8 +872,18 @@ void UITask::onMessageRecv(mesh::Packet *pkt, const ContactInfo &from, uint8_t t
 
 void UITask::onChannelMessageRecv(mesh::Packet *pkt, ChannelDetails& channel_details, const char* text) {
   uint8_t path_len = pkt->isRouteFlood() ? pkt->path_len : 0xFF;
+#if UI_HAS_KEYBOARD
+  if (chat) ((ChatScreen *) chat)->onChannelMsg(channel_details, text);
+  if (isChatOpen()) {   // beim Tippen nicht in die Vorschau springen
+    _next_refresh = 100;
+    int ci = the_mesh.findChannelIdx(channel_details.channel);
+    if (ci < 0 || !((ChatScreen *) chat)->isShowing(0, (uint8_t)ci, NULL)) showAlert("Neue Kanalnachricht", 1200);
+  } else
+#endif
+  {
   ((MsgPreviewScreen *) msg_preview)->addPreview(path_len, channel_details.name, text);
   setCurrScreen(msg_preview);
+  }
 
   if (_display != NULL) {
     if (!_display->isOn() && !hasConnection()) {
@@ -838,7 +902,7 @@ void UITask::onChannelMessageRecv(mesh::Packet *pkt, ChannelDetails& channel_det
 
 void UITask::onQueueSizeChanged(int msgcount) {
   _msgcount = msgcount;
-  if (msgcount == 0) {
+  if (msgcount == 0 && !isChatOpen()) {
     gotoHomeScreen();
   }
 }
@@ -1006,9 +1070,31 @@ void UITask::loop() {
   }
 #endif
 
+#if UI_HAS_KEYBOARD
+  if (c == 0) {
+    uint8_t k = tdeck_input.poll();
+    if (k != 0) {
+      if (isChatOpen()) {
+        c = checkDisplayOn((char)k);
+      } else if (k == TDECK_IN_LEFT || k == TDECK_IN_UP) {
+        c = checkDisplayOn(KEY_PREV);
+      } else if (k == TDECK_IN_RIGHT || k == TDECK_IN_DOWN) {
+        c = checkDisplayOn(KEY_NEXT);
+      } else if (k == 0x0D) {
+        c = checkDisplayOn(KEY_ENTER);
+      } else {
+        checkDisplayOn(0);   // andere Taste: nur Display wecken
+      }
+    }
+  }
+#endif
+
   if (c != 0 && curr) {
     curr->handleInput(c);
     _auto_off = millis() + AUTO_OFF_MILLIS;   // extend auto-off timer
+#if UI_HAS_KEYBOARD
+    if (isChatOpen()) _auto_off = millis() + 60000;   // beim Schreiben/Lesen laenger an
+#endif
     _next_refresh = 100;  // trigger refresh
   }
 
