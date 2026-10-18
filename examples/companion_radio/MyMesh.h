@@ -122,6 +122,7 @@ public:
   void loop();
   void handleCmdFrame(size_t len);
   bool advert();
+  bool floodAdvert();   // Advert als Flood ins ganze Mesh (wie "Advert (Flood)" in der App)
   void enterCLIRescue();
 
   int  getRecentlyHeard(AdvertPath dest[], int max_num);

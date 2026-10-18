@@ -8,6 +8,15 @@
 #ifndef UI_ZOOM
   #define UI_ZOOM 1
 #endif
+#ifndef LGFX_SPRITE_DEPTH
+  #define LGFX_SPRITE_DEPTH 8   // 16 = volle Farben fuer Bilder (Sprite im PSRAM)
+#endif
+#ifndef UI_ZOOM_X
+  #define UI_ZOOM_X UI_ZOOM
+#endif
+#ifndef UI_ZOOM_Y
+  #define UI_ZOOM_Y UI_ZOOM
+#endif
 
 class LGFXDisplay : public DisplayDriver {
 protected:
@@ -19,7 +28,7 @@ protected:
 
 public:
   LGFXDisplay(int w, int h, LGFX_Device &disp)
-    : DisplayDriver(w/UI_ZOOM, h/UI_ZOOM), display(&disp) {}
+    : DisplayDriver(w/UI_ZOOM_X, h/UI_ZOOM_Y), display(&disp) {}
   bool begin();
   bool isOn() override { return _isOn; }
   void turnOn() override;
@@ -36,4 +45,15 @@ public:
   uint16_t getTextWidth(const char* str) override;
   void endFrame() override;
   virtual bool getTouch(int *x, int *y);
+
+  int  nativeWidth() override  { return width(); }    // mit UI_ZOOM 1 sind logisch = echte Pixel
+  int  nativeHeight() override { return height(); }
+  void nativeFill(int x, int y, int w, int h, uint16_t c) override { buffer.fillRect(x, y, w, h, c); }
+  void nativeRect(int x, int y, int w, int h, uint16_t c) override { buffer.drawRect(x, y, w, h, c); }
+  void nativeText(int x, int y, int size, uint16_t c, const char* s) override {
+    buffer.setTextSize(size); buffer.setTextColor(c); buffer.setCursor(x, y); buffer.print(s);
+  }
+  void nativeImage(int x, int y, int w, int h, const uint16_t* rgb565) override {
+    buffer.pushImage(x, y, w, h, (const lgfx::rgb565_t*)rgb565);
+  }
 };

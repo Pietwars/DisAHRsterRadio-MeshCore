@@ -130,8 +130,8 @@ pip install platformio
 python tools/embed_web.py                       # nach Änderungen an web/
 pio run -e disaster_heltec_v2_sx1276_wifi -t upload
 pio run -e disaster_heltec_v2_sx1276_wifi -t uploadfs  # nur einmal! (Dateisystem, löscht Identität)
-ENVS=disaster_heltec_v2_sx1276_wifi tools/package.sh   # dist/DisAHRsterRadio-MeshCore-0.9.1-heltec-v2.zip
-tools/build_device.sh LilyGo_TDeck dist                # dist/DisAHRsterRadio-MeshCore-0.9.1-LilyGo_TDeck.zip
+ENVS=disaster_heltec_v2_sx1276_wifi tools/package.sh   # dist/DisAHRsterRadio-MeshCore-0.9.2-heltec-v2.zip
+tools/build_device.sh LilyGo_TDeck dist                # dist/DisAHRsterRadio-MeshCore-0.9.2-LilyGo_TDeck.zip
 ```
 
 Version und MeshCore-Basis stehen nur in der Datei `VERSION`; `python3 tools/version.py` überträgt sie in Oberfläche, Demo, Firmwarekennung und README (`--check` läuft im CI). Bibliotheken sind auf feste Versionen gesetzt (`tools/pin_libs.py`, CI prüft mit `--check`).
