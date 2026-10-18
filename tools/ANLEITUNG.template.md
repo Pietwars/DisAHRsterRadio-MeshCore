@@ -1,4 +1,4 @@
-> Offenes WLAN, MeshCore-Bluetooth ohne Zahlencode – einfach verbinden. Alte Kopplungen bei Bedarf am Handy entfernen. Details: https://github.com/Pietwars/DisAHRsterRadio-MeshCore/blob/main/docs/OFFENER_ZUGANG.md
+> **TESTVERSION Bluetooth-PIN 123456.** Offenes WLAN ohne Passwort, MeshCore-Bluetooth mit **PIN 123456** (bei der Kopplung am Handy eingeben). Komplett an **0x0** flashen. Alte Kopplungen vorher am Handy entfernen.
 
 # @PREFIX@ für @BOARD@
 
@@ -12,7 +12,7 @@ MeshCore-Companion mit WLAN-Weboberfläche · Version @VERSION@ · Commit @COMMI
 
 ## Neu in 0.9.0-alpha
 
-- Parallel zum WLAN-Portal kann sich die offizielle MeshCore-App per **Bluetooth** verbinden. Kopplung ohne Zahlencode; Funkkonfiguration bleibt USB/Admin-Bereich vorbehalten.
+- Parallel zum WLAN-Portal kann sich die offizielle MeshCore-App per **Bluetooth** verbinden. Kopplung mit PIN **123456** (Testversion); Funkkonfiguration bleibt USB/Admin-Bereich vorbehalten.
 - Neue Partitionstabelle (3 MB App, kein OTA): beim Umstieg von einer älteren Version **einmal komplett mit der factory-Datei** flashen.
 
 ## 2. Erstinstallation
@@ -27,7 +27,7 @@ Enthalten: Bootloader (@BOOT@), Partitionen (0x8000), boot_app0 (0xe000), Firmwa
 
 ## 3. Verbinden
 
-Am Handy das offene WLAN `DisAHRsterRadio-XXXXXX` auswählen und verbinden (höchstens 4 Handys, nichts eingeben). Bei „Kein Internet“ verbunden bleiben, dann `http://192.168.4.1` öffnen. Achtung: offenes, unverschlüsseltes WLAN – jede Person in Reichweite kann mitlesen und senden. Bluetooth (MeshCore-App) koppelt ohne Zahlencode; bei alten Kopplungen am Handy entkoppeln und neu verbinden.
+Am Handy das offene WLAN `DisAHRsterRadio-XXXXXX` auswählen und verbinden (höchstens 4 Handys, nichts eingeben). Bei „Kein Internet“ verbunden bleiben, dann `http://192.168.4.1` öffnen. Achtung: offenes, unverschlüsseltes WLAN – jede Person in Reichweite kann mitlesen und senden. Bluetooth (MeshCore-App) koppelt mit PIN **123456**; bei alten Kopplungen am Handy entkoppeln und neu verbinden.
 
 Nur für Betreiber: Die Admin-Zugangsdaten für den Admin-Bereich (Knotenname, Kanäle, Funkprofil) erscheinen einmalig beim ersten Start über USB (115200 Baud); neu erzeugen mit 10 s BOOT-Taste.
 

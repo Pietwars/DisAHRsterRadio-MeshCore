@@ -2,6 +2,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+// TEST pin123456: fixed Bluetooth passkey for this test build (0 = Just Works without PIN).
+#ifndef DISASTER_BLE_PIN
+#define DISASTER_BLE_PIN 123456
+#endif
+
 namespace disaster {
 // Validate received bytes before any dispatcher access (including memcmp).
 inline size_t companionMinimumLength(uint8_t cmd) {

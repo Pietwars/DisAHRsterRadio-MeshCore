@@ -1,3 +1,4 @@
+#include "OpenAccess.h"  // DISASTER_BLE_PIN (TEST pin123456)
 #include <Arduino.h>   // needed for PlatformIO
 #include <Mesh.h>
 #include "MyMesh.h"
@@ -218,14 +219,14 @@ void setup() {
   #error "need to define filesystem"
 #endif
 
-// Open access is the project default, including upgrades with a saved PIN.
-  if (the_mesh.getNodePrefs()->ble_pin != 0) {
-    the_mesh.getNodePrefs()->ble_pin = 0;
+// TEST pin123456: Bluetooth uses the fixed PIN DISASTER_BLE_PIN (also on upgrades with another saved PIN).
+  if (the_mesh.getNodePrefs()->ble_pin != DISASTER_BLE_PIN) {
+    the_mesh.getNodePrefs()->ble_pin = DISASTER_BLE_PIN;
     the_mesh.savePrefs();
   }
-  the_mesh.setBLEPin(0);
+  the_mesh.setBLEPin(DISASTER_BLE_PIN);
 #if defined(BLE_PIN_CODE)
-  Serial.println("[BLE] Verbindung ohne PIN; Konfiguration ueber USB/Web-Admin");
+  Serial.printf("[BLE] Bluetooth-PIN %06lu (TEST); Konfiguration ueber USB/Web-Admin\n", (unsigned long)DISASTER_BLE_PIN);
 #endif
 
 // add bluetooth interface
@@ -339,7 +340,7 @@ void loop() {
     static unsigned long lastOled = 0; static bool showPw = false;
     if (millis() - lastOled > 15000) {  // abwechselnd WLAN-Name und offener Zugang auf dem OLED
       lastOled = millis(); showPw = !showPw;
-      String t = showPw ? String("WLAN offen / BLE ohne PIN")
+      String t = showPw ? String("WLAN offen / BLE-PIN 123456")
                         : (disaster_portal.apRunning() ? String("WLAN ") : String("WLAN FEHLER ")) + disaster_portal.ssid().substring(16);
       ui_task.showAlert(t.c_str(), 6000);
     }

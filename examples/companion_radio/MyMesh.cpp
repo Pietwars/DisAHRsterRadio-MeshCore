@@ -1871,10 +1871,10 @@ void MyMesh::handleCmdFrame(size_t len) {
     }
   } else if (cmd_frame[0] == CMD_SET_DEVICE_PIN && len >= 5) {
 
-    // PIN-free firmware: a nonzero PIN cannot be enabled by an app or USB.
+    // TEST pin123456: the Bluetooth PIN is fixed; only DISASTER_BLE_PIN is accepted.
     uint32_t pin; memcpy(&pin,&cmd_frame[1],4);
-    if(pin) { writeDisabledFrame(); }
-    else { _prefs.ble_pin=0; savePrefs(); writeOKFrame(); }
+    if(pin != DISASTER_BLE_PIN) { writeDisabledFrame(); }
+    else { _prefs.ble_pin=DISASTER_BLE_PIN; savePrefs(); writeOKFrame(); }
   } else if (cmd_frame[0] == CMD_GET_CUSTOM_VARS) {
     out_frame[0] = RESP_CODE_CUSTOM_VARS;
     char *dp = (char *)&out_frame[1];
@@ -2148,10 +2148,10 @@ bool MyMesh::handleCommand(const char* command, uint32_t sender_timestamp, char*
   }
 
   if (memcmp(command, "set pin ", 8) == 0) {
-    // PIN-free firmware: Bluetooth always pairs without PIN (Just Works).
-    _prefs.ble_pin = 0;
+    // TEST pin123456: Bluetooth always pairs with the fixed PIN.
+    _prefs.ble_pin = DISASTER_BLE_PIN;
     savePrefs();
-    strcpy(reply, "> Bluetooth ohne PIN (fest)");
+    sprintf(reply, "> Bluetooth-PIN %06lu (fest, Testversion)", (unsigned long)DISASTER_BLE_PIN);
     return true;
   }
 
