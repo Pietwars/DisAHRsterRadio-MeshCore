@@ -1,6 +1,6 @@
 {
  "name": "DisAHRsterRadio-MeshCore",
- "hero": "docs/flyer/disahrsterradio-header.jpg",
+ "hero": "docs/flyer/disahrsterradio-hero.jpg",
  "title_html": "Dis<span>AHR</span>sterRadio MeshCore",
  "subtitle": "@VERSION@ · MeshCore 1.18 · WLAN-Oberfläche + Bluetooth · EU/UK Narrow",
  "intro": "<b>Das Ahrtal-Funknetz auf MeshCore-Basis.</b> Release @VERSION@ für <b>LILYGO T-Deck Plus</b> und <b>LILYGO T-Watch S3</b> (868 MHz). Das Display zeigt nur das DisAHRsterRadio-Logo und den Knopf <b>„Advert senden“</b>. Chatten und melden im Browser über offenes WLAN – ohne Anmeldung – oder per Bluetooth mit der MeshCore-App.",

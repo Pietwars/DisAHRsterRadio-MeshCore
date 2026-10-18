@@ -34,7 +34,7 @@ python -m esptool --chip esp32s3 --port PORT --baud 921600 write_flash 0x10000 D
 python -m esptool --chip esp32s3 --port PORT --baud 921600 write_flash 0x10000 DisAHRsterRadio-MeshCore-0.9.2-LilyGo_TWatchS3-firmware.bin
 ```
 
-Nur bei gleicher Partitionierung (ab 0.9.0) verwenden; bei Problemen die Erstinstallation machen. Die Einzelteile (Bootloader 0x0, Partitionen 0x8000, boot_app0 0xe000, Firmware 0x10000, Web-Dateisystem `spiffs.bin` 0x310000) liegen im Paket unter `teile/`.
+Nur bei gleicher Partitionierung (ab 0.9.0) verwenden; bei Problemen die Erstinstallation machen. Die Einzelteile (Bootloader 0x0, Partitionen 0x8000, boot_app0 0xe000, Firmware 0x10000, leerer Datenbereich `spiffs.bin` 0x310000) liegen im Paket unter `teile/`. Im Datenbereich speichert das Gerät Knotenidentität, Kontakte, Kanäle und Einstellungen – `spiffs.bin` daher **nie** beim Update schreiben.
 
 ## Ohne Installation: esptool-js im Browser
 

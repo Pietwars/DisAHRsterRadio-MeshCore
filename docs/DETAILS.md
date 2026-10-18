@@ -92,7 +92,7 @@ Offenes WLAN **`DisAHRsterRadio-XXXXXX`** (höchstens 4 Handys, nichts eingeben)
 
 ## Anzeige und Tasten
 
-Oberfläche: `examples/companion_radio/ui-brand/` (für beide Geräte). Logo: `logo/disahrsterradio-display.png` (Ausschnitt aus dem Titelbild `docs/flyer/disahrsterradio-header.jpg`), umgerechnet mit `python3 tools/gen_brand_logo.py` nach `ui-brand/BrandLogo.h` (320×150 T-Deck, 240×112 T-Watch).
+Oberfläche: `examples/companion_radio/ui-brand/` (für beide Geräte). Bild: `logo/disahrsterradio-display.png` (Ausschnitt unten rechts aus dem Titelbild `docs/flyer/disahrsterradio-header.jpg` mit Ahrtal, Berg und Lichtern; der Schriftzug wird oben rechts wieder eingesetzt), erzeugt mit `python3 tools/gen_brand_logo.py` zusammen mit `ui-brand/BrandLogo.h` (320×180 T-Deck, 240×140 T-Watch) und dem Flyer-Kopfbild `docs/flyer/disahrsterradio-hero.jpg`. Die T-Watch nutzt die volle Auflösung 240×240 und für Texte glatte Schriften (FreeSans), der T-Deck die eingebaute Pixelschrift.
 
 - Angezeigt werden nur Schriftzug + Logo und der Knopf **„Advert senden“**. Keine weiteren Seiten, keine Nachrichtenvorschau, keine Tastatur-/Touch-Nachrichten, kein WLAN/PIN-Wechselhinweis.
 - Jeder Advert ist ein **Flood-Advert** (wie „Advert senden → Flood“ in der App). Danach 2 s **„Advert gesendet“**; höchstens ein Advert je **10 s**, sonst „Bitte N s warten“.
