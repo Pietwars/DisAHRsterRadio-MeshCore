@@ -7,8 +7,17 @@
 #include <Adafruit_ST7789.h>
 #include <helpers/RefCountedDigitalPin.h>
 
+#if defined(LILYGO_TDECK)
+  // T-Deck: display (TFT_CS 12) and LoRa radio (NSS 9) share SCK 40 / MOSI 41 / MISO 38.
+  // Both MUST use the same SPI controller instance, otherwise the GPIO matrix routes
+  // the shared pins to whichever controller was attached last (display freezes after radio init).
+  // Defined in variants/lilygo_tdeck/target.cpp.
+  extern SPIClass tdeck_shared_spi;
+  void tdeck_shared_spi_begin();
+#endif
+
 class ST7789LCDDisplay : public DisplayDriver {
-  #if defined(LILYGO_TDECK) || defined(HELTEC_LORA_V4_TFT) || defined(HELTEC_V4_R8_TFT)
+  #if defined(HELTEC_LORA_V4_TFT) || defined(HELTEC_V4_R8_TFT)
     SPIClass displaySPI;
   #endif
   Adafruit_ST7789 display;
@@ -25,7 +34,14 @@ public:
   {
     _isOn = false;
   }
-#elif defined(LILYGO_TDECK) || defined(HELTEC_LORA_V4_TFT) || defined(HELTEC_V4_R8_TFT)
+#elif defined(LILYGO_TDECK)
+  ST7789LCDDisplay(RefCountedDigitalPin* peripher_power=NULL) : DisplayDriver(128, 64),
+      display(&tdeck_shared_spi, PIN_TFT_CS, PIN_TFT_DC, PIN_TFT_RST),
+      _peripher_power(peripher_power)
+  {
+    _isOn = false;
+  }
+#elif defined(HELTEC_LORA_V4_TFT) || defined(HELTEC_V4_R8_TFT)
   ST7789LCDDisplay(RefCountedDigitalPin* peripher_power=NULL) : DisplayDriver(128, 64),
       displaySPI(HSPI),
       display(&displaySPI, PIN_TFT_CS, PIN_TFT_DC, PIN_TFT_RST),
