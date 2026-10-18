@@ -6,7 +6,7 @@
 - **Bluetooth ohne PIN:** Just Works (ESP32/nRF52/RP2040), gespeicherte BLE-PIN wird auf 0 gesetzt, keine Zufalls-PIN mehr, App kann keine PIN setzen; nRF52 ohne Bluetooth-DFU.
 - Offene Bluetooth-/Netzwerk-Companions: Nachrichten, Kontakte, Uhrzeit-Abgleich, Status; Betreiberbefehle (Funk, Name, Kanäle, Schlüssel, Reset, CLI) nur USB/Admin-Bereich. Längen-/Pfadprüfungen für Companion-Befehle.
 - Doku, Flash-Anleitung, LIESMICH und Flyer ohne Zugangsdaten-Hinweise; Hosttest `tests/open_access.test.cpp`. Hardwareabnahme steht aus.
-- **Room-Server ohne Gast-Passwort:** Gäste treten ohne Passwort bei und können nur lesen. Kein Zufalls-Raum-Passwort mehr; ein gespeichertes Gast-Passwort wird beim Start gelöscht, Gast-Lesezugriff (`allow.read.only`) wird eingeschaltet. `set guest.password` und `set allow.read.only` werden abgelehnt. Admin-Login unverändert. Portal: Raum-Code-Feld entfernt, „Beitreten (ohne Passwort, nur lesen)“; Hosttest `tests/room_access.test.cpp`.
+- **Room-Server mit öffentlichem Gast-Passwort `hello`** (MeshCore-Standard): mit `hello` lesen und schreiben, ohne Passwort nur lesen (`allow.read.only` an). Beim Start wird das Gast-Passwort auf `hello` gesetzt (ersetzt leere/zufällige Werte älterer Versionen); `set guest.password` und `set allow.read.only` werden abgelehnt. Admin-Login unverändert. Portal: kein Eingabefeld, „Beitreten“ meldet automatisch mit `hello` an – Aushängen im Portal wieder möglich. Hosttest `tests/room_access.test.cpp`.
 
 ## Unveröffentlicht · 17.10.2026 · Feste Versionen
 
