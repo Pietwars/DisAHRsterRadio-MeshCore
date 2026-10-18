@@ -185,6 +185,8 @@ public:
     return _receivedFrom == InterfaceType::Bluetooth || _receivedFrom == InterfaceType::WiFi || _receivedFrom == InterfaceType::Ethernet;
   }
 
+  bool isBluetoothTransport() const override { return _receivedFrom == InterfaceType::Bluetooth; }
+
   size_t checkRecvFrame(uint8_t dest[]) override {
     _receivedFrom = InterfaceType::NONE;
     // don't read when disabled

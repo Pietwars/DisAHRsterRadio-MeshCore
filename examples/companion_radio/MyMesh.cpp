@@ -1064,7 +1064,7 @@ void MyMesh::handleCmdFrame(size_t len) {
   if (!disaster::validCompanionLength(cmd_frame,len,MAX_FRAME_SIZE)) {
     writeErrFrame(ERR_CODE_ILLEGAL_ARG); return;
   }
-  if (_serial->isPublicTransport() && !disaster::publicCompanionCommand(cmd_frame[0])) {
+  if (!disaster::allowCompanionCommand(cmd_frame[0], _serial->isPublicTransport(), _serial->isBluetoothTransport(), _active_ble_pin)) {
     writeDisabledFrame(); return;
   }
   // Clear stale bytes and terminate variable text fields within the allocated buffer.

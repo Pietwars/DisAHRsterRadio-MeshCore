@@ -18,6 +18,15 @@ int main() {
   const unsigned blocked[]={8,9,11,12,14,15,19,21,23,24,25,32,33,34,35,37,38,41,50,51,54,55,57,58,61,62,63,65,66,255};
   for(auto cmd:blocked) assert(!disaster::publicCompanionCommand(cmd));
   for(auto cmd:{1,2,3,4,5,6,7,10,13,16,17,18,20,22,26,27,28,29,30,31,39,40,42,43,52,56,59,60,64}) assert(disaster::publicCompanionCommand(cmd));
+  // TEST pin123456: 38/58 only over PIN-protected Bluetooth, never over open WiFi/Ethernet or without PIN
+  for(auto cmd:{38,58}){
+    assert(disaster::allowCompanionCommand(cmd,true,true,123456));
+    assert(!disaster::allowCompanionCommand(cmd,true,true,0));
+    assert(!disaster::allowCompanionCommand(cmd,true,false,123456));
+    assert(disaster::allowCompanionCommand(cmd,false,false,0));
+  }
+  for(auto cmd:blocked) if(cmd!=38&&cmd!=58) assert(!disaster::allowCompanionCommand(cmd,true,true,123456));
+  for(auto cmd:{1,22,59}) assert(disaster::allowCompanionCommand(cmd,true,false,0));
   uint8_t frame[176]={};
   assert(!disaster::validCompanionLength(nullptr,1,176));
   assert(!disaster::validCompanionLength(frame,0,176));
@@ -29,8 +38,8 @@ int main() {
   assert(mux.addInterface(InterfaceType::USB,&usb));
   assert(mux.addInterface(InterfaceType::Portal,&portal));
   mux.enable();
-  ble.queued=1;assert(mux.checkRecvFrame(frame)==1);assert(mux.isPublicTransport());
-  usb.queued=1;assert(mux.checkRecvFrame(frame)==1);assert(!mux.isPublicTransport());
+  ble.queued=1;assert(mux.checkRecvFrame(frame)==1);assert(mux.isPublicTransport());assert(mux.isBluetoothTransport());
+  usb.queued=1;assert(mux.checkRecvFrame(frame)==1);assert(!mux.isPublicTransport());assert(!mux.isBluetoothTransport());
   portal.queued=1;assert(mux.checkRecvFrame(frame)==1);assert(!mux.isPublicTransport());
   assert(mux.checkRecvFrame(frame)==0);assert(!mux.isPublicTransport());
   frame[0]=14;assert(mux.writeFrame(frame,65)==65);assert(ble.written==0);assert(usb.written==65);

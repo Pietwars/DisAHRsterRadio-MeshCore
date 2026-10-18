@@ -54,4 +54,13 @@ inline bool publicCompanionCommand(uint8_t cmd) {
     default: return false;
   }
 }
+// TEST pin123456: contact/telemetry preferences from the app's settings screens
+// (38 = CMD_SET_OTHER_PARAMS: manual-add, telemetry modes, advert location, multi-acks;
+//  58 = CMD_SET_AUTOADD_CONFIG: auto-add contact types, max hops). Allowed only over a
+// PIN-protected Bluetooth link (GATT writes need MITM encryption); open WiFi/Ethernet stay denied.
+inline bool pinBluetoothCompanionCommand(uint8_t cmd) { return cmd == 38 || cmd == 58; }
+inline bool allowCompanionCommand(uint8_t cmd, bool publicTransport, bool bluetooth, uint32_t blePin) {
+  if (!publicTransport || publicCompanionCommand(cmd)) return true;
+  return bluetooth && blePin != 0 && pinBluetoothCompanionCommand(cmd);
+}
 }
