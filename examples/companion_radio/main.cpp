@@ -317,6 +317,8 @@ void setup() {
   disaster_portal.begin();
   DIAG("portal ok");
   interface_manager.addInterface(InterfaceType::Portal, &disaster_portal);
+  // 0.9.3: von der App gesendete Nachrichten auch im Web-Verlauf zeigen
+  the_mesh.setAppSentObserver([](const uint8_t *cmd, size_t len, const uint8_t *tag) { disaster_portal.recordAppSend(cmd, len, tag); });
 #endif
 
   the_mesh.startInterface(interface_manager);

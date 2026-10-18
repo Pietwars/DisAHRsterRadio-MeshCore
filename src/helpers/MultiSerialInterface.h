@@ -26,6 +26,7 @@ private:
   };
 
   bool _enabled = false;
+  bool _replyOnly = false;
   InterfaceType _receivedFrom = InterfaceType::NONE;
   RegisteredInterface _interfaces[MAX_INTERFACES] = {};
 
@@ -172,6 +173,9 @@ public:
         // Private-key export reply (14) goes only back to the requesting USB or Bluetooth link
         // (Bluetooth gets here only with an active PIN); never to WiFi, Ethernet or the portal.
         if(src[0] == 14 && !privateReplyTarget(iface.type)) continue;
+        // Reply-only (message sync, send replies): only the requesting client gets the reply, so one
+        // client's sync does not consume or duplicate messages for the other.
+        if(_replyOnly && src[0] < 0x80 && _receivedFrom != InterfaceType::NONE && iface.type != _receivedFrom) continue;
         if(iface.instance->writeFrame(src, len) != len){
           allSuccessful = false;
         }
@@ -192,6 +196,8 @@ public:
   }
 
   bool isBluetoothTransport() const override { return _receivedFrom == InterfaceType::Bluetooth; }
+  bool isPortalTransport() const override { return _receivedFrom == InterfaceType::Portal; }
+  void setReplyOnly(bool on) override { _replyOnly = on; }
 
   size_t checkRecvFrame(uint8_t dest[]) override {
     _receivedFrom = InterfaceType::NONE;

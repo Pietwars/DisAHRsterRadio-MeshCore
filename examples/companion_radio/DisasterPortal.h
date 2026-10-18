@@ -368,6 +368,18 @@ public:
       Serial.printf("[WLAN] %s | SSID: %s | offen, ohne Passwort | http://192.168.4.1 | Clients: %d\n",apOk?"AP aktiv":"AP FEHLER",apName.c_str(),WiFi.softAPgetStationNum());
       }
   }
+  // 0.9.3: Von der MeshCore-App (Bluetooth) gesendete Text-/Kanalnachricht in den Web-Verlauf schreiben
+  // (gleiches Format wie eigene Nachrichten: f3 Kanal, f4 Direkt mit ACK-Kennung, f2 ohne Kennung).
+  void recordAppSend(const uint8_t *c,size_t n,const uint8_t *tag) {
+    if(n<7||n>MAX_FRAME_SIZE)return;
+    uint8_t r[MAX_FRAME_SIZE];memcpy(r,c,n);size_t rl=n;
+    if(c[0]==3)r[0]=0xf3;
+    else if(c[0]==2&&n>=13){
+      if(tag&&n+4<=MAX_FRAME_SIZE){memmove(r+17,r+13,n-13);memcpy(r+13,tag,4);r[0]=0xf4;rl+=4;}
+      else r[0]=0xf2;
+    } else return;
+    append(r,rl);
+  }
   void enable() override {enabled=true;}
   void disable() override {enabled=false;}
   bool isEnabled() const override {return enabled;}
