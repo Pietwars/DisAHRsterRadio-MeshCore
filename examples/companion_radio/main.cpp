@@ -2,6 +2,10 @@
 #include <Mesh.h>
 #include "MyMesh.h"
 
+#if defined(DISASTER_WIFI_ONLY_TEST) && defined(BLE_PIN_CODE)
+#error "WiFi-only diagnostic profile must not enable BLE_PIN_CODE"
+#endif
+
 // Believe it or not, this std C function is busted on some platforms!
 static uint32_t _atoi(const char* sp) {
   uint32_t n = 0;
@@ -154,6 +158,9 @@ void setup() {
   delay(300);
   Serial.printf("\n[DIAG] boot, reset reason=%d\n", (int)esp_reset_reason());
   Serial.flush();
+#endif
+#ifdef DISASTER_WIFI_ONLY_TEST
+  Serial.println("[DIAG] Heltec V2 WLAN-Test: Bluetooth deaktiviert");
 #endif
   DIAG("board.begin");
   board.begin();
@@ -312,8 +319,11 @@ void setup() {
   interface_manager.addInterface(InterfaceType::Portal, &disaster_portal);
 #endif
 
+  DIAG("startInterface");
   the_mesh.startInterface(interface_manager);
+  DIAG("sensors.begin");
   sensors.begin();
+  DIAG("sensors ok");
 
 #if ENV_INCLUDE_GPS == 1
   the_mesh.applyGpsPrefs();
@@ -323,11 +333,14 @@ void setup() {
 #endif
 
 #ifdef DISPLAY_CLASS
+  DIAG("ui_task.begin");
   ui_task.begin(disp, &sensors, the_mesh.getNodePrefs());  // still want to pass this in as dependency, as prefs might be moved
   the_mesh.setListener(&ui_task);
 #endif
 
+  DIAG("board.onBootComplete");
   board.onBootComplete();
+  DIAG("setup complete");
 }
 
 void loop() {
@@ -339,7 +352,13 @@ void loop() {
     static unsigned long lastOled = 0; static bool showPw = false;
     if (millis() - lastOled > 15000) {  // abwechselnd WLAN-Name und offener Zugang auf dem OLED
       lastOled = millis(); showPw = !showPw;
-      String t = showPw ? String("WLAN offen / BLE ohne PIN")
+      String t = showPw ? String(
+#ifdef DISASTER_WIFI_ONLY_TEST
+                            "WLAN offen / BLE aus"
+#else
+                            "WLAN offen / BLE ohne PIN"
+#endif
+                          )
                         : (disaster_portal.apRunning() ? String("WLAN ") : String("WLAN FEHLER ")) + disaster_portal.ssid().substring(16);
       ui_task.showAlert(t.c_str(), 6000);
     }

@@ -1,0 +1,46 @@
+name: Heltec V2 memory diagnostic
+on:
+  pull_request:
+    paths:
+      - 'platformio.local.ini'
+      - 'examples/companion_radio/**'
+      - '.github/workflows/heltec-memory.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  heltec:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        env: [disaster_heltec_v2_sx1276_wifi, disaster_heltec_v2_sx1276_wifi_only]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/cache@v4
+        with:
+          path: ~/.platformio
+          key: heltec-memory-${{ matrix.env }}-${{ hashFiles('**/platformio*.ini', 'variants/**') }}
+      - run: pip install platformio==6.2.0
+      - run: pio run -e ${{ matrix.env }}
+      - name: Verify diagnostic build has no Bluetooth interface object
+        if: matrix.env == 'disaster_heltec_v2_sx1276_wifi_only'
+        shell: bash
+        run: |
+          NM="$HOME/.platformio/packages/toolchain-xtensa-esp32/bin/xtensa-esp32-elf-nm"
+          "$NM" ".pio/build/${{ matrix.env }}/firmware.elf" > symbols.txt
+          if grep -q 'bluetooth_interface' symbols.txt; then
+            echo "::error::WiFi-only firmware still contains bluetooth_interface"
+            exit 1
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.env }}-memory-test
+          if-no-files-found: error
+          path: |
+            .pio/build/${{ matrix.env }}/firmware.bin
+            .pio/build/${{ matrix.env }}/firmware.elf
+            .pio/build/${{ matrix.env }}/firmware.map
