@@ -18,19 +18,21 @@ int main() {
   const unsigned blocked[]={8,9,11,12,14,15,19,21,23,24,25,32,33,34,35,37,38,41,50,51,54,55,57,58,61,62,63,65,66,255};
   for(auto cmd:blocked) assert(!disaster::publicCompanionCommand(cmd));
   for(auto cmd:{1,2,3,4,5,6,7,10,13,16,17,18,20,22,26,27,28,29,30,31,39,40,42,43,52,56,59,60,64}) assert(disaster::publicCompanionCommand(cmd));
-  // TEST pin123456: 9/15/38/58 only over PIN-protected Bluetooth, never over open WiFi/Ethernet or without PIN
-  for(auto cmd:{9,15,38,58}){
-    assert(disaster::allowCompanionCommand(cmd,true,true,123456));
-    assert(!disaster::allowCompanionCommand(cmd,true,true,0));
+  // TEST pin123456 (ble-voll): PIN-paired Bluetooth gets every command, like stock MeshCore
+  for(unsigned cmd=0;cmd<256;cmd++) assert(disaster::allowCompanionCommand(cmd,true,true,123456));
+  // open WiFi/Ethernet (public, not Bluetooth): unchanged restricted list, PIN irrelevant
+  for(auto cmd:blocked){
     assert(!disaster::allowCompanionCommand(cmd,true,false,123456));
-    assert(disaster::allowCompanionCommand(cmd,false,false,0));
+    assert(!disaster::allowCompanionCommand(cmd,true,false,0));
   }
-  for(auto cmd:blocked) if(cmd!=9&&cmd!=15&&cmd!=38&&cmd!=58) assert(!disaster::allowCompanionCommand(cmd,true,true,123456));
-  // channels, name, location, radio, tuning, keys, reboot/reset, custom vars, CLI stay blocked even with PIN
-  for(auto cmd:{8,11,12,14,19,21,23,24,32,37,41,51,54,61,63,66}) assert(!disaster::allowCompanionCommand(cmd,true,true,123456));
-  assert(disaster::pinBluetoothCompanionCommand(9)&&disaster::pinBluetoothCompanionCommand(15));
-  assert(!disaster::pinBluetoothCompanionCommand(32)&&!disaster::pinBluetoothCompanionCommand(8));
-  for(auto cmd:{1,22,59}) assert(disaster::allowCompanionCommand(cmd,true,false,0));
+  // Bluetooth without PIN: unchanged restricted list
+  for(auto cmd:blocked) assert(!disaster::allowCompanionCommand(cmd,true,true,0));
+  for(auto cmd:{1,2,3,4,5,6,7,10,13,16,17,18,20,22,26,27,28,29,30,31,39,40,42,43,52,56,59,60,64}){
+    assert(disaster::allowCompanionCommand(cmd,true,false,0));
+    assert(disaster::allowCompanionCommand(cmd,true,true,0));
+  }
+  // USB / Portal (not public): everything as before
+  for(unsigned cmd=0;cmd<256;cmd++) assert(disaster::allowCompanionCommand(cmd,false,false,0));
   uint8_t frame[176]={};
   assert(!disaster::validCompanionLength(nullptr,1,176));
   assert(!disaster::validCompanionLength(frame,0,176));
