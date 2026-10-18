@@ -28,7 +28,7 @@
 
 Außer dem öffentlichen Standard `hello` stehen keine Passwörter in Code, Doku, Flyern oder der Live-Demo;  Details: [Offener Zugang](OFFENER_ZUGANG.md).
 
-> ⚠️ **Flashen:** Die `factory.bin` immer an **0x0** flashen. Sie überschreibt das Dateisystem: Einstellungen, Knotenidentität, Kontakte und Verlauf sind danach gelöscht. Update ohne Datenverlust: nur `teile/firmware.bin` an `0x10000`.
+> ⚠️ **Flashen:** Die `factory.bin` immer an **0x0** flashen. Sie überschreibt das Dateisystem: Einstellungen, Knotenidentität, Kontakte und Verlauf sind danach gelöscht. Update ohne Datenverlust: nur `…-firmware.bin` an `0x10000`.
 
 ## Funktionen im Überblick
 
