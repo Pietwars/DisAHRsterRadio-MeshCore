@@ -33,6 +33,7 @@
 #define DAR_SHA256 mbedtls_sha256_ret
 #endif
 #include "HistoryRecord.h"
+#include "SlotFile.h"
 #include "DeliveryOutbox.h"
 #include "ArchiveSd.h"
 
@@ -92,10 +93,12 @@ class DisasterPortal : public BaseSerialInterface {
   void append(const uint8_t *p, size_t n) {
     if (!n || n>MAX_FRAME_SIZE) return;
     Record r{}; r.seq=++seq; r.len=n; memcpy(r.data,p,n); r.crc=disaster::checksum(r);
-    File f=SPIFFS.open("/dr-history.bin", "r+");
-    if (!f) f=SPIFFS.open("/dr-history.bin", "w+");
-    if (!f || !f.seek(disaster::offset(r.seq)) || f.write((uint8_t*)&r,sizeof(r))!=sizeof(r)) storageOK=false;
-    f.close();archive.append(r);
+    File f=disaster::openSlotFile(SPIFFS,"/dr-history.bin");
+    bool ok=f && disaster::seekSlot(f,disaster::offset(r.seq)) && f.write((uint8_t*)&r,sizeof(r))==sizeof(r);
+    if(f)f.close();
+    if(!ok)storageOK=false;
+    if(!ok)Serial.printf("[VERLAUF] Schreiben fehlgeschlagen (seq %u)\n",(unsigned)r.seq);
+    archive.append(r);
   }
   bool permitted() {
     // Custom header prevents cross-origin form submissions; no CORS is enabled.
@@ -164,7 +167,7 @@ class DisasterPortal : public BaseSerialInterface {
     if(!permitted()) return;
     http.setContentLength(CONTENT_LENGTH_UNKNOWN); http.send(200,"text/plain","");
     // Physical slot order; client sorts by monotonically increasing sequence.
-    File f=SPIFFS.open("/dr-history.bin","r"); Record r;
+    File f=disaster::openSlotFileRead(SPIFFS,"/dr-history.bin"); Record r;
     while(f && f.read((uint8_t*)&r,sizeof(r))==sizeof(r)) {
       if(disaster::valid(r))
         http.sendContent(String(r.seq)+":"+hex(r.data,r.len)+"\n");
@@ -193,10 +196,12 @@ public:
   }
   void begin() {
     delivery.begin();lastStamp=delivery.latestStamp();archive.begin();
-    File f=SPIFFS.open("/dr-history.bin","r"); Record r;
+    File f=disaster::openSlotFileRead(SPIFFS,"/dr-history.bin"); Record r;
+    uint32_t records=0;
     while(f && f.read((uint8_t*)&r,sizeof(r))==sizeof(r))
-      if(disaster::valid(r) && r.seq>seq) seq=r.seq;
-    f.close();
+      if(disaster::valid(r)){records++;if(r.seq>seq) seq=r.seq;}
+    if(f)f.close();
+    Serial.printf("[VERLAUF] %u Eintraege, letzte Nummer %u\n",(unsigned)records,(unsigned)seq);
 #ifdef PIN_USER_BTN
     pinMode(PIN_USER_BTN, INPUT_PULLUP);
 #endif
@@ -392,7 +397,11 @@ public:
     });
     http.on("/api/advert",HTTP_POST,[this](){if(!room())return;if(sentOnce&&millis()-lastSend<5000){http.send(429,"text/plain","Bitte fuenf Sekunden Sendepause einhalten");return;}if(!allowClientSend())return;const uint8_t p[]={7,1};accept(p,2);});
     http.on("/api/refresh",HTTP_POST,[this](){if(!room())return;const uint8_t p[]={4};accept(p,1);});
-    http.onNotFound([this](){http.sendHeader("Location","http://192.168.4.1/");http.send(302,"text/plain","");});
+    http.onNotFound([this](){
+      // Diagnose: which client asks for unknown paths (e.g. iOS captive-portal probes)?
+      static uint32_t lastLog=0,skipped=0;
+      if(!lastLog||millis()-lastLog>=10000){Serial.printf("[HTTP] unbekannt: %s%s (Host %s) -> Umleitung%s\n",http.method()==HTTP_POST?"POST ":"",http.uri().c_str(),http.hostHeader().c_str(),skipped?(String(", +")+String(skipped)+" weitere seit letzter Meldung").c_str():"");lastLog=millis()|1;skipped=0;}else skipped++;
+      http.sendHeader("Location","http://192.168.4.1/");http.send(302,"text/plain","");});
     http.begin();
   }
   bool startAP() {
