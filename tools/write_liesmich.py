@@ -19,12 +19,12 @@ if e['chip'].startswith('esp32'):
             f'2. Flash Address **`0x0`**, Datei `*-{r}-factory.bin`, **Program**, danach RST.',
             f'3. Update ohne Datenverlust: nur `teile-{r}/firmware.bin` an **`0x10000`**.','',
             f'Teile: bootloader.bin {b}, partitions.bin 0x8000, boot_app0.bin 0xe000, firmware.bin 0x10000'+(f', spiffs.bin {fs}' if fs!='-' else '')+'.','']
-        if r=='wifi': L+=['Danach mit dem WLAN `DisAHRsterRadio-XXXXXX` verbinden. Das Passwort steht seriell (115200 Baud) und auf dem Display (falls vorhanden). Im Browser http://192.168.4.1 öffnen.','','Parallel kann sich die offizielle MeshCore-App per **Bluetooth** verbinden (falls das Gerät BLE hat). Die Bluetooth-PIN ist pro Gerät zufällig und steht seriell (`[BLE] … PIN`) und auf dem Display.','']
+        if r=='wifi': L+=['Danach mit dem offenen WLAN `DisAHRsterRadio-XXXXXX` verbinden (nichts eingeben). Im Browser http://192.168.4.1 öffnen.','','Parallel kann sich die offizielle MeshCore-App per **Bluetooth** verbinden (falls das Gerät BLE hat) – Kopplung ohne Zahlencode.','']
 elif e['chip'] in('nrf52','rp2040'):
     L+=['## Flashen per UF2','','1. Gerät per USB anschließen und **zweimal schnell Reset** drücken (RP2040: BOOTSEL gedrückt halten beim Einstecken). Es erscheint ein USB-Laufwerk.',
         '2. Die passende `.uf2`-Datei auf das Laufwerk kopieren. Das Gerät startet neu.','',
-        'nRF52: Die `.zip` ist ein DFU-Paket (z. B. für die Nordic-DFU-App oder `adafruit-nrfutil`).','',
-        'Rollen: `companion` = MeshCore-Companion für die MeshCore-App (Bluetooth bzw. USB), `repeater` = Repeater, `room_server` = Room-Server (Schwarzes Brett).','',
+        'nRF52: Die `.zip` ist ein DFU-Paket für `adafruit-nrfutil` über USB (Bluetooth-DFU ist in dieser Firmware abgeschaltet).','',
+        'Rollen: `companion` = MeshCore-Companion für die MeshCore-App (Bluetooth ohne Zahlencode bzw. USB), `repeater` = Repeater, `room_server` = Room-Server (Schwarzes Brett).','',
         'Konfiguration über die offizielle MeshCore-App bzw. https://config.meshcore.dev / https://meshcore.co.uk/configurator/ – **keine** DisAHRsterRadio-Web-Oberfläche (kein WLAN auf diesem Chip).','']
 else:
     L+=['## STM32','','`.bin`/`.hex` mit STM32CubeProgrammer oder einem SWD-Programmer flashen. Ohne Web-Oberfläche.','']
