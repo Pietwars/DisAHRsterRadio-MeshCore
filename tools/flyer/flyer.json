@@ -2,26 +2,26 @@
  "name": "DisAHRsterRadio-MeshCore",
  "hero": "docs/flyer/disahrsterradio-header.jpg",
  "title_html": "Dis<span>AHR</span>sterRadio MeshCore",
- "subtitle": "@VERSION@ · Web-Oberfläche + Bluetooth",
- "intro": "<b>Das Ahrtal-Funknetz auf MeshCore-Basis.</b> Läuft auf vielen LoRa-Boards (868 MHz), z. B. LILYGO T3-S3, T3 V1.6.1, Heltec V2/V3 und RAK4631. Bedienung per WLAN im Browser oder per Bluetooth mit der originalen MeshCore-App.",
+ "subtitle": "@VERSION@ · MeshCore 1.18 · WLAN-Oberfläche + Bluetooth",
+ "intro": "<b>Das Ahrtal-Funknetz auf MeshCore-Basis.</b> Release @VERSION@ für <b>LILYGO T-Deck Plus</b> und <b>Heltec V2</b> (868 MHz), beide auf Hardware getestet. Bedienung im Browser über offenes WLAN – ohne Anmeldung – oder per Bluetooth mit der MeshCore-App.",
  "features": [
-  "Web-UI im Browser über WLAN",
-  "Bluetooth + originale MeshCore-App",
-  "Viele Boards (ESP32 &amp; nRF52)",
-  "Kompatibel mit dem MeshCore-Netz",
-  "Chat und Standort",
-  "Open Source, Releases auf GitHub"
+  "Boards: T-Deck Plus, Heltec V2",
+  "Web-Oberfläche, offenes WLAN",
+  "Bluetooth mit PIN-Kopplung",
+  "Chat, Meldungen, Brett, Karte",
+  "Kompatibel mit MeshCore",
+  "Open Source auf GitHub"
  ],
  "steps": [
-  "Passende Firmware aus den Releases auf das Board flashen.",
-  "Offenes WLAN <b>DisAHRsterRadio-XXXXXX</b> oder Bluetooth mit der MeshCore-App – ohne Zahlencode.",
-  "Im Browser <b>192.168.4.1</b> öffnen und Nachrichten senden."
+  "Firmware aus dem Release v@VERSION@ flashen (<b>factory.bin</b> an 0x0).",
+  "Offenes WLAN <b>DisAHRsterRadio-XXXXXX</b> (ohne Passwort) – oder MeshCore-App per Bluetooth mit PIN koppeln.",
+  "Im Browser <b>192.168.4.1</b> öffnen – ohne Anmeldung chatten und melden."
  ],
  "repo": "https://github.com/Pietwars/DisAHRsterRadio-MeshCore",
  "extra_urls": [
   [
-   "Download",
-   "https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases"
+   "Release v@VERSION@",
+   "@RELEASE@"
   ],
   [
    "Live-Demo",
@@ -46,7 +46,10 @@
    "https://pietwars.github.io/DisasterMesh/"
   ]
  ],
- "qr_url": "https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases",
- "qr_label": "Download",
- "demo": "https://pietwars.github.io/DisAHRsterRadio-MeshCore/"
+ "qr_url": "@RELEASE@",
+ "qr_label": "Release v@VERSION@",
+ "demo": "https://pietwars.github.io/DisAHRsterRadio-MeshCore/",
+ "gui": "docs/images/funktion-chat.jpg",
+ "gui_caption": "MeshAhrtal",
+ "extra_css": ".hero{height:26mm}.phone img{height:42mm}h1{font-size:19pt}"
 }

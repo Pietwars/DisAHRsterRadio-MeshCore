@@ -2,6 +2,8 @@
 
 ## 0.9.1 · 18.10.2026 · Release
 
+- **Flyer 0.9.1 (nachgereicht):** Druck-PDF (QR-Code zum Release v0.9.1 und zur Demo) und Digital-PDF (klickbare Links) neu erzeugt, mit Vorschau der aktuellen Weboberfläche; Inhalt und Boards entsprechen dem Release.
+
 GitHub-Release `v0.9.1` mit den auf Hardware getesteten Paketen für **LILYGO T-Deck Plus** und **Heltec WiFi LoRa 32 V2**. Firmwarekennung `v1.18.0-dar0.9.1` (T-Deck: `v1.18.0-dar0.9.1-wifi`, Heltec V2: `v1.18.0-dar0.9.1-heltecv2-wifi`).
 
 - **Chatverlauf-Fix (alle ESP32-Portal-Boards):** Der Web-Chat blieb leer (weder eigene noch empfangene Nachrichten). Ursache: `SPIFFS.open(fehlendeDatei,"r+")` liefert unter arduino-esp32 ein gültiges Verzeichnis-Handle, daher wurde `/dr-history.bin` nie angelegt. Neu `SlotFile.h` (Öffnen per `SPIFFS.exists()`, Auffüllen bis zum Slot), genutzt von `DisasterPortal` und `DeliveryOutbox`; Weboberfläche zeigt „Verlauf-Speicher“. Hosttest `tests/slot_file.test.cpp`. Alte, nie gespeicherte Nachrichten erscheinen nicht nachträglich.
