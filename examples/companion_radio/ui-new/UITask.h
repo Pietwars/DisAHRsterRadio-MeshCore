@@ -22,11 +22,6 @@
 #include "../AbstractUITask.h"
 #include "../NodePrefs.h"
 
-// Nachrichten am Geraet: T-Deck (Tastatur) oder T-Watch S3 (Touch)
-#if UI_HAS_KEYBOARD || UI_HAS_TOUCH_CHAT
-  #define UI_HAS_CHAT 1
-#endif
-
 #ifdef UI_NO_DISCOVER_SCREEN
   #error "UI_NO_DISCOVER_SCREEN is obsolete - use -D UI_DISCOVER_SCREEN=0 instead"
 #endif
