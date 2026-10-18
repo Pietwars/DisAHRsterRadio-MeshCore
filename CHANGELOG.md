@@ -1,5 +1,15 @@
 # Änderungen
 
+## 0.9.1 · 18.10.2026 · Testversion/Vorab-Release (lokal gebaut, noch nicht veröffentlicht)
+
+Kein Tag, kein GitHub-Release; Pakete lokal gebaut. Firmwarekennung `v1.18.0-dar0.9.1` (T-Deck: `v1.18.0-dar0.9.1-wifi`, Heltec V2: `v1.18.0-dar0.9.1-heltecv2-wifi`).
+
+- **Chatverlauf-Fix (alle ESP32-Portal-Boards):** Der Web-Chat blieb leer (weder eigene noch empfangene Nachrichten). Ursache: `SPIFFS.open(fehlendeDatei,"r+")` liefert unter arduino-esp32 ein gültiges Verzeichnis-Handle, daher wurde `/dr-history.bin` nie angelegt. Neu `SlotFile.h` (Öffnen per `SPIFFS.exists()`, Auffüllen bis zum Slot), genutzt von `DisasterPortal` und `DeliveryOutbox`; Weboberfläche zeigt „Verlauf-Speicher“. Hosttest `tests/slot_file.test.cpp`. Alte, nie gespeicherte Nachrichten erscheinen nicht nachträglich.
+- **T-Deck-Display-Fix (SPI):** Display und LoRa nutzen beim LILYGO T-Deck eine gemeinsame `SPIClass` (FSPI) statt zweier Controller auf denselben Leitungen – kein Hängenbleiben bei „Loading...“ mehr. Nur unter `LILYGO_TDECK`; Heltec V4 TFT unverändert.
+- **Feste Bluetooth-PIN `123456` in diesen Testbuilds** (statischer Passkey, MITM-Schutz, Bonding) statt PIN-freier Kopplung. WLAN bleibt offen, Brett-Gast-Passwort bleibt `hello`.
+- Flashen: `factory.bin` immer an **0x0** (klassischer ESP32: Bootloader im Image bei 0x1000; S3/C3 bei 0x0).
+- Hardware: **LILYGO T-Deck Plus getestet** (von Peter). Heltec V2 ungeprüft; auf dem klassischen ESP32 ist wegen wenig Heap eine Boot-Schleife möglich, der Bootfix (PR #5) ist **nicht** enthalten.
+
 ## Unveröffentlicht – offener Zugang
 
 - **Offenes WLAN:** `softAP(ssid, nullptr, 1, false, 4)`, gespeichertes `ap-pass` wird beim Start gelöscht; seriell/OLED „offen“.

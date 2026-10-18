@@ -1,5 +1,7 @@
 # Verbinden – offen, ohne Eingabe
 
+> **Version 0.9.1 (Testversion/Vorab-Release, lokal gebaut, noch nicht veröffentlicht):** In diesen Testbuilds koppelt Bluetooth mit der festen PIN **`123456`** (statischer Passkey, MITM-Schutz, Bonding) statt ohne PIN. WLAN bleibt offen (`DisAHRsterRadio-XXXXXX` → `http://192.168.4.1`), Brett-Gast-Passwort bleibt `hello`. Der Abschnitt „ohne PIN“ unten beschreibt den Stand vor 0.9.1.
+
 ## WLAN-Portal (ESP32-Geräte mit Weboberfläche)
 
 1. Gerät einschalten und am Handy das WLAN `DisAHRsterRadio-XXXXXX` auswählen – es ist offen, es muss nichts eingegeben werden.

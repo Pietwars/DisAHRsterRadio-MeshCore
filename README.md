@@ -1,11 +1,18 @@
 # DisAHRsterRadio-MeshCore
 
-> **Aktueller Stand:** offenes WLAN `DisAHRsterRadio-XXXXXX` → `http://192.168.4.1`, MeshCore-App per Bluetooth ohne PIN, Brett (Room-Server) mit dem öffentlichen Gast-Passwort `hello` (sendet die Weboberfläche automatisch) – einfach verbinden, nichts eingeben. Betreiberfunktionen nur mit Admin-Passwort über USB/Admin-Bereich. [Zugang auf einen Blick](#zugang-auf-einen-blick) · [Zugang, Update und Abnahme](docs/OFFENER_ZUGANG.md)
+> **Aktueller Stand:** offenes WLAN `DisAHRsterRadio-XXXXXX` → `http://192.168.4.1`, MeshCore-App per Bluetooth mit fester PIN `123456` (Testversion 0.9.1), Brett (Room-Server) mit dem öffentlichen Gast-Passwort `hello` (sendet die Weboberfläche automatisch) – einfach verbinden, nichts eingeben. Betreiberfunktionen nur mit Admin-Passwort über USB/Admin-Bereich. [Zugang auf einen Blick](#zugang-auf-einen-blick) · [Zugang, Update und Abnahme](docs/OFFENER_ZUGANG.md)
 
 
 **🔴 Live-Demo (simulierte Daten, kein Gerät nötig): https://pietwars.github.io/DisAHRsterRadio-MeshCore/**
 
 **Version 0.9.1** · MeshCore 1.18.0 (Upstream `main`, Commit `81dbae59`) · Firmwarekennung `v1.18.0-dar0.9.1`
+
+> **Status 0.9.1: Testversion/Vorab-Release, lokal gebaut, noch nicht veröffentlicht** (kein Tag, kein GitHub-Release). Neu gegenüber 0.9.0-alpha:
+> - **Chatverlauf-Fix (alle ESP32-Portal-Boards):** Der Chat in der Weboberfläche blieb leer, weil die Verlaufsdatei im SPIFFS nie angelegt wurde. Jetzt wird sie angelegt; „Gerät“ → **Verlauf-Speicher** zeigt „ok“.
+> - **T-Deck-Display-Fix (SPI):** Display und LoRa teilen beim LILYGO T-Deck einen SPI-Bus; der Bildschirm bleibt nicht mehr bei „Loading...“ stehen. Nur `LILYGO_TDECK` betroffen.
+> - **Feste Bluetooth-PIN `123456` in diesen Testbuilds** (statische Passkey-Kopplung mit MITM-Schutz und Bonding) statt PIN-frei. WLAN bleibt offen.
+>
+> Auf echter Hardware getestet: LILYGO T-Deck Plus (0.9.1-Stand). Heltec WiFi LoRa 32 V2 und alle übrigen Boards: ungeprüft.
 
 **DisAHRsterRadio mit der Weboberfläche MeshAhrtal auf MeshCore-Firmware.** Das Board ist ein MeshCore-Companion und spannt ein eigenes WLAN auf. Man verbindet sich mit dem Handy und nutzt im Browser Chat, Schnellmeldungen, Brett, Karte und Standort. Eine App ist nicht nötig, Internet auch nicht.
 
@@ -38,7 +45,7 @@ Haupt-Boards: LILYGO T3-S3 V1.3, LILYGO T3 V1.6.1 (TTGO), Heltec WiFi LoRa 32 V2
 | Zugang | Aktueller Stand |
 |---|---|
 | WLAN `DisAHRsterRadio-XXXXXX` | **offen, ohne Passwort** – verbinden, `http://192.168.4.1` öffnen, nichts eingeben (höchstens 4 Handys je Board) |
-| Bluetooth (MeshCore-App) | **ohne PIN** („Just Works“) – das Handy fragt höchstens „Koppeln?“; alte Kopplung bei Bedarf am Handy entfernen |
+| Bluetooth (MeshCore-App) | Testversion 0.9.1: feste PIN **`123456`** bei der Kopplung eingeben (öffentlich bekannter Testwert, kein Geheimnis); alte Kopplung vorher am Handy entfernen. Der `main`-Stand vor 0.9.1 koppelte ohne PIN („Just Works“) |
 | Schwarzes Brett (Room-Server) | öffentliches MeshCore-Standard-Gast-Passwort **`hello`**: damit lesen und schreiben. Die Weboberfläche sendet `hello` beim „Beitreten“ automatisch, niemand muss etwas eintippen. In der MeshCore-App `hello` eingeben; ohne Passwort nur lesen |
 | Admin (nur Betreiber) | Für Betreiberfunktionen (Funkprofil, Name, Kanäle, Verwaltung von Repeater/Room-Server) gibt es ein Admin-Passwort. Es ist für jedes Gerät eigen, steht weder im Code noch in der Doku und wird nur beim ersten Start über USB (115200 Baud) angezeigt. Der Betreiber muss es dort ablesen und sicher aufbewahren oder ein eigenes setzen (bei Repeater und Room-Server per USB-Befehl `password <neu>` ändern). |
 
@@ -70,7 +77,7 @@ Außer dem öffentlichen Standard `hello` stehen keine Passwörter in Code, Doku
 |---|---|
 | Basis | MeshCore `main` nach **v1.18.0** (meshcore-dev/MeshCore), Git-Historie erhalten |
 | Firmware baut | ✅ 105 Geräte (202 Builds, 36 Geräte mit WLAN-Portal) per GitHub Actions, veröffentlicht als [Release v0.9.0-alpha](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.0-alpha) |
-| Auf echter Hardware getestet | ❌ **diese Firmware noch nicht.** LILYGO T3 V1.6.1 lief beim Nutzer mit der Schwester-Firmware DisAHRsterRadio vollständig; Heltec V2 zeigte dort ein Strom-/Brownout-Problem (WLAN-AP fehlte), Gegenmaßnahme hier enthalten, ungeprüft |
+| Auf echter Hardware getestet | ✅ **LILYGO T-Deck Plus** mit dem 0.9.1-Testbuild (Display, Chatverlauf, WLAN, Bluetooth-PIN). ❌ Alle anderen Boards noch nicht: LILYGO T3 V1.6.1 lief beim Nutzer mit der Schwester-Firmware DisAHRsterRadio vollständig; Heltec V2 zeigte dort ein Strom-/Brownout-Problem (WLAN-AP fehlte), Gegenmaßnahme hier enthalten, ungeprüft |
 | Kompatibel mit anderen MeshCore-Geräten/Apps | ✅ normales MeshCore-Funkprotokoll (gleiches Funkprofil vorausgesetzt) |
 
 ## Kartenbedienung und Speicheroptimierung
@@ -107,13 +114,17 @@ Weitere Profile (T3-S3 SX1276, SD-Archiv, Heltec-Diagnose) sind in `platformio.l
 
 Heltec V2 mit WLAN-Fix: Brownout-Detektor früh aus, Startmarken `[DIAG …]` seriell, WLAN startet zuletzt und erst 2 s nach dem Funkmodul, WLAN-Sendeleistung 8,5 dBm.
 
+**Heltec V2 in 0.9.1 (Testversion, ungeprüft):** Paket `DisAHRsterRadio-MeshCore-heltec-v2-v0.9.1-factory.bin` komplett an **0x0** flashen (der Bootloader liegt im Image bei 0x1000). Enthält Chatverlauf-Fix und feste BLE-PIN `123456`. Bekanntes Risiko: Der klassische ESP32 hat wenig freien Heap; mit WLAN + Bluetooth + Webserver ist eine **Boot-Schleife** möglich. Der Bootfix (PR #5) ist in 0.9.1 **nicht** enthalten. Bei Problemen bitte ein serielles Log mit **115200 Baud** (erste ca. 60 s nach RST) schicken – vorher prüfen, dass keine Admin-Zugangsdaten darin stehen.
+
+**LILYGO T-Deck / T-Deck Plus in 0.9.1 (Testversion, auf T-Deck Plus getestet):** Env `dar_LilyGo_TDeck_wifi`, Firmwarekennung `v1.18.0-dar0.9.1-wifi`. Paket `DisAHRsterRadio-MeshCore-tdeck-plus-v0.9.1-factory.bin` komplett an **0x0** flashen (ESP32-S3). Enthält Display-SPI-Fix, Chatverlauf-Fix und feste BLE-PIN `123456`. Update ohne Datenverlust: nur `teile/firmware.bin` an `0x10000`.
+
 Alle WLAN-Portal-Boards: offenes WLAN **`DisAHRsterRadio-XXXXXX`** (höchstens 4 Handys, nichts eingeben). Auf dem OLED stehen WLAN-Name und Zugangshinweis. Bei einem fehlgeschlagenen AP-Start erfolgt alle 5 s ein neuer Versuch.
 
 ## WLAN-Portal und MeshCore-App gleichzeitig (Bluetooth)
 
 Auf ESP32-Geräten mit Bluetooth sind Web-Portal und BLE-Companion beide am selben Companion angemeldet (MeshCore `MultiSerialInterface`): Jede Antwort und jede eingehende Nachricht geht an beide. Die offizielle MeshCore-App verbindet sich per Bluetooth, während Handys im WLAN die Weboberfläche nutzen.
 
-- **Bluetooth ohne PIN:** Just-Works-Kopplung ohne Zahlencode (Handy fragt höchstens „Koppeln?“). Alte Kopplung bei Bedarf am Handy entfernen. Nachrichten, Kontakte, Uhrzeit, Status gehen über Bluetooth; Betreiberbefehle (Funk, Name, Kanäle, Schlüssel, Reset) nur über USB/Admin-Bereich; Details unter [Offener Zugang](docs/OFFENER_ZUGANG.md).
+- **Bluetooth-Kopplung:** In den 0.9.1-Testbuilds mit fester PIN **`123456`** (statischer Passkey, MITM-Schutz, Bonding); vorher (`main` vor 0.9.1) Just-Works ohne Zahlencode. Alte Kopplung bei Bedarf am Handy entfernen. Nachrichten, Kontakte, Uhrzeit, Status gehen über Bluetooth; Betreiberbefehle (Funk, Name, Kanäle, Schlüssel, Reset) nur über USB/Admin-Bereich; Details unter [Offener Zugang](docs/OFFENER_ZUGANG.md).
 - **Grenzen:** Ruft die App Nachrichten aus der Warteschlange ab, sieht das Portal sie im Verlauf mit, die App aber nicht umgekehrt die Abrufe des Portals. Gleichzeitige Befehle aus App und Portal können sich in seltenen Fällen kreuzen. WLAN + Bluetooth + Webserver brauchen viel RAM; auf klassischen ESP32 (T3 V1.6.1, Heltec V2) ist das auf Hardware **nicht geprüft**.
 - **Speicher:** Portal-Profile nutzen jetzt die Partition `huge_app.csv` (3 MB App, kein OTA, 896 KB SPIFFS). T3 V1.6.1: 72 % von 3 MB, T3-S3: 65 %, Heltec V2: 72 %. Nach dem Wechsel von 0.1.0/älter einmal komplett mit `factory.bin` flashen (Partitionstabelle ändert sich, Identität wird neu erzeugt).
 
