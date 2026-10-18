@@ -1,12 +1,15 @@
 # DisAHRsterRadio-MeshCore – Details
 
-> Ausführliche Doku zu Version 0.9.2 (Stand 18.10.2026). Die kurze Übersicht steht in der [README](../README.md).
+> Ausführliche Doku zu Version 0.9.3 (Stand 18.10.2026). Die kurze Übersicht steht in der [README](../README.md).
 
-> **Aktueller Stand (0.9.2):** offenes WLAN `DisAHRsterRadio-XXXXXX` → `http://192.168.4.1`, MeshCore-App per Bluetooth mit PIN-Kopplung (die PIN zeigt das Display nur während der Kopplung an; eigene PIN in der App setzbar), Brett (Room-Server) mit dem öffentlichen Gast-Passwort `hello` (sendet die Weboberfläche automatisch). Volle Einstellungen in der MeshCore-App über PIN-Bluetooth; in der Weboberfläche Knotenname, Funkprofil, Kanäle und Verlauf löschen ohne Anmeldung (jede Person im offenen WLAN kann das). Das Display am Gerät zeigt nur das Ahrtal-Bild mit Schriftzug und den Knopf „Advert senden“. [Zugang auf einen Blick](#zugang-auf-einen-blick) · [Zugang, Update und Abnahme](OFFENER_ZUGANG.md)
+> **Aktueller Stand (0.9.3):** offenes WLAN `DisAHRsterRadio-XXXXXX` → `http://192.168.4.1`, MeshCore-App per Bluetooth mit PIN-Kopplung (die PIN zeigt das Display nur während der Kopplung an; eigene PIN in der App setzbar), Brett (Room-Server) mit dem öffentlichen Gast-Passwort `hello` (sendet die Weboberfläche automatisch). Volle Einstellungen in der MeshCore-App über PIN-Bluetooth; in der Weboberfläche Knotenname, Funkprofil, Kanäle und Verlauf löschen ohne Anmeldung (jede Person im offenen WLAN kann das). Das Display am Gerät zeigt nur das Ahrtal-Bild mit Schriftzug und den Knopf „Advert senden“. [Zugang auf einen Blick](#zugang-auf-einen-blick) · [Zugang, Update und Abnahme](OFFENER_ZUGANG.md)
 
 **🔴 Live-Demo (simulierte Daten, kein Gerät nötig): https://pietwars.github.io/DisAHRsterRadio-MeshCore/**
 
-> **Version 0.9.2** – Firmware für **LILYGO T-Deck Plus** und **LILYGO T-Watch S3**, [Release v0.9.2](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.2) vom 18.10.2026, von Peter auf beiden Geräten getestet. Neu in 0.9.2:
+> **Version 0.9.3** – Firmware für **LILYGO T-Deck Plus** und **LILYGO T-Watch S3**, [Release v0.9.3](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.3) vom 18.10.2026, **noch nicht auf echter Hardware getestet** (getestet wurde 0.9.2 am 18.10.2026 von Peter auf beiden Geräten). Neu in 0.9.3:
+> - **Weboberfläche und MeshCore-App teilen die Nachrichten** (Kanal- und Direktnachrichten, beide Richtungen). Details und Grenzen: [WLAN-Portal und MeshCore-App gleichzeitig](#wlan-portal-und-meshcore-app-gleichzeitig-bluetooth).
+>
+> Aus 0.9.2:
 > - **Minimal-Anzeige:** Das Display zeigt nur ein Bild des Ahrtals bei Nacht mit dem Schriftzug DisAHRsterRadio und einen Knopf **„Advert senden“** (Flood-Advert, höchstens einer je 10 s). Nachrichten und Einstellungen nur über MeshCore-App und Weboberfläche. Details: [Anzeige und Tasten](#anzeige-und-tasten).
 > - **Bluetooth-PIN nur während der Kopplung** auf dem Display.
 > - **LILYGO T-Watch S3** als zweites Gerät (Seitentaste über den Power-Chip AXP2101, Touch-Knopf, glatte Schrift FreeSans).
@@ -51,10 +54,10 @@ Außer dem öffentlichen Standard `hello` stehen keine Passwörter in Code, Doku
 
 | Punkt | Stand |
 |---|---|
-| Release | ✅ [v0.9.2](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.2) vom 18.10.2026 (Pakete, Prüfsummen, Flyer); Web-Flasher installiert 0.9.2 |
+| Release | ✅ [v0.9.3](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.3) vom 18.10.2026 (Pakete, Prüfsummen, Flyer von 0.9.2 unverändert); Web-Flasher installiert 0.9.3. Vorversion [v0.9.2](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.2) bleibt verfügbar |
 | Basis | MeshCore `main` nach **v1.18.0** (meshcore-dev/MeshCore), Git-Historie erhalten |
 | Firmware baut | ✅ LILYGO T-Deck Plus und LILYGO T-Watch S3 per GitHub Actions. Weitere Geräte der MeshCore-Konfigurator-Liste bleiben im Code, werden aber weder im CI gebaut noch veröffentlicht |
-| Auf echter Hardware getestet | ✅ LILYGO T-Deck Plus und LILYGO T-Watch S3 mit 0.9.2 (von Peter, 18.10.2026) |
+| Auf echter Hardware getestet | ⚠️ 0.9.3 noch nicht. ✅ 0.9.2 auf LILYGO T-Deck Plus und LILYGO T-Watch S3 (von Peter, 18.10.2026); der Nachrichtenabgleich Web/App aus 0.9.3 ist nur mit Hosttests geprüft |
 | Kompatibel mit anderen MeshCore-Geräten/Apps | ✅ normales MeshCore-Funkprotokoll (gleiches Funkprofil vorausgesetzt) |
 
 ## Kartenbedienung und Speicheroptimierung
@@ -81,8 +84,8 @@ Karte → Chat/Brett und auf dem Board mehrere WLAN-Clients sowie BLE parallel p
 
 | PlatformIO-Env | Board | Release-Paket | Flash |
 |---|---|---|---|
-| `dar_LilyGo_TDeck_wifi` | **LILYGO T-Deck Plus** (ESP32-S3, SX1262) | `DisAHRsterRadio-MeshCore-0.9.2-LilyGo_TDeck.zip` | `factory.bin` an **0x0**, Update `firmware.bin` an **0x10000** |
-| `dar_LilyGo_TWatchS3_wifi` | **LILYGO T-Watch S3** (ESP32-S3, SX1262, AXP2101) | `DisAHRsterRadio-MeshCore-0.9.2-LilyGo_TWatchS3.zip` | `factory.bin` an **0x0**, Update `firmware.bin` an **0x10000** |
+| `dar_LilyGo_TDeck_wifi` | **LILYGO T-Deck Plus** (ESP32-S3, SX1262) | `DisAHRsterRadio-MeshCore-0.9.3-LilyGo_TDeck.zip` | `factory.bin` an **0x0**, Update `firmware.bin` an **0x10000** |
+| `dar_LilyGo_TWatchS3_wifi` | **LILYGO T-Watch S3** (ESP32-S3, SX1262, AXP2101) | `DisAHRsterRadio-MeshCore-0.9.3-LilyGo_TWatchS3.zip` | `factory.bin` an **0x0**, Update `firmware.bin` an **0x10000** |
 
 Beide nutzen `huge_app.csv` (3 MB App, kein OTA, SPIFFS ab 0x310000). Die `factory.bin` enthält Bootloader, Partitionen, Firmware und Dateisystem und **löscht beim Flashen alle Einstellungen** (Knotenidentität, Kontakte, Verlauf, Bluetooth-PIN). Firmwarekennung `v1.18.0-dar0.9.2-wifi`.
 
@@ -123,10 +126,16 @@ Tastenereignisse der Uhr werden alle 20 ms abgefragt und mit 300 ms entprellt.
 
 ## WLAN-Portal und MeshCore-App gleichzeitig (Bluetooth)
 
-Auf ESP32-Geräten mit Bluetooth sind Web-Portal und BLE-Companion beide am selben Companion angemeldet (MeshCore `MultiSerialInterface`): Jede Antwort und jede eingehende Nachricht geht an beide. Die offizielle MeshCore-App verbindet sich per Bluetooth, während Handys im WLAN die Weboberfläche nutzen.
+Auf ESP32-Geräten mit Bluetooth sind Web-Portal und BLE-Companion beide am selben Companion angemeldet (MeshCore `MultiSerialInterface`): Die offizielle MeshCore-App verbindet sich per Bluetooth, während Handys im WLAN die Weboberfläche nutzen.
 
 - **Bluetooth-Kopplung:** immer mit PIN (statischer Passkey, MITM-Schutz, Bonding; Standard-PIN ab Werk, auf dem Display nur während der Kopplung angezeigt, eigene 6-stellige PIN in der App oder per USB `set pin <6 Ziffern>`, gilt nach Neustart, dann neu koppeln). Alte Kopplung bei Bedarf am Handy entfernen. Mit PIN-Kopplung stehen in der MeshCore-App alle Einstellungen und Befehle zur Verfügung (wie Standard-MeshCore, inkl. Schlüssel-Export/-Import und eigener PIN). Über die Companion-Schnittstelle im offenen WLAN/Ethernet bleiben diese Befehle gesperrt (die Weboberfläche hat ihre eigenen, festen Funktionen); Details unter [Offener Zugang](OFFENER_ZUGANG.md).
-- **Grenzen:** Ruft die App Nachrichten aus der Warteschlange ab, sieht das Portal sie im Verlauf mit, die App aber nicht umgekehrt die Abrufe des Portals. Gleichzeitige Befehle aus App und Portal können sich in seltenen Fällen kreuzen. WLAN + Bluetooth + Webserver brauchen viel RAM; beide Geräte haben PSRAM.
+- **Nachrichten teilen (seit 0.9.3):** Bis 0.9.2 holte die Weboberfläche jede empfangene Nachricht jede Sekunde aus der einzigen Warteschlange des Companions (`CMD_SYNC_NEXT_MESSAGE`) und entfernte sie damit auch für die App; im Web gesendete Nachrichten sah die App nie, in der App gesendete Nachrichten fehlten im Web-Verlauf. Jetzt:
+  - **Empfangene Nachrichten** (Kanal und direkt) bleiben in der Warteschlange, bis Weboberfläche **und** App sie abgeholt haben (`examples/companion_radio/SharedQueue.h`). Eine später verbundene App bekommt sie nachgeliefert. Platz für 256 Nachrichten; ist die Warteschlange voll, fallen zuerst die ältesten Nachrichten heraus, die das Web schon hat.
+  - **Antworten auf Abrufe und Sendebefehle** gehen nur noch an den Anfragenden (Web oder App), damit sich die Abrufe nicht gegenseitig stören. Andere Antworten (Kontakte, Kanäle, Geräteinfo) gehen weiter an beide.
+  - **In der App gesendet:** erscheint im Web-Verlauf als eigene Nachricht („Du“), ohne Hinweis auf die App.
+  - **Im Web gesendet:** Das MeshCore-Protokoll hat keine Meldung „von einem anderen Gerät gesendet“. Die App bekommt die Nachricht deshalb als **empfangene** Nachricht mit Markierung: im Kanal mit Absender „<Knotenname> (Web)“, bei Direktnachrichten im Chat des Empfängers mit dem Textanfang „[von mir über Web]“. Zustellbestätigungen erscheinen dazu in der App nicht.
+  - Nur der erste Sendeversuch wird geteilt (keine Doppel bei Wiederholungen). Gleichzeitige andere Befehle aus App und Portal können sich in seltenen Fällen kreuzen.
+- **Grenzen sonst:** WLAN + Bluetooth + Webserver brauchen viel RAM; beide Geräte haben PSRAM.
 - **Speicher:** Portal-Profile nutzen die Partition `huge_app.csv` (3 MB App, kein OTA, 896 KB SPIFFS); T-Deck Plus und T-Watch S3 je ca. 65 % von 3 MB. Kommt das Gerät von einer anderen Firmware (andere Partitionstabelle), einmal die Neuinstallation (`factory.bin` an 0x0) verwenden; dabei wird die Identität neu erzeugt.
 
 ## So wird die Oberfläche auf MeshCore abgebildet
@@ -149,8 +158,8 @@ pip install platformio
 python tools/embed_web.py                         # nach Änderungen an web/
 pio run -e dar_LilyGo_TDeck_wifi -t upload        # bzw. dar_LilyGo_TWatchS3_wifi
 pio run -e dar_LilyGo_TDeck_wifi -t uploadfs      # nur einmal! (Dateisystem, löscht Identität)
-tools/build_device.sh LilyGo_TDeck dist           # dist/DisAHRsterRadio-MeshCore-0.9.2-LilyGo_TDeck.zip
-tools/build_device.sh LilyGo_TWatchS3 dist        # dist/DisAHRsterRadio-MeshCore-0.9.2-LilyGo_TWatchS3.zip
+tools/build_device.sh LilyGo_TDeck dist           # dist/DisAHRsterRadio-MeshCore-0.9.3-LilyGo_TDeck.zip
+tools/build_device.sh LilyGo_TWatchS3 dist        # dist/DisAHRsterRadio-MeshCore-0.9.3-LilyGo_TWatchS3.zip
 ```
 
 Version und MeshCore-Basis stehen nur in der Datei `VERSION`; `python3 tools/version.py` überträgt sie in Oberfläche, Demo, Firmwarekennung und README (`--check` läuft im CI). Bibliotheken sind auf feste Versionen gesetzt (`tools/pin_libs.py`, CI prüft mit `--check`).

@@ -1,6 +1,6 @@
 # Web-Flasher: Konfiguration fürs nächste Release vorbereiten
 
-Hier wird die Web-Flasher-Konfiguration für ein neues Release vorbereitet; live ist immer `docs/flasher/` (derzeit 0.9.2, identisch mit diesem Ordner).
+Hier wird die Web-Flasher-Konfiguration für ein neues Release vorbereitet; live ist immer `docs/flasher/` (nach dem Release 0.9.3, identisch mit diesem Ordner).
 LILYGO T-Deck Plus und LILYGO T-Watch S3, je zwei Wege:
 
 | Knopf | Manifest | schreibt | Löschen |
