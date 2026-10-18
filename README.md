@@ -5,7 +5,7 @@
 
 **🔴 Live-Demo (simulierte Daten, kein Gerät nötig): https://pietwars.github.io/DisAHRsterRadio-MeshCore/**
 
-**Version 0.9.0-alpha** · MeshCore 1.18.0 (Upstream `main`, Commit `81dbae59`) · Firmwarekennung `v1.18.0-dar0.9.0-alpha`
+**Version 0.9.1** · MeshCore 1.18.0 (Upstream `main`, Commit `81dbae59`) · Firmwarekennung `v1.18.0-dar0.9.1`
 
 **DisAHRsterRadio mit der Weboberfläche MeshAhrtal auf MeshCore-Firmware.** Das Board ist ein MeshCore-Companion und spannt ein eigenes WLAN auf. Man verbindet sich mit dem Handy und nutzt im Browser Chat, Schnellmeldungen, Brett, Karte und Standort. Eine App ist nicht nötig, Internet auch nicht.
 
@@ -17,7 +17,7 @@
 | Repository | Inhalt | Funk | Version | Demo · Download · Flyer |
 |---|---|---|---|---|
 | [Pietwars/DisasterMesh](https://github.com/Pietwars/DisasterMesh) | Original-Repo: MeshCore 1.18 mit der großen Weboberfläche MeshAhrtal, Karten, Werkzeuge, Doku (Ahrtal) | MeshCore | 0.9.0-alpha | [Live-Demo](https://pietwars.github.io/DisasterMesh/demo/) · [Release v0.9.0-alpha](https://github.com/Pietwars/DisasterMesh/releases/tag/v0.9.0-alpha) · Flyer [Druck](https://pietwars.github.io/DisasterMesh/flyer/DisasterMesh-Flyer.pdf) / [digital](https://pietwars.github.io/DisasterMesh/flyer/DisasterMesh-Flyer-digital.pdf) |
-| [Pietwars/DisAHRsterRadio-MeshCore](https://github.com/Pietwars/DisAHRsterRadio-MeshCore) | MeshCore 1.18 mit kompakter MeshAhrtal-Oberfläche per WLAN plus Bluetooth für die MeshCore-App, 105 Geräte (Ahrtal) | MeshCore | 0.9.0-alpha | [Live-Demo](https://pietwars.github.io/DisAHRsterRadio-MeshCore/) · [Release v0.9.0-alpha](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.0-alpha) · Flyer [Druck](https://pietwars.github.io/DisAHRsterRadio-MeshCore/flyer/DisAHRsterRadio-MeshCore-Flyer.pdf) / [digital](https://pietwars.github.io/DisAHRsterRadio-MeshCore/flyer/DisAHRsterRadio-MeshCore-Flyer-digital.pdf) |
+| [Pietwars/DisAHRsterRadio-MeshCore](https://github.com/Pietwars/DisAHRsterRadio-MeshCore) | MeshCore 1.18 mit kompakter MeshAhrtal-Oberfläche per WLAN plus Bluetooth für die MeshCore-App, 105 Geräte (Ahrtal) | MeshCore | 0.9.1 | [Live-Demo](https://pietwars.github.io/DisAHRsterRadio-MeshCore/) · [Release v0.9.0-alpha](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.0-alpha) · Flyer [Druck](https://pietwars.github.io/DisAHRsterRadio-MeshCore/flyer/DisAHRsterRadio-MeshCore-Flyer.pdf) / [digital](https://pietwars.github.io/DisAHRsterRadio-MeshCore/flyer/DisAHRsterRadio-MeshCore-Flyer-digital.pdf) |
 | [Pietwars/DisAHRsterRadio](https://github.com/Pietwars/DisAHRsterRadio) | Ohne MeshCore: modernisiertes disaster-radio (LoRaLayer2, RadioLib) mit kompakter MeshAhrtal-Oberfläche (Ahrtal) | LoRaLayer2 | 0.1.1-alpha | [Live-Demo](https://pietwars.github.io/DisAHRsterRadio/) · [Release v0.1.1-alpha](https://github.com/Pietwars/DisAHRsterRadio/releases/tag/v0.1.1-alpha) · Flyer [Druck](https://pietwars.github.io/DisAHRsterRadio/flyer/DisAHRsterRadio-Flyer.pdf) / [digital](https://pietwars.github.io/DisAHRsterRadio/flyer/DisAHRsterRadio-Flyer-digital.pdf) |
 | [Pietwars/HaldenFunk](https://github.com/Pietwars/HaldenFunk) | Regionalvariante von DisAHRsterRadio für Sangerhausen / Mansfelder Land, ohne MeshCore | LoRaLayer2 | 0.1.1-alpha | [Live-Demo](https://pietwars.github.io/HaldenFunk/) · [Release v0.1.1-alpha](https://github.com/Pietwars/HaldenFunk/releases/tag/v0.1.1-alpha) · Flyer [Druck](https://pietwars.github.io/HaldenFunk/flyer/HaldenFunk-Flyer.pdf) / [digital](https://pietwars.github.io/HaldenFunk/flyer/HaldenFunk-Flyer-digital.pdf) |
 | [Pietwars/HaldenFunk-MeshCore](https://github.com/Pietwars/HaldenFunk-MeshCore) | Regionalvariante von DisAHRsterRadio-MeshCore für das Mansfelder Land: MeshCore 1.18, WLAN + Bluetooth, Gerätematrix | MeshCore | 0.1.1-alpha | [Live-Demo](https://pietwars.github.io/HaldenFunk-MeshCore/) · [Release v0.1.0-alpha](https://github.com/Pietwars/HaldenFunk-MeshCore/releases/tag/v0.1.0-alpha) · Flyer [Druck](https://pietwars.github.io/HaldenFunk-MeshCore/flyer/HaldenFunk-MeshCore-Flyer.pdf) / [digital](https://pietwars.github.io/HaldenFunk-MeshCore/flyer/HaldenFunk-MeshCore-Flyer-digital.pdf) |
@@ -54,7 +54,7 @@ Außer dem öffentlichen Standard `hello` stehen keine Passwörter in Code, Doku
 | **Karte** | **Standort** | **Gerät** |
 | <img src="docs/images/funktion-map.jpg" width="230" alt="Karte"> | <img src="docs/images/funktion-loc.jpg" width="230" alt="Standort"> | <img src="docs/images/funktion-info.jpg" width="230" alt="Gerät"> |
 
-(Aufnahmen der [Live-Demo](https://pietwars.github.io/DisAHRsterRadio-MeshCore/) in Handygröße, Stand 0.9.0-alpha; alle Daten simuliert.)
+(Aufnahmen der [Live-Demo](https://pietwars.github.io/DisAHRsterRadio-MeshCore/) in Handygröße, Stand 0.9.1; alle Daten simuliert.)
 
 - **Chat:** öffentlicher Kanal, eigene Kanäle und Direktnachrichten, Verlauf auf dem Board
 - **Schnellmeldung:** Vorlagen wie Trinkwasser, Strom, Medikamente, Verletzt, Evakuierung mit Ortsangabe
@@ -137,7 +137,7 @@ pip install platformio
 python tools/embed_web.py                       # nach Änderungen an web/
 pio run -e disaster_t3s3_sx1262_wifi -t upload
 pio run -e disaster_t3s3_sx1262_wifi -t uploadfs  # nur einmal! (Dateisystem, löscht Identität)
-tools/package.sh                                 # Flashpakete DisAHRsterRadio-MeshCore-0.9.0-alpha-<board>.zip
+tools/package.sh                                 # Flashpakete DisAHRsterRadio-MeshCore-0.9.1-<board>.zip
 ```
 
 Version und MeshCore-Basis stehen nur in der Datei `VERSION`; `python3 tools/version.py` überträgt sie in Oberfläche, Demo, Firmwarekennung und README (`--check` läuft im CI). Bibliotheken sind auf feste Versionen gesetzt (`tools/pin_libs.py`, CI prüft mit `--check`).
@@ -154,111 +154,111 @@ Gebaut werden alle 105 Geräte, für die MeshCore v1.18.0 Firmware anbietet (Que
 
 | Gerät | Chip | Web-Oberfläche | Inhalt | Datei |
 |---|---|---|---|---|
-| Ebyte_EoRa-S3 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Ebyte_EoRa-S3.zip` |
-| GAT562_30S_Mesh_Kit | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-GAT562_30S_Mesh_Kit.zip` |
-| GAT562_Mesh_EVB_Pro | nrf52 | nein (ohne Web-Oberfläche) | Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-GAT562_Mesh_EVB_Pro.zip` |
-| GAT562_Mesh_Tracker_Pro | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-GAT562_Mesh_Tracker_Pro.zip` |
-| GAT562_Mesh_Watch13 | nrf52 | nein (ohne Web-Oberfläche) | Companion | `DisAHRsterRadio-MeshCore-0.9.0-alpha-GAT562_Mesh_Watch13.zip` |
-| Generic_E22_sx1262 | esp32 | nein (ohne Web-Oberfläche) | Repeater | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Generic_E22_sx1262.zip` |
-| Generic_E22_sx1268 | esp32 | nein (ohne Web-Oberfläche) | Repeater | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Generic_E22_sx1268.zip` |
-| Heltec_ct62 | esp32c3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Heltec_ct62.zip` |
-| Heltec_E213 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Heltec_E213.zip` |
-| Heltec_E290 | esp32s3 | nein (ohne Web-Oberfläche) | Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Heltec_E290.zip` |
-| Heltec_mesh_solar | nrf52 | nein (ohne Web-Oberfläche) | Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Heltec_mesh_solar.zip` |
-| heltec_rc32 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-heltec_rc32.zip` |
-| heltec_rc32_without_display | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-heltec_rc32_without_display.zip` |
-| Heltec_t096 | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Heltec_t096.zip` |
-| Heltec_t1 | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Heltec_t1.zip` |
-| Heltec_t114 | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Heltec_t114.zip` |
-| Heltec_t114_without_display | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Heltec_t114_without_display.zip` |
-| Heltec_tower_v2 | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Heltec_tower_v2.zip` |
-| heltec_tracker_v2 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-heltec_tracker_v2.zip` |
-| Heltec_v2 | esp32 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Heltec_v2.zip` |
-| Heltec_v3 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Heltec_v3.zip` |
-| heltec_v4 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-heltec_v4.zip` |
-| heltec_v4_expansionkit | esp32s3 | nein (ohne Web-Oberfläche) | Repeater | `DisAHRsterRadio-MeshCore-0.9.0-alpha-heltec_v4_expansionkit.zip` |
-| heltec_v4_r8 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-heltec_v4_r8.zip` |
-| heltec_v4_r8_tft | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-heltec_v4_r8_tft.zip` |
-| heltec_v4_tft | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-heltec_v4_tft.zip` |
-| Heltec_Wireless_Paper | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Heltec_Wireless_Paper.zip` |
-| Heltec_Wireless_Tracker | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Heltec_Wireless_Tracker.zip` |
-| Heltec_WSL3 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Heltec_WSL3.zip` |
-| ikoka_handheld_nrf_e22_30dbm | nrf52 | nein (ohne Web-Oberfläche) | Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-ikoka_handheld_nrf_e22_30dbm.zip` |
-| ikoka_handheld_nrf_e22_30dbm_096 | nrf52 | nein (ohne Web-Oberfläche) | Companion | `DisAHRsterRadio-MeshCore-0.9.0-alpha-ikoka_handheld_nrf_e22_30dbm_096.zip` |
-| ikoka_handheld_nrf_e22_30dbm_096_rotated | nrf52 | nein (ohne Web-Oberfläche) | Companion | `DisAHRsterRadio-MeshCore-0.9.0-alpha-ikoka_handheld_nrf_e22_30dbm_096_rotated.zip` |
-| ikoka_nano_nrf_22dbm | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-ikoka_nano_nrf_22dbm.zip` |
-| ikoka_nano_nrf_30dbm | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-ikoka_nano_nrf_30dbm.zip` |
-| ikoka_nano_nrf_33dbm | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-ikoka_nano_nrf_33dbm.zip` |
-| ikoka_stick_nrf_22dbm | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-ikoka_stick_nrf_22dbm.zip` |
-| ikoka_stick_nrf_30dbm | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-ikoka_stick_nrf_30dbm.zip` |
-| ikoka_stick_nrf_33dbm | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-ikoka_stick_nrf_33dbm.zip` |
-| KeepteenLT1 | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-KeepteenLT1.zip` |
-| LilyGo_T-Echo | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-LilyGo_T-Echo.zip` |
-| LilyGo_T-Echo-Lite | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-LilyGo_T-Echo-Lite.zip` |
-| LilyGo_T-Echo-Lite_non_shell | nrf52 | nein (ohne Web-Oberfläche) | Companion | `DisAHRsterRadio-MeshCore-0.9.0-alpha-LilyGo_T-Echo-Lite_non_shell.zip` |
-| LilyGo_T-Echo_Card | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-LilyGo_T-Echo_Card.zip` |
-| LilyGo_T3S3_sx1262 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-LilyGo_T3S3_sx1262.zip` |
-| LilyGo_T3S3_sx1276 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-LilyGo_T3S3_sx1276.zip` |
-| LilyGo_T_Impulse_Plus | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater | `DisAHRsterRadio-MeshCore-0.9.0-alpha-LilyGo_T_Impulse_Plus.zip` |
-| LilyGo_TBeam_1W | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-LilyGo_TBeam_1W.zip` |
-| LilyGo_TDeck | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-LilyGo_TDeck.zip` |
-| LilyGo_TETH_Elite_sx1262 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-LilyGo_TETH_Elite_sx1262.zip` |
-| LilyGo_TLora_V2_1_1_6 | esp32 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-LilyGo_TLora_V2_1_1_6.zip` |
-| M5Stack_Unit_C6L | esp32c6 | nein (ohne Web-Oberfläche: ESP32-C6: WLAN-Bibliothek (Network.h) im Portal-Build nicht auflösbar) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-M5Stack_Unit_C6L.zip` |
-| Mesh_pocket | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Mesh_pocket.zip` |
-| Meshadventurer_sx1262 | esp32 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Meshadventurer_sx1262.zip` |
-| Meshadventurer_sx1268 | esp32 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Meshadventurer_sx1268.zip` |
-| meshnology_w12 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-meshnology_w12.zip` |
-| Meshtiny | nrf52 | nein (ohne Web-Oberfläche) | Companion | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Meshtiny.zip` |
-| MeshTracker_X1 | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-MeshTracker_X1.zip` |
-| Minewsemi_me25ls01 | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Minewsemi_me25ls01.zip` |
-| muzi_base_duo | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-muzi_base_duo.zip` |
-| muzi_base_duo_superIO | nrf52 | nein (ohne Web-Oberfläche) | Companion | `DisAHRsterRadio-MeshCore-0.9.0-alpha-muzi_base_duo_superIO.zip` |
-| muzi_base_uno | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-muzi_base_uno.zip` |
-| muzi_base_uno_superIO | nrf52 | nein (ohne Web-Oberfläche) | Companion | `DisAHRsterRadio-MeshCore-0.9.0-alpha-muzi_base_uno_superIO.zip` |
-| Nano_G2_Ultra | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Nano_G2_Ultra.zip` |
-| PicoW | rp2040 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-PicoW.zip` |
-| ProMicro | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-ProMicro.zip` |
-| R1Neo | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-R1Neo.zip` |
-| RAK_11310 | rp2040 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-RAK_11310.zip` |
-| RAK_3112 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-RAK_3112.zip` |
-| RAK_3401 | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-RAK_3401.zip` |
-| RAK_3x72 | stm32 | nein (ohne Web-Oberfläche) | Companion, Repeater | `DisAHRsterRadio-MeshCore-0.9.0-alpha-RAK_3x72.zip` |
-| RAK_4631 | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-RAK_4631.zip` |
-| RAK_WisMesh_Tag | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-RAK_WisMesh_Tag.zip` |
-| SenseCap_Solar | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-SenseCap_Solar.zip` |
-| Station_G2 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Station_G2.zip` |
-| Station_G2_logging | esp32s3 | nein (ohne Web-Oberfläche) | Repeater | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Station_G2_logging.zip` |
-| Station_G3_ESP32 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Station_G3_ESP32.zip` |
-| Station_G3_ESP32_logging | esp32s3 | nein (ohne Web-Oberfläche) | Repeater | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Station_G3_ESP32_logging.zip` |
-| t1000e | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-t1000e.zip` |
-| T_Beam_S3_Supreme_SX1262 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-T_Beam_S3_Supreme_SX1262.zip` |
-| Tbeam_SX1262 | esp32 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Tbeam_SX1262.zip` |
-| Tbeam_SX1276 | esp32 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Tbeam_SX1276.zip` |
-| Tenstar_C3_sx1262 | esp32c3 | nein (ohne Web-Oberfläche) | Repeater | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Tenstar_C3_sx1262.zip` |
-| Tenstar_C3_sx1268 | esp32c3 | nein (ohne Web-Oberfläche) | Repeater | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Tenstar_C3_sx1268.zip` |
-| ThinkNode_M1 | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-ThinkNode_M1.zip` |
-| ThinkNode_M2 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-ThinkNode_M2.zip` |
-| ThinkNode_M3 | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-ThinkNode_M3.zip` |
-| ThinkNode_M4 | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-ThinkNode_M4.zip` |
-| ThinkNode_M5 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-ThinkNode_M5.zip` |
-| ThinkNode_M6 | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-ThinkNode_M6.zip` |
-| ThinkNode_M7 | esp32s3 | nein (ohne Web-Oberfläche: eigene Display-Oberfläche ohne Hinweisfunktion (showAlert) – Portal baut nicht) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-ThinkNode_M7.zip` |
-| ThinkNode_M8 | nrf52 | nein (ohne Web-Oberfläche: Repeater/Room-Server: Upstream-Linkfehler (EnvironmentSensorManager fehlt im Build)) | Companion | `DisAHRsterRadio-MeshCore-0.9.0-alpha-ThinkNode_M8.zip` |
-| Tiny_Relay | stm32 | nein (ohne Web-Oberfläche) | Companion, Repeater | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Tiny_Relay.zip` |
-| waveshare_rp2040_lora | rp2040 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-waveshare_rp2040_lora.zip` |
-| Waveshare_S3_LR1121 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Waveshare_S3_LR1121.zip` |
-| wio-e5 | stm32 | nein (ohne Web-Oberfläche) | Companion, Repeater | `DisAHRsterRadio-MeshCore-0.9.0-alpha-wio-e5.zip` |
-| wio-e5-mini | stm32 | nein (ohne Web-Oberfläche) | Companion, Repeater | `DisAHRsterRadio-MeshCore-0.9.0-alpha-wio-e5-mini.zip` |
-| wio_wm1110 | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-wio_wm1110.zip` |
-| WioTrackerL1 | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-WioTrackerL1.zip` |
-| WioTrackerL1-1W | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-WioTrackerL1-1W.zip` |
-| WioTrackerL1Eink | nrf52 | nein (ohne Web-Oberfläche) | Companion | `DisAHRsterRadio-MeshCore-0.9.0-alpha-WioTrackerL1Eink.zip` |
-| Xiao_C3 | esp32c3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Xiao_C3.zip` |
-| Xiao_nrf52 | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Xiao_nrf52.zip` |
-| Xiao_rp2040 | rp2040 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Xiao_rp2040.zip` |
-| Xiao_S3 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Xiao_S3.zip` |
-| Xiao_S3_WIO | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.0-alpha-Xiao_S3_WIO.zip` |
+| Ebyte_EoRa-S3 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.1-Ebyte_EoRa-S3.zip` |
+| GAT562_30S_Mesh_Kit | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-GAT562_30S_Mesh_Kit.zip` |
+| GAT562_Mesh_EVB_Pro | nrf52 | nein (ohne Web-Oberfläche) | Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-GAT562_Mesh_EVB_Pro.zip` |
+| GAT562_Mesh_Tracker_Pro | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-GAT562_Mesh_Tracker_Pro.zip` |
+| GAT562_Mesh_Watch13 | nrf52 | nein (ohne Web-Oberfläche) | Companion | `DisAHRsterRadio-MeshCore-0.9.1-GAT562_Mesh_Watch13.zip` |
+| Generic_E22_sx1262 | esp32 | nein (ohne Web-Oberfläche) | Repeater | `DisAHRsterRadio-MeshCore-0.9.1-Generic_E22_sx1262.zip` |
+| Generic_E22_sx1268 | esp32 | nein (ohne Web-Oberfläche) | Repeater | `DisAHRsterRadio-MeshCore-0.9.1-Generic_E22_sx1268.zip` |
+| Heltec_ct62 | esp32c3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.1-Heltec_ct62.zip` |
+| Heltec_E213 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.1-Heltec_E213.zip` |
+| Heltec_E290 | esp32s3 | nein (ohne Web-Oberfläche) | Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-Heltec_E290.zip` |
+| Heltec_mesh_solar | nrf52 | nein (ohne Web-Oberfläche) | Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-Heltec_mesh_solar.zip` |
+| heltec_rc32 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.1-heltec_rc32.zip` |
+| heltec_rc32_without_display | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.1-heltec_rc32_without_display.zip` |
+| Heltec_t096 | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-Heltec_t096.zip` |
+| Heltec_t1 | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-Heltec_t1.zip` |
+| Heltec_t114 | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-Heltec_t114.zip` |
+| Heltec_t114_without_display | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-Heltec_t114_without_display.zip` |
+| Heltec_tower_v2 | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-Heltec_tower_v2.zip` |
+| heltec_tracker_v2 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.1-heltec_tracker_v2.zip` |
+| Heltec_v2 | esp32 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.1-Heltec_v2.zip` |
+| Heltec_v3 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.1-Heltec_v3.zip` |
+| heltec_v4 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.1-heltec_v4.zip` |
+| heltec_v4_expansionkit | esp32s3 | nein (ohne Web-Oberfläche) | Repeater | `DisAHRsterRadio-MeshCore-0.9.1-heltec_v4_expansionkit.zip` |
+| heltec_v4_r8 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.1-heltec_v4_r8.zip` |
+| heltec_v4_r8_tft | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.1-heltec_v4_r8_tft.zip` |
+| heltec_v4_tft | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.1-heltec_v4_tft.zip` |
+| Heltec_Wireless_Paper | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.1-Heltec_Wireless_Paper.zip` |
+| Heltec_Wireless_Tracker | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.1-Heltec_Wireless_Tracker.zip` |
+| Heltec_WSL3 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.1-Heltec_WSL3.zip` |
+| ikoka_handheld_nrf_e22_30dbm | nrf52 | nein (ohne Web-Oberfläche) | Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-ikoka_handheld_nrf_e22_30dbm.zip` |
+| ikoka_handheld_nrf_e22_30dbm_096 | nrf52 | nein (ohne Web-Oberfläche) | Companion | `DisAHRsterRadio-MeshCore-0.9.1-ikoka_handheld_nrf_e22_30dbm_096.zip` |
+| ikoka_handheld_nrf_e22_30dbm_096_rotated | nrf52 | nein (ohne Web-Oberfläche) | Companion | `DisAHRsterRadio-MeshCore-0.9.1-ikoka_handheld_nrf_e22_30dbm_096_rotated.zip` |
+| ikoka_nano_nrf_22dbm | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-ikoka_nano_nrf_22dbm.zip` |
+| ikoka_nano_nrf_30dbm | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-ikoka_nano_nrf_30dbm.zip` |
+| ikoka_nano_nrf_33dbm | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-ikoka_nano_nrf_33dbm.zip` |
+| ikoka_stick_nrf_22dbm | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-ikoka_stick_nrf_22dbm.zip` |
+| ikoka_stick_nrf_30dbm | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-ikoka_stick_nrf_30dbm.zip` |
+| ikoka_stick_nrf_33dbm | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-ikoka_stick_nrf_33dbm.zip` |
+| KeepteenLT1 | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-KeepteenLT1.zip` |
+| LilyGo_T-Echo | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-LilyGo_T-Echo.zip` |
+| LilyGo_T-Echo-Lite | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-LilyGo_T-Echo-Lite.zip` |
+| LilyGo_T-Echo-Lite_non_shell | nrf52 | nein (ohne Web-Oberfläche) | Companion | `DisAHRsterRadio-MeshCore-0.9.1-LilyGo_T-Echo-Lite_non_shell.zip` |
+| LilyGo_T-Echo_Card | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-LilyGo_T-Echo_Card.zip` |
+| LilyGo_T3S3_sx1262 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.1-LilyGo_T3S3_sx1262.zip` |
+| LilyGo_T3S3_sx1276 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.1-LilyGo_T3S3_sx1276.zip` |
+| LilyGo_T_Impulse_Plus | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater | `DisAHRsterRadio-MeshCore-0.9.1-LilyGo_T_Impulse_Plus.zip` |
+| LilyGo_TBeam_1W | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.1-LilyGo_TBeam_1W.zip` |
+| LilyGo_TDeck | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.1-LilyGo_TDeck.zip` |
+| LilyGo_TETH_Elite_sx1262 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.1-LilyGo_TETH_Elite_sx1262.zip` |
+| LilyGo_TLora_V2_1_1_6 | esp32 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.1-LilyGo_TLora_V2_1_1_6.zip` |
+| M5Stack_Unit_C6L | esp32c6 | nein (ohne Web-Oberfläche: ESP32-C6: WLAN-Bibliothek (Network.h) im Portal-Build nicht auflösbar) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-M5Stack_Unit_C6L.zip` |
+| Mesh_pocket | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-Mesh_pocket.zip` |
+| Meshadventurer_sx1262 | esp32 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.1-Meshadventurer_sx1262.zip` |
+| Meshadventurer_sx1268 | esp32 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.1-Meshadventurer_sx1268.zip` |
+| meshnology_w12 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.1-meshnology_w12.zip` |
+| Meshtiny | nrf52 | nein (ohne Web-Oberfläche) | Companion | `DisAHRsterRadio-MeshCore-0.9.1-Meshtiny.zip` |
+| MeshTracker_X1 | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-MeshTracker_X1.zip` |
+| Minewsemi_me25ls01 | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-Minewsemi_me25ls01.zip` |
+| muzi_base_duo | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-muzi_base_duo.zip` |
+| muzi_base_duo_superIO | nrf52 | nein (ohne Web-Oberfläche) | Companion | `DisAHRsterRadio-MeshCore-0.9.1-muzi_base_duo_superIO.zip` |
+| muzi_base_uno | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-muzi_base_uno.zip` |
+| muzi_base_uno_superIO | nrf52 | nein (ohne Web-Oberfläche) | Companion | `DisAHRsterRadio-MeshCore-0.9.1-muzi_base_uno_superIO.zip` |
+| Nano_G2_Ultra | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-Nano_G2_Ultra.zip` |
+| PicoW | rp2040 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-PicoW.zip` |
+| ProMicro | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-ProMicro.zip` |
+| R1Neo | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-R1Neo.zip` |
+| RAK_11310 | rp2040 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-RAK_11310.zip` |
+| RAK_3112 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.1-RAK_3112.zip` |
+| RAK_3401 | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-RAK_3401.zip` |
+| RAK_3x72 | stm32 | nein (ohne Web-Oberfläche) | Companion, Repeater | `DisAHRsterRadio-MeshCore-0.9.1-RAK_3x72.zip` |
+| RAK_4631 | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-RAK_4631.zip` |
+| RAK_WisMesh_Tag | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-RAK_WisMesh_Tag.zip` |
+| SenseCap_Solar | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-SenseCap_Solar.zip` |
+| Station_G2 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.1-Station_G2.zip` |
+| Station_G2_logging | esp32s3 | nein (ohne Web-Oberfläche) | Repeater | `DisAHRsterRadio-MeshCore-0.9.1-Station_G2_logging.zip` |
+| Station_G3_ESP32 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.1-Station_G3_ESP32.zip` |
+| Station_G3_ESP32_logging | esp32s3 | nein (ohne Web-Oberfläche) | Repeater | `DisAHRsterRadio-MeshCore-0.9.1-Station_G3_ESP32_logging.zip` |
+| t1000e | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-t1000e.zip` |
+| T_Beam_S3_Supreme_SX1262 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.1-T_Beam_S3_Supreme_SX1262.zip` |
+| Tbeam_SX1262 | esp32 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.1-Tbeam_SX1262.zip` |
+| Tbeam_SX1276 | esp32 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.1-Tbeam_SX1276.zip` |
+| Tenstar_C3_sx1262 | esp32c3 | nein (ohne Web-Oberfläche) | Repeater | `DisAHRsterRadio-MeshCore-0.9.1-Tenstar_C3_sx1262.zip` |
+| Tenstar_C3_sx1268 | esp32c3 | nein (ohne Web-Oberfläche) | Repeater | `DisAHRsterRadio-MeshCore-0.9.1-Tenstar_C3_sx1268.zip` |
+| ThinkNode_M1 | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-ThinkNode_M1.zip` |
+| ThinkNode_M2 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.1-ThinkNode_M2.zip` |
+| ThinkNode_M3 | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-ThinkNode_M3.zip` |
+| ThinkNode_M4 | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-ThinkNode_M4.zip` |
+| ThinkNode_M5 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.1-ThinkNode_M5.zip` |
+| ThinkNode_M6 | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-ThinkNode_M6.zip` |
+| ThinkNode_M7 | esp32s3 | nein (ohne Web-Oberfläche: eigene Display-Oberfläche ohne Hinweisfunktion (showAlert) – Portal baut nicht) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-ThinkNode_M7.zip` |
+| ThinkNode_M8 | nrf52 | nein (ohne Web-Oberfläche: Repeater/Room-Server: Upstream-Linkfehler (EnvironmentSensorManager fehlt im Build)) | Companion | `DisAHRsterRadio-MeshCore-0.9.1-ThinkNode_M8.zip` |
+| Tiny_Relay | stm32 | nein (ohne Web-Oberfläche) | Companion, Repeater | `DisAHRsterRadio-MeshCore-0.9.1-Tiny_Relay.zip` |
+| waveshare_rp2040_lora | rp2040 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-waveshare_rp2040_lora.zip` |
+| Waveshare_S3_LR1121 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.1-Waveshare_S3_LR1121.zip` |
+| wio-e5 | stm32 | nein (ohne Web-Oberfläche) | Companion, Repeater | `DisAHRsterRadio-MeshCore-0.9.1-wio-e5.zip` |
+| wio-e5-mini | stm32 | nein (ohne Web-Oberfläche) | Companion, Repeater | `DisAHRsterRadio-MeshCore-0.9.1-wio-e5-mini.zip` |
+| wio_wm1110 | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-wio_wm1110.zip` |
+| WioTrackerL1 | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-WioTrackerL1.zip` |
+| WioTrackerL1-1W | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-WioTrackerL1-1W.zip` |
+| WioTrackerL1Eink | nrf52 | nein (ohne Web-Oberfläche) | Companion | `DisAHRsterRadio-MeshCore-0.9.1-WioTrackerL1Eink.zip` |
+| Xiao_C3 | esp32c3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.1-Xiao_C3.zip` |
+| Xiao_nrf52 | nrf52 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-Xiao_nrf52.zip` |
+| Xiao_rp2040 | rp2040 | nein (ohne Web-Oberfläche) | Companion, Repeater, Room-Server | `DisAHRsterRadio-MeshCore-0.9.1-Xiao_rp2040.zip` |
+| Xiao_S3 | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.1-Xiao_S3.zip` |
+| Xiao_S3_WIO | esp32s3 | ja | WLAN-Portal | `DisAHRsterRadio-MeshCore-0.9.1-Xiao_S3_WIO.zip` |
 
 ## Grenzen / offen
 
