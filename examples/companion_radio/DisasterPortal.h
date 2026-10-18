@@ -362,6 +362,12 @@ public:
       memcpy(outgoing,p,n);outgoingLen=n;lastStamp=stamp;sentOnce=true;lastSend=millis();
       outcome="Warteschlange";accept(p,n);
     });
+    // Knotenname ohne Adminanmeldung (Peter, 0.9.1); gleiche Pruefung wie bisher.
+    http.on("/api/name",HTTP_POST,[this](){
+      if(!room())return;String name=http.arg("name");
+      if(name.length()<1||name.length()>24||hasNull(name)){http.send(400,"text/plain","Name: 1 bis 24 UTF-8-Bytes");return;}
+      uint8_t p[26]={8};memcpy(p+1,name.c_str(),name.length());accept(p,name.length()+1);
+    });
     http.on("/api/time",HTTP_POST,[this](){
       if(!room())return;
       uint32_t t=(uint32_t)strtoul(http.arg("time").c_str(),nullptr,10);
@@ -376,7 +382,7 @@ public:
       accept(p,50);
     });
     // Funkprofil ohne Adminanmeldung (Peter, 0.9.1): nur die festen Deutschland-Profile aus dePreset().
-    // Knotenname setzt die MeshCore-App ueber PIN-Bluetooth; der Admin schuetzt nur noch Kanaele und history-wipe.
+    // Der Admin schuetzt nur noch Kanaele und history-wipe.
     http.on("/api/radio",HTTP_POST,[this](){
       if(!room())return;
       disaster::RadioPreset preset;
