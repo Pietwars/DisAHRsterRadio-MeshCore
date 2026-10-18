@@ -10,6 +10,8 @@
 > **Status 0.9.1: Testversion/Vorab-Release, lokal gebaut, noch nicht veröffentlicht** (kein Tag, kein GitHub-Release). Neu gegenüber 0.9.0-alpha:
 > - **Chatverlauf-Fix (alle ESP32-Portal-Boards):** Der Chat in der Weboberfläche blieb leer, weil die Verlaufsdatei im SPIFFS nie angelegt wurde. Jetzt wird sie angelegt; „Gerät“ → **Verlauf-Speicher** zeigt „ok“.
 > - **T-Deck-Display-Fix (SPI):** Display und LoRa teilen beim LILYGO T-Deck einen SPI-Bus; der Bildschirm bleibt nicht mehr bei „Loading...“ stehen. Nur `LILYGO_TDECK` betroffen.
+> - **Kontakte automatisch nur für Repeater und Room-Server:** Chat-Kontakte (Companions) und Sensoren werden nicht mehr automatisch hinzugefügt (Werkseinstellung bei frischem Speicher, in der App über PIN-Bluetooth änderbar; gespeicherte Einstellungen bleiben beim reinen Firmware-Update erhalten).
+> - **Kontakt-Einstellungen der App** (Befehle 38/58) über PIN-geschütztes Bluetooth speicherbar.
 > - **Feste Bluetooth-PIN `123456` in diesen Testbuilds** (statische Passkey-Kopplung mit MITM-Schutz und Bonding) statt PIN-frei. WLAN bleibt offen.
 >
 > Auf echter Hardware getestet: LILYGO T-Deck Plus (0.9.1-Stand). Heltec WiFi LoRa 32 V2 und alle übrigen Boards: ungeprüft.
@@ -47,6 +49,7 @@ Haupt-Boards: LILYGO T3-S3 V1.3, LILYGO T3 V1.6.1 (TTGO), Heltec WiFi LoRa 32 V2
 | WLAN `DisAHRsterRadio-XXXXXX` | **offen, ohne Passwort** – verbinden, `http://192.168.4.1` öffnen, nichts eingeben (höchstens 4 Handys je Board) |
 | Bluetooth (MeshCore-App) | Testversion 0.9.1: feste PIN **`123456`** bei der Kopplung eingeben (öffentlich bekannter Testwert, kein Geheimnis); alte Kopplung vorher am Handy entfernen. Der `main`-Stand vor 0.9.1 koppelte ohne PIN („Just Works“) |
 | Schwarzes Brett (Room-Server) | öffentliches MeshCore-Standard-Gast-Passwort **`hello`**: damit lesen und schreiben. Die Weboberfläche sendet `hello` beim „Beitreten“ automatisch, niemand muss etwas eintippen. In der MeshCore-App `hello` eingeben; ohne Passwort nur lesen |
+| Kontakte | automatisch nur **Repeater und Room-Server**; Chat-Kontakte und Sensoren manuell (Werkseinstellung 0.9.1, in der MeshCore-App über PIN-Bluetooth änderbar) |
 | Admin (nur Betreiber) | Für Betreiberfunktionen (Funkprofil, Name, Kanäle, Verwaltung von Repeater/Room-Server) gibt es ein Admin-Passwort. Es ist für jedes Gerät eigen, steht weder im Code noch in der Doku und wird nur beim ersten Start über USB (115200 Baud) angezeigt. Der Betreiber muss es dort ablesen und sicher aufbewahren oder ein eigenes setzen (bei Repeater und Room-Server per USB-Befehl `password <neu>` ändern). |
 
 Außer dem öffentlichen Standard `hello` stehen keine Passwörter in Code, Doku, Flyern oder der Live-Demo; die Live-Demo öffnet den Adminbereich ohne Anmeldung. Details: [Offener Zugang](docs/OFFENER_ZUGANG.md).

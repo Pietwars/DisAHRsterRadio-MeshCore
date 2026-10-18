@@ -25,3 +25,7 @@ jobs:
         run: |
           g++ -std=c++17 -Wall -Wextra -Werror -fsanitize=address,undefined tests/slot_file.test.cpp -o /tmp/slot-file-test
           /tmp/slot-file-test
+      - name: Kontakte automatisch nur Repeater und Room-Server (Standard)
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror -fsanitize=address,undefined tests/autoadd.test.cpp -o /tmp/autoadd-test
+          /tmp/autoadd-test

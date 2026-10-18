@@ -1,4 +1,5 @@
 #include "MyMesh.h"
+#include "AutoAddPolicy.h"
 #include "OpenAccess.h"
 
 #include <Arduino.h> // needed for PlatformIO
@@ -311,29 +312,7 @@ bool MyMesh::isAutoAddEnabled() const {
 }
 
 bool MyMesh::shouldAutoAddContactType(uint8_t contact_type) const {
-  if ((_prefs.manual_add_contacts & 1) == 0) {
-    return true;
-  }
-
-  uint8_t type_bit = 0;
-  switch (contact_type) {
-    case ADV_TYPE_CHAT:
-      type_bit = AUTO_ADD_CHAT;
-      break;
-    case ADV_TYPE_REPEATER:
-      type_bit = AUTO_ADD_REPEATER;
-      break;
-    case ADV_TYPE_ROOM:
-      type_bit = AUTO_ADD_ROOM_SERVER;
-      break;
-    case ADV_TYPE_SENSOR:
-      type_bit = AUTO_ADD_SENSOR;
-      break;
-    default:
-      return false;  // Unknown type, don't auto-add
-  }
-
-  return (_prefs.autoadd_config & type_bit) != 0;
+  return autoadd::shouldAdd(_prefs.manual_add_contacts, _prefs.autoadd_config, contact_type);
 }
 
 bool MyMesh::shouldOverwriteWhenFull() const {
@@ -930,6 +909,12 @@ MyMesh::MyMesh(mesh::Radio &radio, mesh::RNG &rng, mesh::RTCClock &rtc, SimpleMe
   _prefs.tx_power_dbm = LORA_TX_POWER;
   _prefs.gps_enabled = 0;       // GPS disabled by default
   _prefs.gps_interval = 0;      // No automatic GPS updates by default
+#ifdef DISASTER_PORTAL
+  // DisAHRsterRadio: only repeaters and room servers are added automatically, chat users stay
+  // manual. Applies to fresh prefs only; a saved /prefs.json (man_add, auto_add) overrides it.
+  _prefs.manual_add_contacts = autoadd::DISASTER_DEFAULT_MANUAL;
+  _prefs.autoadd_config = autoadd::DISASTER_DEFAULT_CONFIG;
+#endif
   _prefs.radio_fem_rxgain = 1;
 #ifdef RADIO_FEM_TXGAIN
   _prefs.radio_fem_txgain = RADIO_FEM_TXGAIN;   // board-specific default for PA

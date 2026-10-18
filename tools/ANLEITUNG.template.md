@@ -13,6 +13,7 @@ MeshCore-Companion mit WLAN-Weboberfläche · Version @VERSION@ · Commit @COMMI
 ## Neu in 0.9.0-alpha
 
 - Parallel zum WLAN-Portal kann sich die offizielle MeshCore-App per **Bluetooth** verbinden. Kopplung mit PIN **123456** (Testversion); Funkkonfiguration bleibt USB/Admin-Bereich vorbehalten.
+- **Kontakte automatisch:** nur **Repeater und Room-Server** werden automatisch hinzugefügt. Chat-Kontakte (andere Handys/Companions), Sensoren und sonstige Typen werden **nicht** automatisch übernommen (manuell). Das ist die Werkseinstellung bei leerem Speicher (z. B. nach dem Flashen der factory-Datei); in der MeshCore-App über PIN-gekoppeltes Bluetooth änderbar. Beim reinen Firmware-Update (`firmware.bin` an 0x10000) bleibt eine bereits gespeicherte Einstellung erhalten. Hinweis Testversion: Direktnachrichten gehen nur mit Kontakten in der Kontaktliste; das Übernehmen entdeckter Chat-Kontakte per Bluetooth (App-Befehl „Kontakt hinzufügen“) ist noch nicht freigegeben, per USB geht es.
 - Neue Partitionstabelle (3 MB App, kein OTA): beim Umstieg von einer älteren Version **einmal komplett mit der factory-Datei** flashen.
 
 ## 2. Erstinstallation
