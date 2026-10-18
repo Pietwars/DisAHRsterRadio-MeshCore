@@ -21,7 +21,7 @@ main{flex:1;display:flex;flex-direction:column;min-height:0}section{display:none
 #log{flex:1;overflow-y:auto;min-height:200px;display:flex;flex-direction:column;gap:5px}
 .m{background:var(--card);border-radius:8px;padding:6px 9px;max-width:92%;word-wrap:break-word}.m.self{align-self:flex-end;background:#1f3d2cdd}.m.sys{align-self:center;background:#0b141c99;color:#9ab;font-size:.85rem}
 .m .n{color:var(--mesh);font-weight:600;margin-right:4px}.m .tm{color:#789;font-size:.7rem;margin-left:6px}.m .pend{color:#fc6}
-form{display:flex;gap:6px}input,select,textarea{flex:1;background:#0b141c;color:#eaf2f7;border:1px solid var(--line);border-radius:8px;padding:9px;font-size:1rem}
+form{display:flex;gap:6px;flex-wrap:wrap}form>*,.row>*{min-width:0}select{max-width:100%}#qf select{flex:1 1 8rem}@media(max-width:480px){#qf .b{flex:1 1 100%}}input,select,textarea{flex:1;background:#0b141c;color:#eaf2f7;border:1px solid var(--line);border-radius:8px;padding:9px;font-size:1rem}
 button.b{background:var(--mesh);color:#102;border:0;border-radius:8px;padding:9px 14px;font-weight:600;font-size:1rem}button.b2{background:#24384a;color:#eaf2f7}
 .quick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}.quick-btn{background:var(--card);color:#eaf2f7;border:1px solid var(--line);border-radius:10px;padding:12px 8px;font-size:.95rem;text-align:left}.quick-btn b{display:block;font-size:1.4rem}
 .quick-btn.H{border-left:4px solid var(--wine)}.quick-btn.I{border-left:4px solid #6ab0e0}.quick-btn.A{border-left:4px solid var(--mesh)}
