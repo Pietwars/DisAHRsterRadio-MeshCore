@@ -61,18 +61,3 @@ mesh::LocalIdentity radio_new_identity() {
   RadioNoiseListener rng(radio);
   return mesh::LocalIdentity(&rng); // create new random identity
 }
-
-#if UI_HAS_KEYBOARD
-volatile uint16_t tdeck_tb_up = 0, tdeck_tb_down = 0, tdeck_tb_left = 0, tdeck_tb_right = 0;
-static void IRAM_ATTR tdeck_isr_up()    { tdeck_tb_up++; }
-static void IRAM_ATTR tdeck_isr_down()  { tdeck_tb_down++; }
-static void IRAM_ATTR tdeck_isr_left()  { tdeck_tb_left++; }
-static void IRAM_ATTR tdeck_isr_right() { tdeck_tb_right++; }
-void tdeck_trackball_attach() {
-  attachInterrupt(digitalPinToInterrupt(PIN_TB_UP), tdeck_isr_up, FALLING);
-  attachInterrupt(digitalPinToInterrupt(PIN_TB_DOWN), tdeck_isr_down, FALLING);
-  attachInterrupt(digitalPinToInterrupt(PIN_TB_LEFT), tdeck_isr_left, FALLING);
-  attachInterrupt(digitalPinToInterrupt(PIN_TB_RIGHT), tdeck_isr_right, FALLING);
-}
-TDeckInput tdeck_input;
-#endif

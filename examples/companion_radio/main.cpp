@@ -344,9 +344,6 @@ void loop() {
 #ifdef DISPLAY_CLASS
   {
     static unsigned long lastOled = 0; static bool showPw = false;
-#if UI_HAS_KEYBOARD
-    if (ui_task.isChatOpen()) lastOled = millis();  // beim Tippen kein Hinweis-Popup ueber dem Text
-#endif
     if (millis() - lastOled > 15000) {  // abwechselnd WLAN-Name und offener Zugang auf dem OLED
       lastOled = millis(); showPw = !showPw;
       String t = showPw ? (the_mesh.getBLEPin() == DISASTER_BLE_PIN ? String("WLAN offen / BLE-PIN 123456") : String("WLAN offen / BLE eigene PIN"))

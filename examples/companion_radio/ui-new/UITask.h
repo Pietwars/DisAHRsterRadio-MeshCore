@@ -75,7 +75,6 @@ class UITask : public AbstractUITask {
   UIScreen* splash;
   UIScreen* home;
   UIScreen* msg_preview;
-  UIScreen* chat = NULL;   // nur mit UI_HAS_KEYBOARD
   UIScreen* curr;
 
   void userLedHandler();
@@ -98,8 +97,6 @@ public:
   void begin(DisplayDriver* display, SensorManager* sensors, NodePrefs* node_prefs);
 
   void gotoHomeScreen() { setCurrScreen(home); }
-  void openChat();                        // Nachrichten am Geraet (UI_HAS_KEYBOARD)
-  bool isChatOpen() const { return curr != NULL && curr == chat; }
   void showAlert(const char* text, int duration_millis);
   int  getMsgCount() const { return _msgcount; }
   bool hasDisplay() const { return _display != NULL; }
@@ -123,7 +120,6 @@ public:
   void onQueueSizeChanged(int offline_queue_size) override;
   void onDiscoveredContact(ContactInfo &contact, bool is_new, uint8_t path_len, const uint8_t* path) override;
   void onControlDataRecv(const mesh::Packet* pkt) override;
-  void onACKRecv(uint32_t ack_crc) override;
 
   // from AbstractUITask
   void notify(UIEventType t = UIEventType::none) override;

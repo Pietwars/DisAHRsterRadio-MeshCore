@@ -24,10 +24,5 @@ extern EnvironmentSensorManager sensors;
   extern MomentaryButton user_btn;
 #endif
 
-#if UI_HAS_KEYBOARD
-  #include "TDeckInput.h"
-  extern TDeckInput tdeck_input;
-#endif
-
 bool radio_init();
 mesh::LocalIdentity radio_new_identity();
