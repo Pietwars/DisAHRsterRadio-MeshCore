@@ -8,6 +8,10 @@
 #endif
 
 namespace disaster {
+// Bluetooth PIN: any 6-digit value 100000..999999 (set via app CMD_SET_DEVICE_PIN or CLI "set pin").
+// 0 or anything else falls back to the default DISASTER_BLE_PIN, so Bluetooth always needs a PIN.
+inline bool validBlePin(uint32_t pin) { return pin >= 100000 && pin <= 999999; }
+inline uint32_t effectiveBlePin(uint32_t saved) { return validBlePin(saved) ? saved : (uint32_t)DISASTER_BLE_PIN; }
 // Validate received bytes before any dispatcher access (including memcmp).
 inline size_t companionMinimumLength(uint8_t cmd) {
   switch (cmd) {

@@ -12,7 +12,7 @@ MeshCore-Companion mit WLAN-Weboberfläche · Version @VERSION@ · Commit @COMMI
 
 ## Neu in 0.9.0-alpha
 
-- Parallel zum WLAN-Portal kann sich die offizielle MeshCore-App per **Bluetooth** verbinden. Kopplung mit PIN **123456** (Testversion). Über **PIN-gekoppeltes Bluetooth** (PIN 123456) hat die MeshCore-App **alle Einstellungen und Funktionen** wie bei Standard-MeshCore (Name, Standort, Kanäle, Funkparameter, Kontakte, GPS, Neustart, Werksreset, CLI usw.). Die Weboberfläche im offenen WLAN bleibt eingeschränkt: Funkprofil (nur die festen Deutschland-Profile) und Knotenname ohne Anmeldung änderbar; Kanäle anlegen/ändern und Verlauf löschen nur im Bereich „Betreiber: Kanäle & Verlauf“ mit Admin-Anmeldung; alle übrigen Einstellungen über die MeshCore-App.
+- Parallel zum WLAN-Portal kann sich die offizielle MeshCore-App per **Bluetooth** verbinden. Kopplung mit PIN (Standard **123456**, Testversion). MeshCore-App über PIN-gekoppeltes Bluetooth: **alle** Einstellungen und Funktionen wie bei Standard-MeshCore (Name, Standort, Kanäle, Funkparameter, Kontakte, GPS, Neustart, Werksreset, CLI), auch **privaten Schlüssel exportieren/importieren** und eine **eigene 6-stellige PIN** setzen (wird gespeichert, gilt nach dem Neustart; danach die alte Kopplung am Handy entfernen und mit der neuen PIN neu koppeln). Standard-PIN: 123456. Weboberfläche (offenes WLAN, **ohne Anmeldung**): Knotenname, Funkprofil (nur feste Deutschland-Profile), Kanäle anlegen/ändern und Nachrichtenverlauf löschen im Reiter „Gerät“. **Achtung: Jede Person im offenen WLAN kann Kanäle, Knotenname und Funkprofil ändern und den Verlauf löschen.** Einen Web-Admin-Bereich (Admin-Passwort) gibt es nicht mehr.
 - **Kontakte automatisch:** nur **Repeater und Room-Server** werden automatisch hinzugefügt. Chat-Kontakte (andere Handys/Companions), Sensoren und sonstige Typen werden **nicht** automatisch übernommen (manuell). Das ist die Werkseinstellung bei leerem Speicher (z. B. nach dem Flashen der factory-Datei); in der MeshCore-App über PIN-gekoppeltes Bluetooth änderbar. Beim reinen Firmware-Update (`firmware.bin` an 0x10000) bleibt eine bereits gespeicherte Einstellung erhalten. Chat-Kontakte manuell hinzufügen, bearbeiten oder löschen geht in der MeshCore-App über PIN-gekoppeltes Bluetooth (Direktnachrichten gehen nur mit Kontakten in der Kontaktliste).
 - Neue Partitionstabelle (3 MB App, kein OTA): beim Umstieg von einer älteren Version **einmal komplett mit der factory-Datei** flashen.
 
@@ -28,9 +28,9 @@ Enthalten: Bootloader (@BOOT@), Partitionen (0x8000), boot_app0 (0xe000), Firmwa
 
 ## 3. Verbinden
 
-Am Handy das offene WLAN `DisAHRsterRadio-XXXXXX` auswählen und verbinden (höchstens 4 Handys, nichts eingeben). Bei „Kein Internet“ verbunden bleiben, dann `http://192.168.4.1` öffnen. Achtung: offenes, unverschlüsseltes WLAN – jede Person in Reichweite kann mitlesen und senden. Bluetooth (MeshCore-App) koppelt mit PIN **123456**; bei alten Kopplungen am Handy entkoppeln und neu verbinden.
+Am Handy das offene WLAN `DisAHRsterRadio-XXXXXX` auswählen und verbinden (höchstens 4 Handys, nichts eingeben). Bei „Kein Internet“ verbunden bleiben, dann `http://192.168.4.1` öffnen. Achtung: offenes, unverschlüsseltes WLAN – jede Person in Reichweite kann mitlesen und senden. Bluetooth (MeshCore-App) koppelt mit PIN (Standard **123456**); bei alten Kopplungen oder nach einer PIN-Änderung am Handy entkoppeln und neu verbinden.
 
-Nur für Betreiber: Die Admin-Zugangsdaten für den Bereich „Betreiber: Kanäle & Verlauf“ (Kanäle anlegen/ändern, Verlauf löschen) erscheinen einmalig beim ersten Start über USB (115200 Baud); neu erzeugen mit 10 s BOOT-Taste.
+Es gibt keinen Admin-Bereich in der Weboberfläche mehr: Knotenname, Funkprofil, Kanäle und Verlauf löschen sind ohne Anmeldung zugänglich – jede Person im offenen WLAN kann sie ändern.
 
 ## 4. Update (nur Firmware)
 

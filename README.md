@@ -1,6 +1,6 @@
 # DisAHRsterRadio-MeshCore
 
-> **Aktueller Stand:** offenes WLAN `DisAHRsterRadio-XXXXXX` → `http://192.168.4.1`, MeshCore-App per Bluetooth mit fester PIN `123456` (Testversion 0.9.1), Brett (Room-Server) mit dem öffentlichen Gast-Passwort `hello` (sendet die Weboberfläche automatisch) – einfach verbinden, nichts eingeben. Volle Einstellungen in der MeshCore-App über PIN-Bluetooth; in der Weboberfläche Funkprofil und Knotenname ohne Anmeldung, Kanäle und Verlauf löschen nur mit Admin-Passwort. [Zugang auf einen Blick](#zugang-auf-einen-blick) · [Zugang, Update und Abnahme](docs/OFFENER_ZUGANG.md)
+> **Aktueller Stand:** offenes WLAN `DisAHRsterRadio-XXXXXX` → `http://192.168.4.1`, MeshCore-App per Bluetooth mit PIN (Standard `123456`, in der App änderbar; Testversion 0.9.1), Brett (Room-Server) mit dem öffentlichen Gast-Passwort `hello` (sendet die Weboberfläche automatisch) – einfach verbinden, nichts eingeben. Volle Einstellungen in der MeshCore-App über PIN-Bluetooth; in der Weboberfläche Knotenname, Funkprofil, Kanäle und Verlauf löschen ohne Anmeldung (jede Person im offenen WLAN kann das). [Zugang auf einen Blick](#zugang-auf-einen-blick) · [Zugang, Update und Abnahme](docs/OFFENER_ZUGANG.md)
 
 
 **🔴 Live-Demo (simulierte Daten, kein Gerät nötig): https://pietwars.github.io/DisAHRsterRadio-MeshCore/**
@@ -11,9 +11,9 @@
 > - **Chatverlauf-Fix (alle ESP32-Portal-Boards):** Der Chat in der Weboberfläche blieb leer, weil die Verlaufsdatei im SPIFFS nie angelegt wurde. Jetzt wird sie angelegt; „Gerät“ → **Verlauf-Speicher** zeigt „ok“.
 > - **T-Deck-Display-Fix (SPI):** Display und LoRa teilen beim LILYGO T-Deck einen SPI-Bus; der Bildschirm bleibt nicht mehr bei „Loading...“ stehen. Nur `LILYGO_TDECK` betroffen.
 > - **Kontakte automatisch nur für Repeater und Room-Server:** Chat-Kontakte (Companions) und Sensoren werden nicht mehr automatisch hinzugefügt (Werkseinstellung bei frischem Speicher, in der App über PIN-Bluetooth änderbar; gespeicherte Einstellungen bleiben beim reinen Firmware-Update erhalten).
-> - **Weboberfläche vereinfacht:** Funkprofil (nur feste Deutschland-Profile) und Knotenname ohne Admin-Anmeldung; Admin-Bereich heißt „Betreiber: Kanäle & Verlauf“ und enthält nur noch Kanäle anlegen/ändern und Verlauf löschen. **Knotenname** ist im Reiter „Gerät“ ohne Anmeldung änderbar (1–24 Zeichen); Admin-Passwort ändern ist aus der Weboberfläche entfernt (neu per 10 s BOOT-Taste).
-> - **Volle MeshCore-App über PIN-geschütztes Bluetooth:** Mit PIN-Kopplung sind alle Companion-Befehle erlaubt wie bei Standard-MeshCore (Name, Standort, Kanäle, Funkparameter, Kontakte, GPS/Custom-Vars, Neustart, Werksreset, CLI, Signieren, Rohpakete). Das offene WLAN/Ethernet bleibt eingeschränkt wie bisher. Private-Schlüssel-Export/-Import sind in diesen Builds weiterhin nicht einkompiliert.
-> - **Feste Bluetooth-PIN `123456` in diesen Testbuilds** (statische Passkey-Kopplung mit MITM-Schutz und Bonding) statt PIN-frei. WLAN bleibt offen.
+> - **Weboberfläche ohne Admin:** Weboberfläche (offenes WLAN, **ohne Anmeldung**): Knotenname, Funkprofil (nur feste Deutschland-Profile), Kanäle anlegen/ändern und Nachrichtenverlauf löschen im Reiter „Gerät“. **Achtung: Jede Person im offenen WLAN kann Kanäle, Knotenname und Funkprofil ändern und den Verlauf löschen.** Einen Web-Admin-Bereich (Admin-Passwort) gibt es nicht mehr.
+> - **Volle MeshCore-App über PIN-geschütztes Bluetooth:** MeshCore-App über PIN-gekoppeltes Bluetooth: **alle** Einstellungen und Funktionen wie bei Standard-MeshCore (Name, Standort, Kanäle, Funkparameter, Kontakte, GPS, Neustart, Werksreset, CLI), auch **privaten Schlüssel exportieren/importieren** und eine **eigene 6-stellige PIN** setzen (wird gespeichert, gilt nach dem Neustart; danach die alte Kopplung am Handy entfernen und mit der neuen PIN neu koppeln). Standard-PIN: 123456. Über das offene WLAN/Ethernet und Bluetooth ohne PIN bleibt die Companion-Schnittstelle eingeschränkt wie bisher.
+> - **Bluetooth immer mit PIN** (statische Passkey-Kopplung mit MITM-Schutz und Bonding): Standard `123456`, eigene 6-stellige PIN per App oder USB-Befehl `set pin <6 Ziffern>`. WLAN bleibt offen.
 >
 > Auf echter Hardware getestet: LILYGO T-Deck Plus (0.9.1-Stand). Heltec WiFi LoRa 32 V2 und alle übrigen Boards: ungeprüft.
 
@@ -48,12 +48,12 @@ Haupt-Boards: LILYGO T3-S3 V1.3, LILYGO T3 V1.6.1 (TTGO), Heltec WiFi LoRa 32 V2
 | Zugang | Aktueller Stand |
 |---|---|
 | WLAN `DisAHRsterRadio-XXXXXX` | **offen, ohne Passwort** – verbinden, `http://192.168.4.1` öffnen, nichts eingeben (höchstens 4 Handys je Board) |
-| Bluetooth (MeshCore-App) | Testversion 0.9.1: feste PIN **`123456`** bei der Kopplung eingeben (öffentlich bekannter Testwert, kein Geheimnis); alte Kopplung vorher am Handy entfernen. Mit PIN-Kopplung hat die App alle Einstellungen (wie Standard-MeshCore). Der `main`-Stand vor 0.9.1 koppelte ohne PIN („Just Works“) |
+| Bluetooth (MeshCore-App) | Testversion 0.9.1: PIN bei der Kopplung eingeben – Standard **`123456`** (öffentlich bekannter Testwert), eigene 6-stellige PIN in der App setzbar (gilt nach Neustart, dann neu koppeln); alte Kopplung vorher am Handy entfernen. Mit PIN-Kopplung hat die App alle Einstellungen (wie Standard-MeshCore). Der `main`-Stand vor 0.9.1 koppelte ohne PIN („Just Works“) |
 | Schwarzes Brett (Room-Server) | öffentliches MeshCore-Standard-Gast-Passwort **`hello`**: damit lesen und schreiben. Die Weboberfläche sendet `hello` beim „Beitreten“ automatisch, niemand muss etwas eintippen. In der MeshCore-App `hello` eingeben; ohne Passwort nur lesen |
 | Kontakte | automatisch nur **Repeater und Room-Server**; Chat-Kontakte und Sensoren manuell (Werkseinstellung 0.9.1, in der MeshCore-App über PIN-Bluetooth änderbar; dort Kontakte auch manuell hinzufügen, bearbeiten, löschen) |
-| Admin (nur Betreiber) | Weboberfläche ab 0.9.1: der Bereich „Betreiber: Kanäle & Verlauf“ (Kanäle anlegen/ändern, Nachrichtenverlauf löschen) braucht das Admin-Passwort; Funkprofil (feste Deutschland-Profile) ist ohne Anmeldung wählbar, Knotenname ebenfalls ohne Anmeldung (Reiter „Gerät“), Passwort ändern in der Weboberfläche entfällt (neu erzeugen: 10 s BOOT-Taste). Für die Verwaltung von Repeater/Room-Server gibt es ebenfalls ein Admin-Passwort. Es ist für jedes Gerät eigen, steht weder im Code noch in der Doku und wird nur beim ersten Start über USB (115200 Baud) angezeigt. Der Betreiber muss es dort ablesen und sicher aufbewahren oder ein eigenes setzen (bei Repeater und Room-Server per USB-Befehl `password <neu>` ändern). |
+| Weboberfläche | **keine Anmeldung mehr:** Knotenname, Funkprofil (feste Deutschland-Profile), Kanäle anlegen/ändern, Verlauf löschen – für jede Person im offenen WLAN. Das frühere Web-Admin-Passwort (serielle Anzeige, 10 s BOOT-Taste) ist entfernt. Repeater und Room-Server haben weiterhin ihr eigenes Admin-Passwort (bei jedem Gerät eigen, nur beim ersten Start über USB angezeigt, per USB-Befehl `password <neu>` änderbar). |
 
-Außer dem öffentlichen Standard `hello` stehen keine Passwörter in Code, Doku, Flyern oder der Live-Demo; die Live-Demo öffnet den Adminbereich ohne Anmeldung. Details: [Offener Zugang](docs/OFFENER_ZUGANG.md).
+Außer dem öffentlichen Standard `hello` stehen keine Passwörter in Code, Doku, Flyern oder der Live-Demo;  Details: [Offener Zugang](docs/OFFENER_ZUGANG.md).
 
 > Hinweis: Das bisher veröffentlichte [Release v0.9.0-alpha](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.0-alpha) ist älter als dieser Stand und enthält noch die alten Zugangsregeln (WLAN-Schlüssel, Bluetooth-PIN, eigenes Raum-Passwort). Den hier beschriebenen Stand gibt es bis zum nächsten Release als Build von `main` (Artefakte unter [Actions](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/actions), GitHub-Anmeldung nötig) oder selbst gebaut.
 
@@ -72,7 +72,7 @@ Außer dem öffentlichen Standard `hello` stehen keine Passwörter in Code, Doku
 - **Brett:** Schwarzes Brett über einen MeshCore-Room-Server; Beitritt automatisch mit dem öffentlichen Gast-Passwort `hello` (lesen und schreiben)
 - **Karte:** Offline-Karten des Ahrtals direkt aus der Firmware, Knoten und geteilte Positionen
 - **Standort:** Handy-GPS oder Ortsliste, als Chat-Position oder Knoten-Standort (Advert)
-- **Gerät:** Status, Funkzähler, Kontakte, Bekanntgabe, Funkprofil (feste Deutschland-Profile) und Knotenname ohne Anmeldung, Betreiber: Kanäle & Verlauf löschen (Admin-Passwort)
+- **Gerät:** Status, Funkzähler, Kontakte, Bekanntgabe, Knotenname, Funkprofil (feste Deutschland-Profile), Kanäle, Verlauf löschen – alles ohne Anmeldung
 - **WLAN + Bluetooth gleichzeitig:** Auf ESP32-Geräten läuft das WLAN-Portal und parallel die Bluetooth-Verbindung für die offizielle MeshCore-App (siehe unten)
 
 ## Ehrlicher Stand (Oktober 2026)
@@ -128,7 +128,7 @@ Alle WLAN-Portal-Boards: offenes WLAN **`DisAHRsterRadio-XXXXXX`** (höchstens 4
 
 Auf ESP32-Geräten mit Bluetooth sind Web-Portal und BLE-Companion beide am selben Companion angemeldet (MeshCore `MultiSerialInterface`): Jede Antwort und jede eingehende Nachricht geht an beide. Die offizielle MeshCore-App verbindet sich per Bluetooth, während Handys im WLAN die Weboberfläche nutzen.
 
-- **Bluetooth-Kopplung:** In den 0.9.1-Testbuilds mit fester PIN **`123456`** (statischer Passkey, MITM-Schutz, Bonding); vorher (`main` vor 0.9.1) Just-Works ohne Zahlencode. Alte Kopplung bei Bedarf am Handy entfernen. Mit PIN-Kopplung stehen in der MeshCore-App alle Einstellungen und Befehle zur Verfügung (wie Standard-MeshCore). Über das offene WLAN/Ethernet bleiben Betreiberbefehle (Funk, Name, Kanäle, Schlüssel, Reset) gesperrt und laufen nur über USB/Admin-Bereich; Details unter [Offener Zugang](docs/OFFENER_ZUGANG.md).
+- **Bluetooth-Kopplung:** In den 0.9.1-Testbuilds mit fester PIN **`123456`** (statischer Passkey, MITM-Schutz, Bonding); vorher (`main` vor 0.9.1) Just-Works ohne Zahlencode. Alte Kopplung bei Bedarf am Handy entfernen. Mit PIN-Kopplung stehen in der MeshCore-App alle Einstellungen und Befehle zur Verfügung (wie Standard-MeshCore, inkl. Schlüssel-Export/-Import und eigener PIN). Über die Companion-Schnittstelle im offenen WLAN/Ethernet bleiben diese Befehle gesperrt (die Weboberfläche hat ihre eigenen, festen Funktionen); Details unter [Offener Zugang](docs/OFFENER_ZUGANG.md).
 - **Grenzen:** Ruft die App Nachrichten aus der Warteschlange ab, sieht das Portal sie im Verlauf mit, die App aber nicht umgekehrt die Abrufe des Portals. Gleichzeitige Befehle aus App und Portal können sich in seltenen Fällen kreuzen. WLAN + Bluetooth + Webserver brauchen viel RAM; auf klassischen ESP32 (T3 V1.6.1, Heltec V2) ist das auf Hardware **nicht geprüft**.
 - **Speicher:** Portal-Profile nutzen jetzt die Partition `huge_app.csv` (3 MB App, kein OTA, 896 KB SPIFFS). T3 V1.6.1: 72 % von 3 MB, T3-S3: 65 %, Heltec V2: 72 %. Nach dem Wechsel von 0.1.0/älter einmal komplett mit `factory.bin` flashen (Partitionstabelle ändert sich, Identität wird neu erzeugt).
 
@@ -141,7 +141,7 @@ Auf ESP32-Geräten mit Bluetooth sind Web-Portal und BLE-Companion beide am selb
 | **Brett** | MeshCore-**Room-Server**: Portal tritt automatisch mit dem öffentlichen Gast-Passwort `hello` bei, Beiträge lesen und schreiben (ohne Passwort nur lesen) |
 | **Karte** | Offline-OSM-Karten (Ahrtal, Heimersheim, Dernau, Altenahr, Sinzig) aus der Firmware. Angezeigt werden Knoten mit Standort in ihrer Bekanntgabe (Advert), Positionen aus Nachrichten und die eigene Position |
 | **Standort** | GPS des Handys oder Ortsliste. „Position in Chat senden“ (Format `!DP1\|lat,lon\|zeit`, kompatibel zu DisasterMesh) oder als Knoten-Standort setzen und per Advert bekanntgeben |
-| **Gerät** | Status, Funkzähler, Kontakte neu lesen, Advert senden, Funkprofil (`CMD_SET_RADIO_PARAMS`, nur feste Deutschland-Profile) und Knotenname (`CMD_SET_ADVERT_NAME`), beides ohne Anmeldung; Betreiber (Admin): Kanal mit Schlüssel, Verlauf löschen |
+| **Gerät** | Status, Funkzähler, Kontakte neu lesen, Advert senden; ohne Anmeldung: Knotenname (`CMD_SET_ADVERT_NAME`), Funkprofil (`CMD_SET_RADIO_PARAMS`, nur feste Deutschland-Profile), Kanal mit Schlüssel (`CMD_SET_CHANNEL`), Verlauf löschen |
 
 Nachrichten sind bei MeshCore auf **100 Byte** begrenzt.
 

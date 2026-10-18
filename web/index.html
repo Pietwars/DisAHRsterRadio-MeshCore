@@ -39,7 +39,6 @@ h2{margin:4px 0;font-size:1.05rem}
 .tgt{display:flex;gap:6px}.tgt select{flex:1}
 .lbl{font-size:.72rem;color:#9ab;display:block}
 .small{font-size:.8rem}
-#admin{display:none;flex-direction:column;gap:6px}
 section h2,section p,.row label{text-shadow:0 1px 3px #000,0 0 8px #000}
 .hero{height:min(24vw,260px);flex:none}
 @media (min-width:1100px){body::before{background:linear-gradient(#0b141c00 560px,#0b141c 722px) top center/100% 100% no-repeat,linear-gradient(90deg,#0b141c,#0b141c00 3%,#0b141c00 97%,#0b141c) top center/1083px 722px no-repeat,url(bg.webp) top center/1083px auto no-repeat,#0b141c}}
@@ -79,10 +78,9 @@ section h2,section p,.row label{text-shadow:0 1px 3px #000,0 0 8px #000}
 <h2>Funkprofil</h2><p class="muted small">Alle Geräte im Netz brauchen dasselbe Profil. Alle übrigen Einstellungen: MeshCore-App per Bluetooth (PIN).</p>
 <div class="row"><select id="rpreset"><option value="de-narrow">EU/UK Narrow 869,618 MHz · 62,5 kHz · SF8 · CR 4/8 (Standard)</option><option value="ahr-legacy">Ahrtal alt 869,618 MHz · 62,5 kHz · SF8 · CR 4/5</option><option value="eu-legacy">EU alt 869,525 MHz · 250 kHz · SF11 · CR 4/5</option></select><button class="b b2" id="setradio" type="button">Funkprofil setzen</button></div>
 <h2>Knotenname</h2><div class="row"><input id="nname" maxlength="24" placeholder="Knotenname (1–24 Zeichen)"><button class="b b2" id="setname" type="button">Name setzen</button></div>
-<div class="row"><button class="b b2" id="admbtn" type="button">Betreiber: Kanäle &amp; Verlauf</button></div>
-<div id="admin"><p class="muted small">Betreiber: Kanäle anlegen/ändern und den Nachrichtenverlauf auf dem Gerät löschen. Admin-Zugang erscheint seriell beim ersten Start (neu: 10 s BOOT-Taste).</p><input id="apass" type="password" placeholder="Admin-Zugang (nur Betreiber, seriell beim ersten Start)"><button class="b b2" id="alogin" type="button">Admin anmelden</button>
-<div class="row"><select id="cslot"></select><input id="cname" maxlength="24" placeholder="Kanalname"><input id="ckey" maxlength="32" placeholder="Schlüssel (32 Hex)"></div><button class="b b2" id="setch" type="button">Kanal speichern</button>
-<button class="b b2" id="wipe" type="button">Verlauf jetzt löschen</button></div>
+<h2>Kanäle</h2><p class="muted small">Kanal anlegen oder ändern (Slot 0–7, Name, 32-stelliger Hex-Schlüssel). Achtung: Jede Person im offenen WLAN kann Kanäle, Knotenname und Funkprofil ändern und den Verlauf löschen.</p>
+<div class="row"><select id="cslot"></select><input id="cname" maxlength="24" placeholder="Kanalname"><input id="ckey" maxlength="32" placeholder="Schlüssel (32 Hex)"></div><div class="row"><button class="b b2" id="setch" type="button">Kanal speichern</button></div>
+<h2>Verlauf</h2><div class="row"><button class="b b2" id="wipe" type="button">Nachrichtenverlauf auf dem Gerät löschen</button></div>
 <p class="muted" id="ifb"></p>
 <p class="muted" id="uiver">Weboberfläche DisAHRsterRadio-MeshCore 0.9.1 · MeshCore v1.18.0</p>
 <p class="muted">MeshCore (MIT) · Oberfläche aus <a href="https://github.com/Pietwars/DisAHRsterRadio" style="color:var(--sage)">DisAHRsterRadio</a> / <a href="https://github.com/Pietwars/DisasterMesh" style="color:var(--sage)">DisasterMesh</a>.</p></section>
@@ -93,10 +91,10 @@ const QUICK=[['H','Trinkwasser benötigt, Personen: ','💧','Trinkwasser'],['H'
 const KIND={H:'HILFE',I:'INFO',A:'ANGEBOT'};
 const $=s=>document.querySelector(s),enc=new TextEncoder(),dec=new TextDecoder();
 const DEMO=/[?&]demo/.test(location.search);
-let state=null,msgs=[],adminToken='',myPos=localStorage.getItem('dar-pos')||'',target=localStorage.getItem('mc-target')||'c0';
+let state=null,msgs=[],myPos=localStorage.getItem('dar-pos')||'',target=localStorage.getItem('mc-target')||'c0';
 function esc(t){return String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function cid(){let c=localStorage.getItem('mc-cid');if(!c){c=[...crypto.getRandomValues(new Uint8Array(8))].map(x=>x.toString(16).padStart(2,'0')).join('');localStorage.setItem('mc-cid',c)}return c}
-async function api(path,data){if(DEMO)return demoApi(path,data);const o={headers:{'X-Disaster-Request':'1','X-Disaster-Client':cid()},cache:'no-store'};if(adminToken)o.headers['X-Disaster-Admin']=adminToken;
+async function api(path,data){if(DEMO)return demoApi(path,data);const o={headers:{'X-Disaster-Request':'1','X-Disaster-Client':cid()},cache:'no-store'};
  if(data){o.method='POST';o.body=new URLSearchParams(data)}const r=await fetch('/api/'+path,o);if(!r.ok)throw Error(await r.text());return r}
 const now=()=>Math.floor(Date.now()/1000);
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button,section').forEach(e=>e.classList.remove('on'));b.classList.add('on');$('#'+b.dataset.tab).classList.add('on');if(b.dataset.tab=='map')loadMap();if(b.dataset.tab=='board')renderPosts();if(b.dataset.tab=='info')renderInfo()});
@@ -155,8 +153,6 @@ function renderInfo(){const s=state||{},d=s.diagnostics||{},warn=d.heapWarn||409
  $('#it').innerHTML=rows.map(r=>'<tr><td>'+r[0]+'</td><td'+(r[2]?' class="heaplow"':'')+'>'+esc(r[1]??'')+(r[2]?' ⚠&nbsp;unter&nbsp;'+Math.round(warn/1024)+'&nbsp;KB':'')+'</td></tr>').join('');$('#cslot').innerHTML=[0,1,2,3,4,5,6,7].map(i=>'<option>'+i+'</option>').join('')}
 const act=async(p,d)=>{try{$('#ifb').textContent=await (await api(p,d||{})).text();setTimeout(poll,1500)}catch(x){$('#ifb').textContent=x.message}};
 $('#refresh').onclick=$('#reload').onclick=()=>act('refresh');$('#adv').onclick=()=>act('advert');
-$('#admbtn').onclick=()=>{$('#admin').style.display='flex'};
-$('#alogin').onclick=async()=>{try{adminToken=(await (await api('admin/login',{password:$('#apass').value})).json()).token;$('#ifb').textContent='Admin angemeldet (15 min).'}catch(x){$('#ifb').textContent=x.message}};
 $('#setch').onclick=()=>act('channel',{slot:$('#cslot').value,name:$('#cname').value,key:$('#ckey').value});$('#setname').onclick=()=>act('name',{name:$('#nname').value});$('#setradio').onclick=()=>act('radio',{preset:$('#rpreset').value});$('#wipe').onclick=()=>{if(confirm('Nachrichtenverlauf auf dem Gerät wirklich löschen?'))act('history-wipe')};
 /* ---------- Abfrage ---------- */
 let lastSeq=-1,polling=false;

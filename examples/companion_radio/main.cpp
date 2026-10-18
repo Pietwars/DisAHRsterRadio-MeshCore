@@ -219,14 +219,20 @@ void setup() {
   #error "need to define filesystem"
 #endif
 
-// TEST pin123456: Bluetooth uses the fixed PIN DISASTER_BLE_PIN (also on upgrades with another saved PIN).
-  if (the_mesh.getNodePrefs()->ble_pin != DISASTER_BLE_PIN) {
-    the_mesh.getNodePrefs()->ble_pin = DISASTER_BLE_PIN;
-    the_mesh.savePrefs();
+// Bluetooth always pairs with a 6-digit PIN: the saved one (set in the app) or the default DISASTER_BLE_PIN.
+  {
+    uint32_t pin = disaster::effectiveBlePin(the_mesh.getNodePrefs()->ble_pin);
+    if (the_mesh.getNodePrefs()->ble_pin != pin) {
+      the_mesh.getNodePrefs()->ble_pin = pin;
+      the_mesh.savePrefs();
+    }
+    the_mesh.setBLEPin(pin);
   }
-  the_mesh.setBLEPin(DISASTER_BLE_PIN);
 #if defined(BLE_PIN_CODE)
-  Serial.printf("[BLE] Bluetooth-PIN %06lu (TEST); Konfiguration ueber USB/Web-Admin\n", (unsigned long)DISASTER_BLE_PIN);
+  if (the_mesh.getBLEPin() == DISASTER_BLE_PIN)
+    Serial.printf("[BLE] Bluetooth-PIN %06lu (Standard); volle MeshCore-App ueber PIN-Bluetooth\n", (unsigned long)DISASTER_BLE_PIN);
+  else
+    Serial.println("[BLE] Bluetooth mit eigener PIN (in der App gesetzt); volle MeshCore-App ueber PIN-Bluetooth");
 #endif
 
 // add bluetooth interface
@@ -340,7 +346,7 @@ void loop() {
     static unsigned long lastOled = 0; static bool showPw = false;
     if (millis() - lastOled > 15000) {  // abwechselnd WLAN-Name und offener Zugang auf dem OLED
       lastOled = millis(); showPw = !showPw;
-      String t = showPw ? String("WLAN offen / BLE-PIN 123456")
+      String t = showPw ? (the_mesh.getBLEPin() == DISASTER_BLE_PIN ? String("WLAN offen / BLE-PIN 123456") : String("WLAN offen / BLE eigene PIN"))
                         : (disaster_portal.apRunning() ? String("WLAN ") : String("WLAN FEHLER ")) + disaster_portal.ssid().substring(16);
       ui_task.showAlert(t.c_str(), 6000);
     }
