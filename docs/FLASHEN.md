@@ -6,7 +6,16 @@
 
 Geräte: **LILYGO T-Deck Plus** (`DisAHRsterRadio-MeshCore-0.9.2-LilyGo_TDeck.zip`) und **LILYGO T-Watch S3** (`DisAHRsterRadio-MeshCore-0.9.2-LilyGo_TWatchS3.zip`), beide ESP32-S3. Paket aus den [Releases](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases) laden und entpacken, Prüfsummen kontrollieren (`sha256sum -c SHA256SUMS`, Windows: `certutil -hashfile Datei SHA256`). esptool installieren: `python -m pip install esptool` (Version 4.x oder 5.x).
 
-> Der [Web-Flasher](https://pietwars.github.io/DisAHRsterRadio-MeshCore/flasher/) installiert noch die getestete T-Deck-Datei der 0.9.1 und wird erst mit dem Release 0.9.2 umgestellt. Für 0.9.2 bitte wie unten flashen.
+## Am einfachsten: Web-Flasher
+
+[Web-Flasher](https://pietwars.github.io/DisAHRsterRadio-MeshCore/flasher/) in **Chrome oder Edge am Computer** öffnen (nicht am Handy, nicht Firefox/Safari). Pro Gerät zwei Knöpfe:
+
+| Knopf | Was passiert | Wann |
+|---|---|---|
+| **Update (Einstellungen bleiben)** | schreibt nur `…-firmware.bin` an 0x10000; Identität, Kontakte, Kanäle, Verlauf, Name, Funkprofil, eigene PIN bleiben. Im Fenster „Erase device“ das Kästchen **nicht** anhaken. | Gerät läuft schon mit DisAHRsterRadio-MeshCore 0.9.x |
+| **Neuinstallation (alles löschen)** | löscht den ganzen Speicher und schreibt `…-factory.bin` an 0x0 – **neue Identität, Kontakte und Einstellungen sind weg** | neues Gerät, andere Firmware vorher, oder das Update startet nicht |
+
+Der Flasher lädt die Dateien aus dem Release v0.9.2 und prüft ihre SHA-256-Werte. Ohne Chrome/Edge: wie unten mit esptool flashen.
 
 ## Port finden
 

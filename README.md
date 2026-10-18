@@ -69,7 +69,7 @@ Das Display zeigt nur den Schriftzug **DisAHRsterRadio** mit Logo und einen Knop
 
 ## Schnellstart
 
-1. **Flashen:** Paket aus dem Release laden, `…-factory.bin` mit esptool oder [esptool-js](https://espressif.github.io/esptool-js/) an Adresse **0x0** schreiben – [Anleitung Flashen](docs/FLASHEN.md). Die `factory.bin` löscht Einstellungen, Identität und Verlauf; Update ohne Datenverlust: nur `…-firmware.bin` an 0x10000.
+1. **Flashen:** am einfachsten mit dem [Web-Flasher](https://pietwars.github.io/DisAHRsterRadio-MeshCore/flasher/) (Chrome/Edge am Computer; „Update“ behält die Einstellungen, „Neuinstallation“ löscht alles). Oder Paket aus dem Release laden, `…-factory.bin` mit esptool oder [esptool-js](https://espressif.github.io/esptool-js/) an Adresse **0x0** schreiben – [Anleitung Flashen](docs/FLASHEN.md). Die `factory.bin` löscht Einstellungen, Identität und Verlauf; Update ohne Datenverlust: nur `…-firmware.bin` an 0x10000.
 2. **Verbinden:** Handy mit dem offenen WLAN `DisAHRsterRadio-XXXXXX` verbinden, **http://192.168.4.1** öffnen – kein Passwort, höchstens 4 Handys.
 3. **MeshCore-App (optional):** per Bluetooth koppeln; die PIN zeigt das Display während der Kopplung an. Danach in der App eine eigene PIN setzen. Details: [Offener Zugang](docs/OFFENER_ZUGANG.md)
 

@@ -20,7 +20,7 @@ jobs:
         with:
           node-version: 22
       - run: node tests/web_regression.cjs
-      - name: Web-Flasher-Konfiguration (T-Deck Plus, factory.bin an 0x0)
+      - name: Web-Flasher-Konfiguration (T-Deck Plus + T-Watch S3, Update + Neuinstallation)
         run: python3 tools/flasher_fetch.py --check
       - name: Versionsprüfung (VERSION ist die einzige Quelle)
         run: python3 tools/version.py --check && python3 tests/version.test.py
