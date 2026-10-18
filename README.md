@@ -38,7 +38,7 @@ Nachrichten, Kontakte und Einstellungen laufen **nur über die Weboberfläche un
 | **LILYGO T-Deck Plus** (ESP32-S3, SX1262, 868 MHz) | `DisAHRsterRadio-MeshCore-0.9.2-LilyGo_TDeck.zip` |
 | **LILYGO T-Watch S3** (ESP32-S3, SX1262, 868 MHz) | `DisAHRsterRadio-MeshCore-0.9.2-LilyGo_TWatchS3.zip` |
 
-Jedes Paket enthält `…-factory.bin` (komplett an **0x0**), `…-firmware.bin` (Update an **0x10000**), die Einzelteile, `SHA256SUMS` und eine deutsche `ANLEITUNG.md`. Hardwaretest der 0.9.2 steht noch aus; das Release folgt erst danach.
+Jedes Paket enthält `…-factory.bin` (komplett an **0x0**), `…-firmware.bin` (Update an **0x10000**), die Einzelteile, `SHA256SUMS` und eine deutsche `ANLEITUNG.md`.
 
 ## Anzeige am Gerät
 

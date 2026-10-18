@@ -1,6 +1,6 @@
 # Änderungen
 
-## 0.9.2 · DisAHRsterRadio-MeshCore v0.9.2 (Release erst nach dem Hardwaretest)
+## 0.9.2 · DisAHRsterRadio-MeshCore v0.9.2
 
 Geräte: **LILYGO T-Deck Plus** (`DisAHRsterRadio-MeshCore-0.9.2-LilyGo_TDeck.zip`) und **LILYGO T-Watch S3** (`DisAHRsterRadio-MeshCore-0.9.2-LilyGo_TWatchS3.zip`). Firmwarekennung `v1.18.0-dar0.9.2-wifi`.
 

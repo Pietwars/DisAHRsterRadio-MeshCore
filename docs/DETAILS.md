@@ -11,8 +11,6 @@
 > - **Bluetooth-PIN nur während der Kopplung** auf dem Display (statt dauerhaft bzw. im Wechselhinweis).
 > - **LILYGO T-Watch S3** als zweites Gerät (Seitentaste über den Power-Chip AXP2101, Touch-Knopf).
 > - **Schnellmeldung:** „Senden“-Knopf auf schmalen Handys wieder im Bild (Weboberfläche).
->
-> Der Hardwaretest der 0.9.2 steht noch aus; das Release folgt erst danach.
 
 **Download:** [Releases](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases) (je Gerät ein Paket-ZIP mit `factory.bin` an **0x0**) · **Anleitung:** [Flashen](FLASHEN.md)
 
@@ -54,7 +52,7 @@ Außer dem öffentlichen Standard `hello` stehen keine Passwörter in Code, Doku
 |---|---|
 | Basis | MeshCore `main` nach **v1.18.0** (meshcore-dev/MeshCore), Git-Historie erhalten |
 | Firmware baut | ✅ LILYGO T-Deck Plus und LILYGO T-Watch S3 per GitHub Actions. Weitere Geräte der MeshCore-Konfigurator-Liste bleiben im Code, werden aber weder im CI gebaut noch veröffentlicht |
-| Auf echter Hardware getestet | T-Deck Plus mit 0.9.1 (Weboberfläche, Bluetooth mit PIN). Die 0.9.2 (Minimal-Anzeige) und die T-Watch S3: **Hardwaretest steht aus** |
+| Auf echter Hardware getestet | ✅ LILYGO T-Deck Plus und LILYGO T-Watch S3 mit 0.9.2 (von Peter, 18.10.2026); T-Deck Plus vorher mit 0.9.1 (Weboberfläche, Bluetooth mit PIN) |
 | Kompatibel mit anderen MeshCore-Geräten/Apps | ✅ normales MeshCore-Funkprotokoll (gleiches Funkprofil vorausgesetzt) |
 
 ## Kartenbedienung und Speicheroptimierung
