@@ -75,10 +75,13 @@ section h2,section p,.row label{text-shadow:0 1px 3px #000,0 0 8px #000}
 <p class="muted small">„Bekanntgeben“ sendet eine MeshCore-Bekanntgabe (Advert) mit dieser Position an alle in Funkreichweite.</p>
 <h2>Orte im Ahrtal</h2><div class="places" id="pl"></div></section>
 <section id="info"><h2>Gerät</h2><table id="it"></table>
-<div class="row"><button class="b b2" id="refresh" type="button">Kontakte neu lesen</button><button class="b b2" id="adv" type="button">Bekanntgabe senden</button><button class="b b2" id="admbtn" type="button">Admin</button></div>
-<div id="admin"><input id="apass" type="password" placeholder="Admin-Zugang (nur Betreiber, seriell beim ersten Start)"><button class="b b2" id="alogin" type="button">Admin anmelden</button>
-<input id="nname" maxlength="24" placeholder="Knotenname"><button class="b b2" id="setname" type="button">Name setzen</button>
-<div class="row"><select id="cslot"></select><input id="cname" maxlength="24" placeholder="Kanalname"><input id="ckey" maxlength="32" placeholder="Schlüssel (32 Hex)"></div><button class="b b2" id="setch" type="button">Kanal speichern</button></div>
+<div class="row"><button class="b b2" id="refresh" type="button">Kontakte neu lesen</button><button class="b b2" id="adv" type="button">Bekanntgabe senden</button></div>
+<h2>Funkprofil</h2><p class="muted small">Alle Geräte im Netz brauchen dasselbe Profil. Name, Kanäle und alle übrigen Einstellungen: MeshCore-App per Bluetooth (PIN).</p>
+<div class="row"><select id="rpreset"><option value="de-narrow">EU/UK Narrow 869,618 MHz · 62,5 kHz · SF8 · CR 4/8 (Standard)</option><option value="ahr-legacy">Ahrtal alt 869,618 MHz · 62,5 kHz · SF8 · CR 4/5</option><option value="eu-legacy">EU alt 869,525 MHz · 250 kHz · SF11 · CR 4/5</option></select><button class="b b2" id="setradio" type="button">Funkprofil setzen</button></div>
+<div class="row"><button class="b b2" id="admbtn" type="button">Betreiber: Kanäle &amp; Verlauf</button></div>
+<div id="admin"><p class="muted small">Betreiber: Kanäle anlegen/ändern und den Nachrichtenverlauf auf dem Gerät löschen. Admin-Zugang erscheint seriell beim ersten Start (neu: 10 s BOOT-Taste).</p><input id="apass" type="password" placeholder="Admin-Zugang (nur Betreiber, seriell beim ersten Start)"><button class="b b2" id="alogin" type="button">Admin anmelden</button>
+<div class="row"><select id="cslot"></select><input id="cname" maxlength="24" placeholder="Kanalname"><input id="ckey" maxlength="32" placeholder="Schlüssel (32 Hex)"></div><button class="b b2" id="setch" type="button">Kanal speichern</button>
+<button class="b b2" id="wipe" type="button">Verlauf jetzt löschen</button></div>
 <p class="muted" id="ifb"></p>
 <p class="muted" id="uiver">Weboberfläche DisAHRsterRadio-MeshCore 0.9.1 · MeshCore v1.18.0</p>
 <p class="muted">MeshCore (MIT) · Oberfläche aus <a href="https://github.com/Pietwars/DisAHRsterRadio" style="color:var(--sage)">DisAHRsterRadio</a> / <a href="https://github.com/Pietwars/DisasterMesh" style="color:var(--sage)">DisasterMesh</a>.</p></section>
@@ -153,7 +156,7 @@ const act=async(p,d)=>{try{$('#ifb').textContent=await (await api(p,d||{})).text
 $('#refresh').onclick=$('#reload').onclick=()=>act('refresh');$('#adv').onclick=()=>act('advert');
 $('#admbtn').onclick=()=>{$('#admin').style.display='flex'};
 $('#alogin').onclick=async()=>{try{adminToken=(await (await api('admin/login',{password:$('#apass').value})).json()).token;$('#ifb').textContent='Admin angemeldet (15 min).'}catch(x){$('#ifb').textContent=x.message}};
-$('#setname').onclick=()=>act('name',{name:$('#nname').value});$('#setch').onclick=()=>act('channel',{slot:$('#cslot').value,name:$('#cname').value,key:$('#ckey').value});
+$('#setch').onclick=()=>act('channel',{slot:$('#cslot').value,name:$('#cname').value,key:$('#ckey').value});$('#setradio').onclick=()=>act('radio',{preset:$('#rpreset').value});$('#wipe').onclick=()=>{if(confirm('Nachrichtenverlauf auf dem Gerät wirklich löschen?'))act('history-wipe')};
 /* ---------- Abfrage ---------- */
 let lastSeq=-1,polling=false;
 async function poll(){if(polling)return;polling=true;try{state=await (await api('state')).json();$('#st').textContent='verbunden';$('#st').className='ok';targets();

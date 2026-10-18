@@ -261,15 +261,6 @@ public:
       admin.issue(token.c_str(),millis());http.send(200,"application/json","{\"token\":\""+token+"\",\"expiresIn\":900}");
     });
     http.on("/api/admin/logout",HTTP_POST,[this](){if(!adminAllowed())return;admin.clear();http.send(200,"text/plain","Adminbereich gesperrt");});
-    http.on("/api/admin/password",HTTP_POST,[this](){
-      if(!adminAllowed())return;String pass=http.arg("password");
-      if(pass.length()<12||pass.length()>64||hasNull(pass)){http.send(400,"text/plain","Passwort: 12 bis 64 UTF-8-Bytes");return;}
-      String next=passwordHash(pass);Preferences prefs;
-      if(!prefs.begin("disaster",false)){http.send(500,"text/plain","Passwort konnte nicht gespeichert werden");return;}
-      bool saved=prefs.putString("admin-hash",next)==next.length();prefs.end();
-      if(!saved){http.send(500,"text/plain","Passwort konnte nicht gespeichert werden");return;}
-      adminHash=next;admin.clear();http.send(200,"text/plain","Passwort geaendert. Bitte neu anmelden.");
-    });
     http.on("/api/state",HTTP_GET,[this](){
       if(!permitted())return;
       http.setContentLength(CONTENT_LENGTH_UNKNOWN);
@@ -371,11 +362,6 @@ public:
       memcpy(outgoing,p,n);outgoingLen=n;lastStamp=stamp;sentOnce=true;lastSend=millis();
       outcome="Warteschlange";accept(p,n);
     });
-    http.on("/api/name",HTTP_POST,[this](){
-      if(!adminRoom())return;String name=http.arg("name");
-      if(name.length()<1||name.length()>24||hasNull(name)){http.send(400,"text/plain","Name: 1 bis 24 UTF-8-Bytes");return;}
-      uint8_t p[26]={8};memcpy(p+1,name.c_str(),name.length());accept(p,name.length()+1);
-    });
     http.on("/api/time",HTTP_POST,[this](){
       if(!room())return;
       uint32_t t=(uint32_t)strtoul(http.arg("time").c_str(),nullptr,10);
@@ -389,8 +375,10 @@ public:
       for(int i=0;i<16;i++){int a=nibble(key[2*i]),b=nibble(key[2*i+1]);if(a<0||b<0){http.send(400,"text/plain","Schluessel muss Hex sein");return;}p[34+i]=(a<<4)|b;}
       accept(p,50);
     });
+    // Funkprofil ohne Adminanmeldung (Peter, 0.9.1): nur die festen Deutschland-Profile aus dePreset().
+    // Knotenname setzt die MeshCore-App ueber PIN-Bluetooth; der Admin schuetzt nur noch Kanaele und history-wipe.
     http.on("/api/radio",HTTP_POST,[this](){
-      if(!adminRoom())return;
+      if(!room())return;
       disaster::RadioPreset preset;
       if(!disaster::dePreset(http.arg("preset").c_str(),preset)){http.send(400,"text/plain","Unbekanntes Deutschland-Funkprofil");return;}
       uint8_t p[12]={11};memcpy(p+1,&preset.freq,4);memcpy(p+5,&preset.bw,4);p[9]=preset.sf;p[10]=preset.cr;p[11]=0;accept(p,12);

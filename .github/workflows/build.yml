@@ -25,7 +25,7 @@ jobs:
       - name: Bibliotheksversionen fest (keine ^/~-Bereiche)
         run: python3 tools/pin_libs.py --check
       - name: Kartenprüfung
-        run: python3 tests/maps.test.py
+        run: python3 tests/maps.test.py && python3 tests/portal_routes.test.py
   build:
     runs-on: ubuntu-latest
     strategy:
