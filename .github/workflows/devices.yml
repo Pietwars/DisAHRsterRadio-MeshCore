@@ -2,10 +2,10 @@ name: Alle Geräte (MeshCore-Konfigurator-Liste)
 on:
   push:
     branches: [main]
-    paths: ['tools/devices.json', 'platformio.devices.ini', 'tools/build_device.sh', 'examples/**', 'src/**', 'variants/**', '.github/workflows/devices.yml']
+    paths: ['tools/devices.json', 'platformio.devices.ini', 'platformio.local.ini', 'tools/build_device.sh', 'examples/**', 'src/**', 'variants/**', '.github/workflows/devices.yml']
   pull_request:
     # nur wenn sich Geräte-Builds ändern können (spart über 100 Jobs pro PR; reine Weboberflächen-Änderungen prüft build.yml)
-    paths: ['tools/devices.json', 'platformio.devices.ini', 'platformio.ini', 'tools/build_device.sh', 'tools/write_liesmich.py', 'examples/**', '!examples/companion_radio/PortalPage.h', '!examples/companion_radio/PortalAssets.h', 'src/**', 'variants/**', '.github/workflows/devices.yml']
+    paths: ['tools/devices.json', 'platformio.devices.ini', 'platformio.local.ini', 'platformio.ini', 'tools/build_device.sh', 'tools/write_liesmich.py', 'examples/**', '!examples/companion_radio/PortalPage.h', '!examples/companion_radio/PortalAssets.h', 'src/**', 'variants/**', '.github/workflows/devices.yml']
   workflow_dispatch:
     inputs:
       alle:
@@ -24,13 +24,13 @@ jobs:
       devices: ${{ steps.m.outputs.devices }}
     steps:
       - uses: actions/checkout@v4
-      # 0.9.1: Es werden vorerst nur die auf Hardware getesteten Boards gebaut (LILYGO T-Deck Plus, Heltec V2).
+      # 0.9.2: Es werden nur LILYGO T-Deck Plus und LILYGO T-Watch S3 gebaut.
       # Die übrigen Geräte bleiben in tools/devices.json, werden aber weder hier noch im Release gebaut.
       # VOLL=true (Liste ALLE) baut bei manuellem Start mit alle=true weiterhin die komplette Liste.
       - id: m
         env:
           VOLL: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.alle == 'true' }}
-          KERN: LilyGo_TDeck Heltec_v2
+          KERN: LilyGo_TDeck LilyGo_TWatchS3
         run: |
           python3 - <<'PY' >> "$GITHUB_OUTPUT"
           import json, os

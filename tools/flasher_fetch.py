@@ -18,7 +18,7 @@ def check():
     assert [b['chipFamily'] for b in m['builds']] == ['ESP32-S3'], 'nur T-Deck Plus (ESP32-S3)'
     assert parts == [{'path': CFG['out'], 'offset': 0}], 'factory.bin muss an 0x0'
     html = (ROOT / 'docs/flasher/index.html').read_text(encoding='utf-8')
-    assert 'manifest="manifest.json"' in html and CFG['sha256'] in html and 'Heltec V2' in html
+    assert 'manifest="manifest.json"' in html and CFG['sha256'] in html and 'FLASHEN.md' in html
     print('Flasher-Konfiguration OK:', CFG['tag'], CFG['asset'])
 
 def fetch(out):

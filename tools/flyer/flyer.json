@@ -3,9 +3,9 @@
  "hero": "docs/flyer/disahrsterradio-header.jpg",
  "title_html": "Dis<span>AHR</span>sterRadio MeshCore",
  "subtitle": "@VERSION@ · MeshCore 1.18 · WLAN-Oberfläche + Bluetooth",
- "intro": "<b>Das Ahrtal-Funknetz auf MeshCore-Basis.</b> Release @VERSION@ für <b>LILYGO T-Deck Plus</b> und <b>Heltec V2</b> (868 MHz), beide auf Hardware getestet. Bedienung im Browser über offenes WLAN – ohne Anmeldung – oder per Bluetooth mit der MeshCore-App.",
+ "intro": "<b>Das Ahrtal-Funknetz auf MeshCore-Basis.</b> Release @VERSION@ für <b>LILYGO T-Deck Plus</b> und <b>LILYGO T-Watch S3</b> (868 MHz). Am Gerät: Logo und Knopf „Advert senden“. Bedienung im Browser über offenes WLAN – ohne Anmeldung – oder per Bluetooth mit der MeshCore-App.",
  "features": [
-  "Boards: T-Deck Plus, Heltec V2",
+  "Geräte: T-Deck Plus, T-Watch S3",
   "Web-Oberfläche, offenes WLAN",
   "Bluetooth mit PIN-Kopplung",
   "Chat, Meldungen, Brett, Karte",
@@ -43,7 +43,7 @@
   ],
   [
    "Projektseite",
-   "https://pietwars.github.io/DisasterMesh/"
+   "https://pietwars.github.io/DisAHRsterRadio-MeshCore/"
   ]
  ],
  "qr_url": "@RELEASE@",

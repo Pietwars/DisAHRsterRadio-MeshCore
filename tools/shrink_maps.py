@@ -83,7 +83,7 @@ def shrink(d, prof):
     return d
 
 # Aufruf: tools/shrink_maps.py <Ordner mit Rohkarten> <Zielordner, z. B. web/map>
-# Ahrtal: python3 tools/make_map.py <DisasterMesh/maps> /tmp/roh && python3 tools/shrink_maps.py /tmp/roh web/map
+# Ahrtal: python3 tools/make_map.py <GeoJSON-Ordner> /tmp/roh && python3 tools/shrink_maps.py /tmp/roh web/map
 if __name__ == "__main__":
     src, dst = Path(sys.argv[1]), Path(sys.argv[2]); dst.mkdir(parents=True, exist_ok=True)
     for f in sorted(src.glob('*.json.gz')):

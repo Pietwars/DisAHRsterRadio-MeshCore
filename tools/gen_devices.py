@@ -53,6 +53,8 @@ for d in sorted(devs,key=str.lower):
             e=f'dar_{d}_{key}'; entry['envs'][key]=e
             ini+=[f'[env:{e}]',f'extends = env:{base}','build_flags =',f'  ${{env:{base}.build_flags}}',f"  -D FIRMWARE_VERSION='\"v1.18.0-dar{VER}\"'",'']
     out.append(entry)
+# LILYGO T-Watch S3: nicht in der Upstream-Liste, eigenes Profil dar_LilyGo_TWatchS3_wifi in platformio.local.ini
+out.append({'device':'LilyGo_TWatchS3','chip':'esp32s3','envs':{'wifi':'dar_LilyGo_TWatchS3_wifi'},'webui':True,'note':'eigenes Profil (platformio.local.ini), nicht in der MeshCore-Konfigurator-Liste'})
 (ROOT/'platformio.devices.ini').write_text('\n'.join(ini)+'\n')
 (ROOT/'tools/devices.json').write_text(json.dumps(out,indent=1)+'\n')
 print(len(out),'Geraete,',sum(e['webui'] for e in out),'mit Web-Oberflaeche,',sum(len(e['envs']) for e in out),'Envs')

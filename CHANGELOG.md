@@ -1,8 +1,18 @@
 # Änderungen
 
-## Unveröffentlicht (nach 0.9.1)
+## 0.9.2 · DisAHRsterRadio-MeshCore v0.9.2 (Release erst nach dem Hardwaretest)
 
-- **Web-Flasher für LILYGO T-Deck Plus** auf GitHub Pages (`/flasher/`, ESP Web Tools 10.4.0): schreibt die unveränderte `factory.bin` aus dem Release v0.9.1 an 0x0; der Pages-Workflow lädt sie aus dem Release und prüft die SHA-256 (`tools/flasher_fetch.py`, Konfiguration `docs/flasher/flasher.json`). Heltec V2 vorerst nur manuell. Neue Anleitung `docs/FLASHEN.md` (Port finden, esptool-Befehle, Update an 0x10000). Firmware unverändert.
+Geräte: **LILYGO T-Deck Plus** (`DisAHRsterRadio-MeshCore-0.9.2-LilyGo_TDeck.zip`) und **LILYGO T-Watch S3** (`DisAHRsterRadio-MeshCore-0.9.2-LilyGo_TWatchS3.zip`). Firmwarekennung `v1.18.0-dar0.9.2-wifi`.
+
+- **Minimal-Anzeige (neue Oberfläche `examples/companion_radio/ui-brand/`):** Das Display zeigt nur den Schriftzug DisAHRsterRadio mit Logo (`logo/disahrsterradio-display.png`, Ausschnitt aus dem Titelbild `docs/flyer/disahrsterradio-header.jpg`, umgerechnet mit `tools/gen_brand_logo.py`) und einen Knopf **„Advert senden“**. Alle übrigen Display-Seiten, die Nachrichtenvorschau, die Nachrichten-/Tastaturbedienung der Testversionen und der WLAN/PIN-Wechselhinweis sind entfernt. Nachrichten und Einstellungen nur noch über MeshCore-App (Bluetooth mit PIN) und Weboberfläche.
+- **Advert:** jeder Advert ist ein **Flood-Advert** (`MyMesh::floodAdvert()`, wie „Advert senden → Flood“ in der App); danach 2 s „Advert gesendet“, höchstens einer je 10 s („Bitte N s warten“). Display geht nach 30 s ohne Bedienung aus; neue Nachrichten wecken es nicht.
+- **T-Deck Plus:** Trackball kurz = Display an/aus, 2,5 s halten = Flood-Advert, kein Abschalten per Trackball; Tastatur (auch Enter) ohne Funktion.
+- **LILYGO T-Watch S3 neu** (Profil `dar_LilyGo_TWatchS3_wifi`, ESP32-S3, SX1262, AXP2101, Touch): Seitentaste kurz = Display an/aus, ca. 2 s = Flood-Advert (Tasten-Interrupt des AXP2101), ca. 6 s = harte Abschaltung durch den AXP2101 (vorher 4 s); Knopf „Advert senden“ antippen = Flood-Advert, Antippen bei dunklem Display weckt nur. Abfrage alle 20 ms, 300 ms Entprellung.
+- **Bluetooth-PIN nur während der Kopplung** auf dem Display (Passkey-Abfrage bis Kopplung fertig/abgebrochen, höchstens 60 s; Verbindung ohne Kopplung nach 2,5 s, höchstens 60 s). Die PIN steht in keiner Anleitung mehr.
+- **Schnellmeldung (Weboberfläche):** „Senden“-Knopf auf schmalen Handys wieder im Bild.
+- **Nur noch T-Deck Plus und T-Watch S3 in CI und Release** (`build.yml`, `devices.yml`, `release.yml`; Release-Titel „DisAHRsterRadio-MeshCore v<Version>“). Heltec V2 ist nicht mehr Teil des Releases.
+- Doku (README, `docs/DETAILS.md`, `docs/FLASHEN.md`, `docs/OFFENER_ZUGANG.md`, ANLEITUNG-Vorlagen) auf 0.9.2 aktualisiert: Anzeige, Tastentabellen, Geräte; Hinweise auf frühere Schwester-Repositorys entfernt.
+- **Web-Flasher für LILYGO T-Deck Plus** auf GitHub Pages (`/flasher/`, ESP Web Tools 10.4.0): schreibt die unveränderte `factory.bin` aus dem Release v0.9.1 an 0x0; der Pages-Workflow lädt sie aus dem Release und prüft die SHA-256 (`tools/flasher_fetch.py`, Konfiguration `docs/flasher/flasher.json`). Neue Anleitung `docs/FLASHEN.md` (Port finden, esptool-Befehle, Update an 0x10000). Firmware unverändert. Bis zum Release 0.9.2 installiert der Web-Flasher die getestete 0.9.1-Datei.
 
 ## 0.9.1 · 18.10.2026 · Release
 
@@ -59,7 +69,7 @@ GitHub-Release `v0.9.1` mit den auf Hardware getesteten Paketen für **LILYGO T-
 
 ## 0.9.0-alpha-Nachtrag · 17.10.2026 · Vereinheitlichung
 
-- README: Abschnitt „Projektfamilie DisAHRsterRadio“ (in allen drei Repositorys identisch) mit Versionen, Live-Demos, Release, Flyern und Namensregel (DisAHRsterRadio = Projekt/Marke, MeshAhrtal = Weboberfläche, DisasterMesh = Original-Repo).
+- README: Abschnitt „Projektfamilie DisAHRsterRadio“ (in allen drei Repositorys identisch) mit Versionen, Live-Demos, Release, Flyern und Namensregel (DisAHRsterRadio = Projekt/Marke, MeshAhrtal = Weboberfläche).
 - Vorschaubilder aller sechs Bereiche neu aus der Live-Demo aufgenommen (Handygröße, aktuelles Vollbild-Design) als `docs/images/funktion-*.jpg`; alte Bilder `darmc-*.png` und PNG-Fassungen entfernt.
 - Flyer `docs/flyer/DisAHRsterRadio-MeshCore-Flyer.pdf` (Druck, QR-Codes zu Release und Demo) und `…-Flyer-digital.pdf` (klickbare Links zu Repository, Release, Live-Demo, Projektseite); in der Live-Demo unter `/flyer/` verlinkt.
 - Boardtabelle mit Flash-Belegung der 3-MB-App-Partition, Build-Stand 105 Geräte.
