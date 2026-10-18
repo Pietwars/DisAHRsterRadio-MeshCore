@@ -89,7 +89,7 @@ public:
 class HomeScreen : public UIScreen {
   enum HomePage {
     FIRST,
-#if UI_HAS_KEYBOARD
+#if UI_HAS_CHAT
     MESSAGES,
 #endif
     RECENT,
@@ -331,17 +331,22 @@ public:
         display.drawTextCentered(display.width() / 2, 43, tmp);
         #endif
       }
-#if UI_HAS_KEYBOARD
+#if UI_HAS_CHAT
     } else if (_page == HomePage::MESSAGES) {
       display.setColor(UIColor::primary_txt);
       display.setTextSize(2);
       display.drawTextCentered(display.width() / 2, 22, "Nachrichten");
       display.setTextSize(1);
       display.setColor(UIColor::secondary_txt);
+  #if UI_HAS_KEYBOARD
       display.drawTextCentered(display.width() / 2, 40, "Enter: Kanal/Kontakt waehlen");
       display.drawTextCentered(display.width() / 2, 47, "und auf der Tastatur tippen");
       display.setColor(tdeck_input.hasKeyboard() ? UIColor::corp_blue : UIColor::warning_txt);
       display.drawTextCentered(display.width() / 2, 56, tdeck_input.hasKeyboard() ? "Tastatur bereit" : "Tastatur nicht gefunden");
+  #else
+      display.drawTextCentered(display.width() / 2, 42, "Mitte tippen: oeffnen");
+      display.drawTextCentered(display.width() / 2, 52, "Kanal/Kontakt, Tastatur");
+  #endif
 #endif
     } else if (_page == HomePage::RECENT) {
       the_mesh.getRecentlyHeard(recent, UI_RECENT_LIST_SIZE);
@@ -590,7 +595,7 @@ public:
 #endif
       return true;
     }
-#if UI_HAS_KEYBOARD
+#if UI_HAS_CHAT
     if (c == KEY_ENTER && _page == HomePage::MESSAGES) {
       _task->openChat();
       return true;
@@ -743,12 +748,12 @@ public:
   }
 };
 
-#if UI_HAS_KEYBOARD
+#if UI_HAS_CHAT
   #include "ChatScreen.h"
 #endif
 
 void UITask::openChat() {
-#if UI_HAS_KEYBOARD
+#if UI_HAS_CHAT
   if (chat) {
     ((ChatScreen *) chat)->open();
     setCurrScreen(chat);
@@ -757,7 +762,7 @@ void UITask::openChat() {
 }
 
 void UITask::onACKRecv(uint32_t ack_crc) {
-#if UI_HAS_KEYBOARD
+#if UI_HAS_CHAT
   if (chat) ((ChatScreen *) chat)->onAck(ack_crc);
   if (isChatOpen()) _next_refresh = 100;
 #endif
@@ -797,8 +802,10 @@ void UITask::begin(DisplayDriver* display, SensorManager* sensors, NodePrefs* no
   splash = new SplashScreen(this);
   home = new HomeScreen(this, &rtc_clock, sensors, node_prefs);
   msg_preview = new MsgPreviewScreen(this, &rtc_clock);
-#if UI_HAS_KEYBOARD
+#if UI_HAS_CHAT
   chat = new ChatScreen(this, node_prefs);
+#endif
+#if UI_HAS_KEYBOARD
   tdeck_input.begin();
 #endif
   setCurrScreen(splash);
@@ -843,7 +850,7 @@ void UITask::onMessageRecv(mesh::Packet *pkt, const ContactInfo &from, uint8_t t
   if (!(txt_type == TXT_TYPE_PLAIN || txt_type == TXT_TYPE_SIGNED_PLAIN)) return;
 
   uint8_t path_len = pkt->isRouteFlood() ? pkt->path_len : 0xFF;
-#if UI_HAS_KEYBOARD
+#if UI_HAS_CHAT
   if (chat) ((ChatScreen *) chat)->onContactMsg(from, text);
   if (isChatOpen()) {   // beim Tippen nicht in die Vorschau springen
     _next_refresh = 100;
@@ -872,7 +879,7 @@ void UITask::onMessageRecv(mesh::Packet *pkt, const ContactInfo &from, uint8_t t
 
 void UITask::onChannelMessageRecv(mesh::Packet *pkt, ChannelDetails& channel_details, const char* text) {
   uint8_t path_len = pkt->isRouteFlood() ? pkt->path_len : 0xFF;
-#if UI_HAS_KEYBOARD
+#if UI_HAS_CHAT
   if (chat) ((ChatScreen *) chat)->onChannelMsg(channel_details, text);
   if (isChatOpen()) {   // beim Tippen nicht in die Vorschau springen
     _next_refresh = 100;
@@ -1092,7 +1099,7 @@ void UITask::loop() {
   if (c != 0 && curr) {
     curr->handleInput(c);
     _auto_off = millis() + AUTO_OFF_MILLIS;   // extend auto-off timer
-#if UI_HAS_KEYBOARD
+#if UI_HAS_CHAT
     if (isChatOpen()) _auto_off = millis() + 60000;   // beim Schreiben/Lesen laenger an
 #endif
     _next_refresh = 100;  // trigger refresh

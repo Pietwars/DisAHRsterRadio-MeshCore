@@ -5,6 +5,8 @@
 // Ablauf: Startseite "Nachrichten" -> Enter -> Liste (Kanaele, dann Kontakte)
 //         -> Trackball hoch/runter waehlen, Klick/Enter oeffnen
 //         -> tippen, Enter sendet, Ruecktaste loescht, Trackball-Klick macht a/o/u/s zu ae/oe/ue/ss.
+// T-Watch S3 (UI_HAS_TOUCH_CHAT=1): gleiche Nachrichtenlogik, Bedienung per Touch:
+//         Liste antippen/wischen, Schnellantworten, Bildschirmtastatur (QWERTZ mit Umlauten, 123-Seite).
 
 #ifndef CHAT_LOG_SIZE
   #define CHAT_LOG_SIZE 48
@@ -14,6 +16,9 @@
 #define CHAT_KEY_PREFIX  6
 #define CHAT_MAX_TARGETS (MAX_GROUP_CHANNELS + MAX_CONTACTS)
 #define CHAT_SEND_GAP_MS 3000
+#ifndef CHAT_ROW_H
+  #define CHAT_ROW_H 5     // Zeilenhoehe in logischen Pixeln (T-Deck: 16-px-Schrift / 3,75)
+#endif
 
 // UTF-8 -> Code Page 437 (Schrift des ST7789-Treibers): deutsche Umlaute bleiben lesbar.
 static void chatToCP437(char* dest, const char* src, size_t dest_size) {
@@ -260,13 +265,21 @@ class ChatScreen : public UIScreen {
     return cols < 8 ? 8 : cols;
   }
 
-  void renderList(DisplayDriver& display) {
+  void renderHeader(DisplayDriver& display, const char* utf8_title) {
+    char cp[48];
     display.setColor(UIColor::title_bkg);
-    display.fillRect(0, 0, display.width(), 6);
+    display.fillRect(0, 0, display.width(), CHAT_ROW_H + 1);
     display.setColor(UIColor::title_txt);
+    chatToCP437(cp, utf8_title, sizeof(cp));
     display.setCursor(1, 1);
-    display.print("Nachricht an ...");
-    const int row_h = 5, top = 7, rows = 10;
+    display.print(cp);
+  }
+
+#if UI_HAS_KEYBOARD
+  void renderList(DisplayDriver& display) {
+    renderHeader(display, "Nachricht an ...");
+    const int row_h = CHAT_ROW_H, top = CHAT_ROW_H + 2;
+    const int rows = (display.height() - top - CHAT_ROW_H) / CHAT_ROW_H;
     int n = targetCount();
     if (n == 0) {
       display.setColor(UIColor::secondary_txt);
@@ -295,19 +308,14 @@ class ChatScreen : public UIScreen {
       display.print(cp);
     }
     display.setColor(UIColor::secondary_txt);
-    display.setCursor(1, 59);
+    display.setCursor(1, display.height() - CHAT_ROW_H);
     display.print("Klick/Enter: oeffnen  Links: zurueck");
   }
+#endif
 
-  void renderChat(DisplayDriver& display) {
-    display.setColor(UIColor::title_bkg);
-    display.fillRect(0, 0, display.width(), 6);
-    display.setColor(UIColor::title_txt);
+  // Verlauf des offenen Gespraechs zwischen y=top und y=bottom (exklusiv).
+  void renderHistory(DisplayDriver& display, int top, int bottom) {
     char cp[CHAT_ENTRY_MAX + 48];
-    chatToCP437(cp, _title, sizeof(cp));
-    display.setCursor(1, 1);
-    display.print(cp);
-
     int cols = columns(display);
     // Zeilen fuer dieses Gespraech, aelteste zuerst
     int nlines = 0;
@@ -329,7 +337,8 @@ class ChatScreen : public UIScreen {
         nlines -= 16;
       }
     }
-    const int row_h = 5, top = 7, rows = 9;   // Verlauf: y 7..51
+    const int row_h = CHAT_ROW_H;
+    const int rows = (bottom - top) / row_h;
     int max_scroll = nlines > rows ? nlines - rows : 0;
     if (_scroll > max_scroll) _scroll = max_scroll;
     int first = nlines - rows - _scroll; if (first < 0) first = 0;
@@ -347,10 +356,12 @@ class ChatScreen : public UIScreen {
       display.setColor(UIColor::warning_txt);
       display.drawTextRightAlign(display.width() - 1, top, "^");
     }
+  }
 
-    // Eingabe (zwei Zeilen, Ende sichtbar)
-    display.setColor(UIColor::secondary_txt);
-    display.fillRect(0, 52, display.width(), 1);
+  // Eingabe (zwei Zeilen, Ende sichtbar) ab y.
+  void renderInput(DisplayDriver& display, int y, int max_w) {
+    char cp[CHAT_INPUT_MAX + 16];
+    int cols = (max_w * columns(display)) / display.width();
     char shown[CHAT_INPUT_MAX + 8];
     snprintf(shown, sizeof(shown), ">%s_", _input);
     chatToCP437(cp, shown, sizeof(cp));
@@ -363,10 +374,21 @@ class ChatScreen : public UIScreen {
       char seg[CHAT_LINE_CHARS];
       int take = len - off; if (take > cols) take = cols;
       memcpy(seg, cp + off, take); seg[take] = 0;
-      display.setCursor(1, 54 + r * row_h);
+      display.setCursor(1, y + r * CHAT_ROW_H);
       display.print(seg);
     }
   }
+
+#if UI_HAS_KEYBOARD
+  void renderChat(DisplayDriver& display) {
+    renderHeader(display, _title);
+    int sep = display.height() - 2 * CHAT_ROW_H - 2;
+    renderHistory(display, CHAT_ROW_H + 2, sep);
+    display.setColor(UIColor::secondary_txt);
+    display.fillRect(0, sep, display.width(), 1);
+    renderInput(display, display.height() - 2 * CHAT_ROW_H, display.width());
+  }
+#endif
 
 public:
   ChatScreen(UITask* task, NodePrefs* prefs) : _task(task), _prefs(prefs) {
@@ -406,6 +428,7 @@ public:
     return kind == 0 ? ch_idx == _ch_idx : memcmp(key, _key, CHAT_KEY_PREFIX) == 0;
   }
 
+#if UI_HAS_KEYBOARD
   int render(DisplayDriver& display) override {
     display.setTextSize(1);
     if (_in_chat) renderChat(display); else renderList(display);
@@ -436,4 +459,10 @@ public:
     if (c >= 0x20 && c < 0x7F) { appendChar((char)c); _scroll = 0; return true; }
     return false;
   }
+#endif
+
+#if UI_HAS_TOUCH_CHAT
+private:
+#include "ChatTouch.h"
+#endif
 };

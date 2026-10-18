@@ -344,7 +344,7 @@ void loop() {
 #ifdef DISPLAY_CLASS
   {
     static unsigned long lastOled = 0; static bool showPw = false;
-#if UI_HAS_KEYBOARD
+#if UI_HAS_CHAT
     if (ui_task.isChatOpen()) lastOled = millis();  // beim Tippen kein Hinweis-Popup ueber dem Text
 #endif
     if (millis() - lastOled > 15000) {  // abwechselnd WLAN-Name und offener Zugang auf dem OLED
