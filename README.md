@@ -43,6 +43,8 @@ Firmware 0.9.1 auf echter Hardware getestet: **LILYGO T-Deck Plus** und **Heltec
 
 **Download:** [Release v0.9.1](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.1) (T-Deck Plus und Heltec V2, je Paket-ZIP und `factory.bin` an **0x0**) · **Flyer (A5):** [Druck-PDF mit QR-Codes](docs/flyer/DisAHRsterRadio-MeshCore-Flyer.pdf) · [Digital-PDF mit klickbaren Links](docs/flyer/DisAHRsterRadio-MeshCore-Flyer-digital.pdf)
 
+**Web-Flasher (nur LILYGO T-Deck Plus):** [pietwars.github.io/DisAHRsterRadio-MeshCore/flasher](https://pietwars.github.io/DisAHRsterRadio-MeshCore/flasher/) – in Chrome/Edge am Computer, schreibt die `factory.bin` aus dem Release v0.9.1 an 0x0 (löscht Einstellungen). **Heltec V2 vorerst manuell** mit esptool bzw. esptool-js: [Anleitung Flashen](docs/FLASHEN.md) (Port finden unter Windows/macOS/Linux, Befehle, Update ohne Datenverlust).
+
 ## Zugang auf einen Blick
 
 | Zugang | Aktueller Stand |

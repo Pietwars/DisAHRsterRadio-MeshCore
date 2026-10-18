@@ -1,0 +1,24 @@
+{
+ "repo": "Pietwars/DisAHRsterRadio-MeshCore",
+ "tag": "v0.9.1",
+ "asset": "DisAHRsterRadio-MeshCore-tdeck-plus-v0.9.1-factory.bin",
+ "member": "",
+ "sha256": "dea54631db6195c5eaab7eb0945858ea7c83d2c06fd8a6d6d7129fc7513e9721",
+ "out": "firmware-tdeck-plus.bin",
+ "manifest": {
+  "name": "DisAHRsterRadio-MeshCore 0.9.1 · LILYGO T-Deck Plus",
+  "version": "0.9.1",
+  "new_install_prompt_erase": true,
+  "builds": [
+   {
+    "chipFamily": "ESP32-S3",
+    "parts": [
+     {
+      "path": "firmware-tdeck-plus.bin",
+      "offset": 0
+     }
+    ]
+   }
+  ]
+ }
+}
