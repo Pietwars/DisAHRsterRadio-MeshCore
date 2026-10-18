@@ -283,8 +283,8 @@ class ChatScreen : public UIScreen {
     int n = targetCount();
     if (n == 0) {
       display.setColor(UIColor::secondary_txt);
-      display.setCursor(1, top + 5);  display.print("Keine Kanaele/Kontakte.");
-      display.setCursor(1, top + 10); display.print("Links: zurueck");
+      display.setCursor(1, top + CHAT_ROW_H);  display.print("Keine Kanaele/Kontakte");
+      display.setCursor(1, top + 2 * CHAT_ROW_H); display.print("<-: zurueck");
       return;
     }
     if (_sel < _list_top) _list_top = _sel;
@@ -309,7 +309,7 @@ class ChatScreen : public UIScreen {
     }
     display.setColor(UIColor::secondary_txt);
     display.setCursor(1, display.height() - CHAT_ROW_H);
-    display.print("Klick/Enter: oeffnen  Links: zurueck");
+    display.print("Klick:waehlen  <-:zurueck");
   }
 #endif
 
@@ -345,7 +345,7 @@ class ChatScreen : public UIScreen {
     if (nlines == 0) {
       display.setColor(UIColor::secondary_txt);
       display.setCursor(1, top);
-      display.print("Noch keine Nachrichten.");
+      display.print("Keine Nachrichten.");
     }
     for (int r = 0; r < rows && first + r < nlines; r++) {
       display.setColor(_line_out[first + r] ? UIColor::corp_blue : UIColor::primary_txt);
