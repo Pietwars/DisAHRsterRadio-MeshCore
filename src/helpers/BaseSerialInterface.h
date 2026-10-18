@@ -17,6 +17,8 @@ public:
   virtual void loop() {};
   // True only for the transport which supplied the current frame.
   virtual bool isPublicTransport() const { return false; }
+  // True only when the current frame came over Bluetooth.
+  virtual bool isBluetoothTransport() const { return false; }
 
   virtual bool isWriteBusy() const = 0;
   virtual size_t writeFrame(const uint8_t src[], size_t len) = 0;

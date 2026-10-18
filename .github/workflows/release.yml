@@ -1,7 +1,9 @@
 name: Release
-# Baut bei jedem Versions-Tag v* die drei Haupt-Boards (tools/package.sh) und alle Geräte aus tools/devices.json
-# (tools/build_device.sh), prüft jedes Paket (Vollständigkeit, Prüfsummen, Version) und veröffentlicht eine
-# GitHub-Vorabversion. Fehlt ein Paket oder eine Datei, bricht der Lauf vor der Veröffentlichung ab.
+# Baut bei jedem Versions-Tag v* die Release-Boards: Heltec V2 (tools/package.sh) und LILYGO T-Deck Plus
+# (tools/build_device.sh LilyGo_TDeck), prüft jedes Paket (Vollständigkeit, Prüfsummen, Version) und veröffentlicht
+# ein GitHub-Release. Übrige Boards bleiben im Code, sind aber vorerst nicht im Release.
+# Gibt es das Release zum Tag schon (z. B. mit den auf Hardware getesteten Paketen), wird nichts hochgeladen oder ersetzt;
+# die CI-Pakete bleiben dann nur als Workflow-Artefakte zum Vergleich.
 on:
   push:
     tags: ['v*']
@@ -39,7 +41,7 @@ jobs:
       - id: m
         run: |
           if [ -n "$TAG" ]; then
-            echo "devices=$(python3 -c "import json;print(json.dumps([d['device'] for d in json.load(open('tools/devices.json'))]))")" >> "$GITHUB_OUTPUT"
+            echo 'devices=["LilyGo_TDeck"]' >> "$GITHUB_OUTPUT"
           else
             echo 'devices=[]' >> "$GITHUB_OUTPUT"
           fi
@@ -49,7 +51,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        env: [disaster_t3s3_sx1262_wifi, disaster_tlora_v2_1_sx1276_wifi, disaster_heltec_v2_sx1276_wifi]
+        env: [disaster_heltec_v2_sx1276_wifi]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -106,17 +108,17 @@ jobs:
       - name: Pakete prüfen (Vollständigkeit, Prüfsummen, Version)
         run: |
           V=$(python3 tools/version.py --get)
-          python3 tools/verify_release.py dist DisAHRsterRadio-MeshCore "$V" spiffs.bin t3s3 t3-v161 heltec-v2
-          if [ -n "$TAG" ]; then python3 tools/verify_devices.py dist "$V"; fi
+          python3 tools/verify_release.py dist DisAHRsterRadio-MeshCore "$V" spiffs.bin heltec-v2
+          if [ -n "$TAG" ]; then python3 tools/verify_devices.py dist "$V" LilyGo_TDeck; fi
           (cd dist && sha256sum *.zip > SHA256SUMS-DisAHRsterRadio-MeshCore-$V.txt)
           ls dist | wc -l
       - name: Release-Text erzeugen
         run: |
           python3 tools/release_notes.py "$(python3 tools/version.py --get)" "${{ github.repository }}" DisAHRsterRadio-MeshCore \
-            "t3s3=LILYGO T3-S3 V1.3 (SX1262)" "t3-v161=LILYGO T3 V1.6.1 (SX1276)" "heltec-v2=Heltec WiFi LoRa 32 V2 (SX1276)" | tee notes.md
+            "heltec-v2=Heltec WiFi LoRa 32 V2 (SX1276)" | tee notes.md
           echo "" >> notes.md
-          echo "Zusätzlich je ein Paket pro Gerät aus der MeshCore-Konfigurator-Liste (\`DisAHRsterRadio-MeshCore-<Version>-<Gerät>.zip\`, $(python3 -c "import json;print(len(json.load(open('tools/devices.json'))))") Geräte); Übersicht in der README." >> notes.md
-      - name: Vorabversion veröffentlichen
+          echo "Zusätzlich das Paket für den LILYGO T-Deck / T-Deck Plus (\`DisAHRsterRadio-MeshCore-<Version>-LilyGo_TDeck.zip\`)." >> notes.md
+      - name: Release veröffentlichen
         if: env.TAG != ''
         env:
           GH_TOKEN: ${{ github.token }}
@@ -124,8 +126,10 @@ jobs:
           ASSETS="dist/*.zip dist/SHA256SUMS-*.txt"
           for f in docs/flyer/*-Flyer.pdf docs/flyer/*-Flyer-digital.pdf docs/flyer/*-Flyer-vorschau.jpg; do [ -f "$f" ] && ASSETS="$ASSETS $f"; done
           if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release upload "$TAG" $ASSETS --clobber
+            echo "Release $TAG existiert bereits (hardware-getestete Pakete) – keine Uploads, nichts ersetzt."
+            (cd dist && sha256sum *.zip)
           else
-            gh release create "$TAG" --prerelease --verify-tag --title "DisAHRsterRadio-MeshCore $TAG (Vorabversion)" --notes-file notes.md $ASSETS
+            PRE=""; case "$TAG" in *-*) PRE=--prerelease;; esac
+            gh release create "$TAG" $PRE --verify-tag --title "DisAHRsterRadio-MeshCore $TAG" --notes-file notes.md $ASSETS
           fi
           gh release view "$TAG" --json assets --jq '.assets | length'

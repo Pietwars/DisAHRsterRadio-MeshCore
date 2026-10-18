@@ -39,7 +39,6 @@ h2{margin:4px 0;font-size:1.05rem}
 .tgt{display:flex;gap:6px}.tgt select{flex:1}
 .lbl{font-size:.72rem;color:#9ab;display:block}
 .small{font-size:.8rem}
-#admin{display:none;flex-direction:column;gap:6px}
 section h2,section p,.row label{text-shadow:0 1px 3px #000,0 0 8px #000}
 .hero{height:min(24vw,260px);flex:none}
 @media (min-width:1100px){body::before{background:linear-gradient(#0b141c00 560px,#0b141c 722px) top center/100% 100% no-repeat,linear-gradient(90deg,#0b141c,#0b141c00 3%,#0b141c00 97%,#0b141c) top center/1083px 722px no-repeat,url(bg.webp) top center/1083px auto no-repeat,#0b141c}}
@@ -75,12 +74,15 @@ section h2,section p,.row label{text-shadow:0 1px 3px #000,0 0 8px #000}
 <p class="muted small">„Bekanntgeben“ sendet eine MeshCore-Bekanntgabe (Advert) mit dieser Position an alle in Funkreichweite.</p>
 <h2>Orte im Ahrtal</h2><div class="places" id="pl"></div></section>
 <section id="info"><h2>Gerät</h2><table id="it"></table>
-<div class="row"><button class="b b2" id="refresh" type="button">Kontakte neu lesen</button><button class="b b2" id="adv" type="button">Bekanntgabe senden</button><button class="b b2" id="admbtn" type="button">Admin</button></div>
-<div id="admin"><input id="apass" type="password" placeholder="Admin-Zugang (nur Betreiber, seriell beim ersten Start)"><button class="b b2" id="alogin" type="button">Admin anmelden</button>
-<input id="nname" maxlength="24" placeholder="Knotenname"><button class="b b2" id="setname" type="button">Name setzen</button>
-<div class="row"><select id="cslot"></select><input id="cname" maxlength="24" placeholder="Kanalname"><input id="ckey" maxlength="32" placeholder="Schlüssel (32 Hex)"></div><button class="b b2" id="setch" type="button">Kanal speichern</button></div>
+<div class="row"><button class="b b2" id="refresh" type="button">Kontakte neu lesen</button><button class="b b2" id="adv" type="button">Bekanntgabe senden</button></div>
+<h2>Funkprofil</h2><p class="muted small">Alle Geräte im Netz brauchen dasselbe Profil. Alle übrigen Einstellungen: MeshCore-App per Bluetooth (PIN).</p>
+<div class="row"><select id="rpreset"><option value="de-narrow">EU/UK Narrow 869,618 MHz · 62,5 kHz · SF8 · CR 4/8 (Standard)</option><option value="ahr-legacy">Ahrtal alt 869,618 MHz · 62,5 kHz · SF8 · CR 4/5</option><option value="eu-legacy">EU alt 869,525 MHz · 250 kHz · SF11 · CR 4/5</option></select><button class="b b2" id="setradio" type="button">Funkprofil setzen</button></div>
+<h2>Knotenname</h2><div class="row"><input id="nname" maxlength="24" placeholder="Knotenname (1–24 Zeichen)"><button class="b b2" id="setname" type="button">Name setzen</button></div>
+<h2>Kanäle</h2><p class="muted small">Kanal anlegen oder ändern (Slot 0–7, Name, 32-stelliger Hex-Schlüssel). Achtung: Jede Person im offenen WLAN kann Kanäle, Knotenname und Funkprofil ändern und den Verlauf löschen.</p>
+<div class="row"><select id="cslot"></select><input id="cname" maxlength="24" placeholder="Kanalname"><input id="ckey" maxlength="32" placeholder="Schlüssel (32 Hex)"></div><div class="row"><button class="b b2" id="setch" type="button">Kanal speichern</button></div>
+<h2>Verlauf</h2><div class="row"><button class="b b2" id="wipe" type="button">Nachrichtenverlauf auf dem Gerät löschen</button></div>
 <p class="muted" id="ifb"></p>
-<p class="muted" id="uiver">Weboberfläche DisAHRsterRadio-MeshCore 0.9.0-alpha · MeshCore v1.18.0</p>
+<p class="muted" id="uiver">Weboberfläche DisAHRsterRadio-MeshCore 0.9.1 · MeshCore v1.18.0</p>
 <p class="muted">MeshCore (MIT) · Oberfläche aus <a href="https://github.com/Pietwars/DisAHRsterRadio" style="color:var(--sage)">DisAHRsterRadio</a> / <a href="https://github.com/Pietwars/DisasterMesh" style="color:var(--sage)">DisasterMesh</a>.</p></section>
 </main>
 <script>
@@ -89,10 +91,10 @@ const QUICK=[['H','Trinkwasser benötigt, Personen: ','💧','Trinkwasser'],['H'
 const KIND={H:'HILFE',I:'INFO',A:'ANGEBOT'};
 const $=s=>document.querySelector(s),enc=new TextEncoder(),dec=new TextDecoder();
 const DEMO=/[?&]demo/.test(location.search);
-let state=null,msgs=[],adminToken='',myPos=localStorage.getItem('dar-pos')||'',target=localStorage.getItem('mc-target')||'c0';
+let state=null,msgs=[],myPos=localStorage.getItem('dar-pos')||'',target=localStorage.getItem('mc-target')||'c0';
 function esc(t){return String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function cid(){let c=localStorage.getItem('mc-cid');if(!c){c=[...crypto.getRandomValues(new Uint8Array(8))].map(x=>x.toString(16).padStart(2,'0')).join('');localStorage.setItem('mc-cid',c)}return c}
-async function api(path,data){if(DEMO)return demoApi(path,data);const o={headers:{'X-Disaster-Request':'1','X-Disaster-Client':cid()},cache:'no-store'};if(adminToken)o.headers['X-Disaster-Admin']=adminToken;
+async function api(path,data){if(DEMO)return demoApi(path,data);const o={headers:{'X-Disaster-Request':'1','X-Disaster-Client':cid()},cache:'no-store'};
  if(data){o.method='POST';o.body=new URLSearchParams(data)}const r=await fetch('/api/'+path,o);if(!r.ok)throw Error(await r.text());return r}
 const now=()=>Math.floor(Date.now()/1000);
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button,section').forEach(e=>e.classList.remove('on'));b.classList.add('on');$('#'+b.dataset.tab).classList.add('on');if(b.dataset.tab=='map')loadMap();if(b.dataset.tab=='board')renderPosts();if(b.dataset.tab=='info')renderInfo()});
@@ -104,6 +106,8 @@ function i32(p,i){return new DataView(p.buffer,p.byteOffset).getInt32(i,true)}
 function decodeRecord(hex){const p=bytes(hex);if(!p.length)return null;const c=p[0];let at,stamp,label,own=false,t='';
  if(c===17&&p.length>=11){at=11;stamp=u32(p,7);t='c'+p[4]}
  else if(c===16&&p.length>=16){at=16;stamp=u32(p,12);t='d'+hex.slice(8,20);if(p[11]===2){if(p.length<20)return null;at=20}}
+ else if(c===8&&p.length>=8){at=8;stamp=u32(p,4);t='c'+p[1]}
+ else if(c===7&&p.length>=13){at=13;stamp=u32(p,9);t='d'+hex.slice(2,14);if(p[8]===2)return null}
  else if(c===0xf3&&p.length>=7){at=7;stamp=u32(p,3);t='c'+p[2];own=true}
  else if((c===0xf2&&p.length>=13)||(c===0xf4&&p.length>=17)){at=c===0xf4?17:13;stamp=u32(p,3);t='d'+hex.slice(14,26);own=true}
  else return null;
@@ -145,13 +149,11 @@ $('#gps').onclick=()=>{if(!navigator.geolocation)return $('#gpsres').textContent
 $('#psend').onclick=async()=>{if(!me)return alert('Zuerst Standort holen oder Ort wählen.');const t='!DP1|'+me[0].toFixed(4)+','+me[1].toFixed(4)+'|'+now();try{$('#gpsres').textContent=await send(target,t)}catch(x){$('#gpsres').textContent='Nicht gesendet: '+x.message}};
 $('#padv').onclick=async()=>{if(!me)return alert('Zuerst Standort holen oder Ort wählen.');try{await api('position',{lat:Math.round(me[0]*1e6),lon:Math.round(me[1]*1e6)});setTimeout(async()=>{try{$('#gpsres').textContent='Position gesetzt. '+await (await api('advert',{})).text()}catch(x){$('#gpsres').textContent=x.message}},1500)}catch(x){$('#gpsres').textContent=x.message}};
 /* ---------- Gerät ---------- */
-function renderInfo(){const s=state||{},d=s.diagnostics||{},warn=d.heapWarn||40960,kb=v=>v==null?'':(v/1024).toFixed(1).replace('.',',')+' KB',low=v=>v!=null&&v<warn;const rows=[['Firmware',d.firmware],['Bereit',s.ready?'ja':'nein'],['WLAN-Clients',d.wifiClients],['Kanäle',channels().map(c=>c.name).join(', ')],['Kontakte',contacts(1).length],['Repeater',contacts(2).length],['Room-Server',contacts(3).length],['Gesendet (Flood/Direkt)',(d.txFlood??'')+' / '+(d.txDirect??'')],['Empfangen (Flood/Direkt)',(d.rxFlood??'')+' / '+(d.rxDirect??'')],['Laufzeit (s)',d.uptimeSeconds],['Freier RAM',kb(s.heap),low(s.heap)],['Niedrigster freier RAM',kb(d.minHeapBytes),low(d.minHeapBytes)],['Größter freier RAM-Block',kb(d.largestHeapBlockBytes)],['Letztes Ergebnis',s.result]];
+function renderInfo(){const s=state||{},d=s.diagnostics||{},warn=d.heapWarn||40960,kb=v=>v==null?'':(v/1024).toFixed(1).replace('.',',')+' KB',low=v=>v!=null&&v<warn;const rows=[['Firmware',d.firmware],['Bereit',s.ready?'ja':'nein'],['WLAN-Clients',d.wifiClients],['Kanäle',channels().map(c=>c.name).join(', ')],['Kontakte',contacts(1).length],['Repeater',contacts(2).length],['Room-Server',contacts(3).length],['Gesendet (Flood/Direkt)',(d.txFlood??'')+' / '+(d.txDirect??'')],['Empfangen (Flood/Direkt)',(d.rxFlood??'')+' / '+(d.rxDirect??'')],['Laufzeit (s)',d.uptimeSeconds],['Freier RAM',kb(s.heap),low(s.heap)],['Niedrigster freier RAM',kb(d.minHeapBytes),low(d.minHeapBytes)],['Größter freier RAM-Block',kb(d.largestHeapBlockBytes)],['Verlauf-Speicher',s.storage===false?'FEHLER – Nachrichten werden nicht gespeichert':s.storage?'ok':''],['Letztes Ergebnis',s.result]];
  $('#it').innerHTML=rows.map(r=>'<tr><td>'+r[0]+'</td><td'+(r[2]?' class="heaplow"':'')+'>'+esc(r[1]??'')+(r[2]?' ⚠&nbsp;unter&nbsp;'+Math.round(warn/1024)+'&nbsp;KB':'')+'</td></tr>').join('');$('#cslot').innerHTML=[0,1,2,3,4,5,6,7].map(i=>'<option>'+i+'</option>').join('')}
 const act=async(p,d)=>{try{$('#ifb').textContent=await (await api(p,d||{})).text();setTimeout(poll,1500)}catch(x){$('#ifb').textContent=x.message}};
 $('#refresh').onclick=$('#reload').onclick=()=>act('refresh');$('#adv').onclick=()=>act('advert');
-$('#admbtn').onclick=()=>{$('#admin').style.display='flex'};
-$('#alogin').onclick=async()=>{try{adminToken=(await (await api('admin/login',{password:$('#apass').value})).json()).token;$('#ifb').textContent='Admin angemeldet (15 min).'}catch(x){$('#ifb').textContent=x.message}};
-$('#setname').onclick=()=>act('name',{name:$('#nname').value});$('#setch').onclick=()=>act('channel',{slot:$('#cslot').value,name:$('#cname').value,key:$('#ckey').value});
+$('#setch').onclick=()=>act('channel',{slot:$('#cslot').value,name:$('#cname').value,key:$('#ckey').value});$('#setname').onclick=()=>act('name',{name:$('#nname').value});$('#setradio').onclick=()=>act('radio',{preset:$('#rpreset').value});$('#wipe').onclick=()=>{if(confirm('Nachrichtenverlauf auf dem Gerät wirklich löschen?'))act('history-wipe')};
 /* ---------- Abfrage ---------- */
 let lastSeq=-1,polling=false;
 async function poll(){if(polling)return;polling=true;try{state=await (await api('state')).json();$('#st').textContent='verbunden';$('#st').className='ok';targets();
@@ -207,7 +209,7 @@ function demoChan(i,name){const p=new Uint8Array(50);p[0]=18;p[1]=i;p.set(enc.en
 function chMsg(ch,stamp,body){const b=enc.encode(body),p=new Uint8Array(11+b.length);p[0]=17;p[4]=ch;new DataView(p.buffer).setUint32(7,stamp,true);p.set(b,11);return hx(p)}
 function roomMsg(room6,author4,stamp,body){const b=enc.encode(body),p=new Uint8Array(20+b.length);p[0]=16;for(let i=0;i<6;i++)p[4+i]=parseInt(room6.substr(i*2,2),16);p[11]=2;new DataView(p.buffer).setUint32(12,stamp,true);for(let i=0;i<4;i++)p[16+i]=parseInt(author4.substr(i*2,2),16);p.set(b,20);return hx(p)}
 function demoApi(path){const t=now()-3600;const J=o=>({json:async()=>o,text:async()=>typeof o=='string'?o:JSON.stringify(o)});
- if(path=='state')return J({ready:true,heap:142000,seq:7,result:'',channels:[demoChan(0,'Öffentlich'),demoChan(1,'Ahrtal-Hilfe'),'','','','','',''],contacts:[demoContact('a1b2c3d4e5f6',1,'Anna',50.5515,7.1865),demoContact('b2c3d4e5f6a7',1,'Jonas',50.5449,7.1377),demoContact('c3d4e5f6a7b8',3,'Brett Heimersheim',50.5426,7.1761),demoContact('d4e5f6a7b8c9',2,'Repeater Landskrone',50.5560,7.1520)],room:{target:'dc3d4e5f6a7b8',rights:2,pending:false},diagnostics:{firmware:'v1.18.0-dar0.9.0-alpha',wifiClients:2,txFlood:12,txDirect:3,rxFlood:40,rxDirect:5,uptimeSeconds:5321,minHeapBytes:118400,largestHeapBlockBytes:69620,heapWarn:40960}});
+ if(path=='state')return J({ready:true,heap:142000,seq:7,result:'',channels:[demoChan(0,'Öffentlich'),demoChan(1,'Ahrtal-Hilfe'),'','','','','',''],contacts:[demoContact('a1b2c3d4e5f6',1,'Anna',50.5515,7.1865),demoContact('b2c3d4e5f6a7',1,'Jonas',50.5449,7.1377),demoContact('c3d4e5f6a7b8',3,'Brett Heimersheim',50.5426,7.1761),demoContact('d4e5f6a7b8c9',2,'Repeater Landskrone',50.5560,7.1520)],room:{target:'dc3d4e5f6a7b8',rights:2,pending:false},diagnostics:{firmware:'v1.18.0-dar0.9.1',wifiClients:2,txFlood:12,txDirect:3,rxFlood:40,rxDirect:5,uptimeSeconds:5321,minHeapBytes:118400,largestHeapBlockBytes:69620,heapWarn:40960}});
  if(path=='history')return J(['1:'+chMsg(0,t,'Anna: Heimersheim: Wasser steht in der Bachstraße, Brücke gesperrt.'),'2:'+chMsg(0,t+600,'Jonas: [HILFE] Trinkwasser benötigt, Personen: 4 @ Lohrsdorf 50.5515,7.1865'),'3:'+chMsg(0,t+900,'Peter: Bin auf dem Weg, bringe 2 Kanister mit.'),'4:'+chMsg(0,t+1500,'Mia: [ANGEBOT] Strom/Ladestation verfügbar @ Bad Neuenahr 50.5449,7.1377'),
   '5:'+roomMsg('c3d4e5f6a7b8','a1b2c3d4',t-7200,'WICHTIG: Trinkwasser-Ausgabe am Bürgerhaus Heimersheim 14–17 Uhr 50.5426,7.1761'),'6:'+roomMsg('c3d4e5f6a7b8','b2c3d4e5',t-3000,'Apotheke Bad Neuenahr Notdienst bis 20 Uhr'),'7:'+roomMsg('c3d4e5f6a7b8','a1b2c3d4',t+100,'Brücke Bachstraße gesperrt, Umweg über Lohrsdorf.')].join('\n'));
  return J('Demo: nicht gesendet')}

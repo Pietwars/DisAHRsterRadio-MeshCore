@@ -169,8 +169,9 @@ public:
     bool allSuccessful = true;
     for(auto iface : _interfaces){
       if(iface.instance && iface.instance->isEnabled()){
-        // Never broadcast a USB private-key export to open wireless clients.
-        if(src[0] == 14 && (iface.type == InterfaceType::Bluetooth || iface.type == InterfaceType::WiFi || iface.type == InterfaceType::Ethernet)) continue;
+        // Private-key export reply (14) goes only back to the requesting USB or Bluetooth link
+        // (Bluetooth gets here only with an active PIN); never to WiFi, Ethernet or the portal.
+        if(src[0] == 14 && !privateReplyTarget(iface.type)) continue;
         if(iface.instance->writeFrame(src, len) != len){
           allSuccessful = false;
         }
@@ -184,6 +185,13 @@ public:
   bool isPublicTransport() const override {
     return _receivedFrom == InterfaceType::Bluetooth || _receivedFrom == InterfaceType::WiFi || _receivedFrom == InterfaceType::Ethernet;
   }
+
+  bool privateReplyTarget(InterfaceType t) const {
+    if (_receivedFrom == InterfaceType::USB || _receivedFrom == InterfaceType::Bluetooth) return t == _receivedFrom;
+    return t == InterfaceType::USB;  // unsolicited: USB only
+  }
+
+  bool isBluetoothTransport() const override { return _receivedFrom == InterfaceType::Bluetooth; }
 
   size_t checkRecvFrame(uint8_t dest[]) override {
     _receivedFrom = InterfaceType::NONE;

@@ -25,13 +25,14 @@ jobs:
       - name: Bibliotheksversionen fest (keine ^/~-Bereiche)
         run: python3 tools/pin_libs.py --check
       - name: Kartenprüfung
-        run: python3 tests/maps.test.py
+        run: python3 tests/maps.test.py && python3 tests/portal_routes.test.py
   build:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        env: [disaster_t3s3_sx1262_wifi, disaster_tlora_v2_1_sx1276_wifi, disaster_heltec_v2_sx1276_wifi, disaster_t3s3_sx1262_repeater, disaster_t3s3_sx1262_room, disaster_ttgo_repeater, disaster_ttgo_room]
+        # 0.9.1: nur die auf Hardware getesteten Boards (T-Deck Plus, Heltec V2); übrige Profile bleiben im Code
+        env: [dar_LilyGo_TDeck_wifi, disaster_heltec_v2_sx1276_wifi]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
