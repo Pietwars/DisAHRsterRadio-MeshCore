@@ -47,6 +47,7 @@ public:
   virtual void nativeRect(int x, int y, int w, int h, uint16_t c) { setColor(c); drawRect(x, y, w, h); }
   virtual void nativeText(int x, int y, int size, uint16_t c, const char* s) { setColor(c); setTextSize(size); setCursor(x, y); print(s); }
   virtual int  nativeTextWidth(const char* s, int size) { return 6 * size * (int)strlen(s); }
+  virtual int  nativeTextHeight(int size) { return 8 * size; }   // Hoehe einer Textzeile in Pixeln
   virtual void nativeImage(int x, int y, int w, int h, const uint16_t* rgb565) { }
   virtual void drawTextCentered(int mid_x, int y, const char* str) {   // helper method (override to optimise)
     int w = getTextWidth(str);

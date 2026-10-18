@@ -9,7 +9,7 @@ Aufruf:  brand_preview.py <Gerät> <Ausgabeordner> [<PlatformIO-Env>]   (braucht
 import glob, re, sys
 from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
-DEVICES = {'LilyGo_TDeck': (320, 240, 320, 150, False), 'LilyGo_TWatchS3': (240, 240, 240, 112, True)}
+DEVICES = {'LilyGo_TDeck': (320, 240, 320, 180, False), 'LilyGo_TWatchS3': (240, 240, 240, 140, True)}
 if sys.argv[1] == '--has':
     sys.exit(0 if sys.argv[2] in DEVICES else 1)
 from PIL import Image, ImageDraw
@@ -21,6 +21,62 @@ if not fonts: sys.exit('glcdfont.c nicht gefunden (erst bauen)')
 src = open(fonts[0]).read()
 F = [int(x, 16) for x in re.findall(r'0x[0-9A-Fa-f]{2}', src[src.index('{'):src.index('};')])]
 LOGO = ROOT / 'logo/disahrsterradio-display.png'
+LGFX = sorted(glob.glob(str(ROOT / '.pio/libdeps/*/LovyanGFX/src/lgfx/Fonts')))
+
+def _nocomment(t): return re.sub(r'//[^\n]*|/\*.*?\*/', '', t, flags=re.S)
+def _nums(txt): return [int(x, 0) for x in re.findall(r'0x[0-9A-Fa-f]+|\b\d+\b', txt)]
+
+class GFXFont:
+    """Adafruit-GFX-Schrift aus LovyanGFX (Fonts/GFXFF/<name>.h), wie LGFX mit Datum top_left gezeichnet"""
+    def __init__(self, name):
+        t = _nocomment(open(f'{LGFX[0]}/GFXFF/{name}.h').read())
+        self.bm = _nums(t[t.index('Bitmaps[]'):].split('{', 1)[1].split('};', 1)[0])
+        gl = t[t.index('Glyphs[]'):].split('{', 1)[1].split('};', 1)[0]
+        self.gl = [tuple(int(v) for v in re.findall(r'-?\d+', g)) for g in re.findall(r'\{([^}]*)\}', gl)]
+        tail = t[t.index(f'GFXfont {name}'):]
+        self.first, self.last, self.yadv = [int(v, 0) for v in re.findall(r'0x[0-9A-Fa-f]+|\b\d+\b', tail.split('Glyphs,', 1)[1])[:3]]
+        self.ab = max(-g[5] for g in self.gl); self.bb = max(g[2] + g[5] for g in self.gl)
+    def height(self): return self.ab + self.bb
+    def width(self, s):
+        w = 0
+        for ch in s:
+            g = self.gl[ord(ch) - self.first]; w += g[3]
+        return w
+    def draw(self, d, x, y, c, s):
+        for ch in s:
+            off, w, h, adv, xo, yo = self.gl[ord(ch) - self.first]
+            bit = 0
+            for yy in range(h):
+                for xx in range(w):
+                    b = self.bm[off + (bit >> 3)]
+                    if b & (0x80 >> (bit & 7)): d.px_set(x + xo + xx, y + self.ab + yo + yy, c)
+                    bit += 1
+            x += adv
+
+class BMPFont:
+    """Font2 (TFT_eSPI Font16, 16 px) aus LovyanGFX"""
+    def __init__(self):
+        t = _nocomment(open(f'{LGFX[0]}/Font16.h').read())
+        self.wid = _nums(t[t.index('widtbl_f16[96]'):].split('{', 1)[1].split('}', 1)[0])
+        self.chr = {}
+        for m in re.finditer(r'chr_f16_([0-9A-Fa-f]{2})\[\d+\]\s*=\s*\{([^}]*)\}', t):
+            self.chr[int(m.group(1), 16)] = _nums(m.group(2))
+    def height(self): return 16
+    def width(self, s): return sum(self.wid[ord(ch) - 32] for ch in s)
+    def draw(self, d, x, y, c, s):
+        for ch in s:
+            w = self.wid[ord(ch) - 32]; data = self.chr.get(ord(ch), []); bpr = (w + 6) >> 3
+            for yy in range(16):
+                for xx in range(w):
+                    i = yy * bpr + (xx >> 3)
+                    if i < len(data) and data[i] & (0x80 >> (xx & 7)): d.px_set(x + xx, y + yy, c)
+            x += w
+
+LGFX_FONTS = {}
+def lgfx_font(size):
+    if size not in LGFX_FONTS:
+        LGFX_FONTS[size] = GFXFont({1: 'FreeSans9pt7b', 2: 'FreeSansBold12pt7b', 3: 'FreeSansBold18pt7b'}.get(size, 'FreeSansBold24pt7b'))
+    return LGFX_FONTS[size]
 def c565(v): r, g, b = (v >> 11) & 31, (v >> 5) & 63, v & 31; return (r * 255 // 31, g * 255 // 63, b * 255 // 31)
 def q(p): r, g, b = p; return c565(((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3))
 BG, GREEN, WHITE, GREY, ORANGE, RED = [c565(x) for x in (0x08A3, 0x4EF0, 0xFFFF, 0x8410, 0xFD20, 0xF800)]
@@ -31,8 +87,13 @@ class D:
         s.im = Image.new('RGB', (W, H), BG); s.px = s.im.load(); s.dr = ImageDraw.Draw(s.im)
     def fill(s, x, y, w, h, c): s.dr.rectangle([x, y, x + w - 1, y + h - 1], fill=c)
     def rect(s, x, y, w, h, c): s.dr.rectangle([x, y, x + w - 1, y + h - 1], outline=c)
-    def tw(s, t, sz): return 6 * sz * len(t)
+    def px_set(s, x, y, c):
+        if 0 <= x < s.W and 0 <= y < s.H: s.px[x, y] = c
+    def tw(s, t, sz): return lgfx_font(sz).width(t) if s.touch else 6 * sz * len(t)
+    def th(s, sz): return lgfx_font(sz).height() if s.touch else 8 * sz
     def text(s, x, y, sz, c, t):
+        if s.touch: return lgfx_font(sz).draw(s, x, y, c, t)   # T-Watch: LovyanGFX-Schriften
+
         for ch in t:
             for i in range(5):
                 l = F[ord(ch) * 5 + i]
@@ -42,29 +103,33 @@ class D:
             x += 6 * sz
     def ctext(s, cx, y, sz, c, t): s.text(cx - s.tw(t, sz) // 2, y, sz, c, t)
     def logo(s):
-        im = Image.open(LOGO).convert('RGB').resize((s.lw, s.lh), Image.LANCZOS)
+        sys.path.insert(0, str(ROOT / 'tools')); from gen_brand_logo import fit
+        im = fit(Image.open(LOGO).convert('RGB'), s.lw, s.lh)
         b = im.tobytes(); px = bytes(v for i in range(0, len(b), 3) for v in q((b[i], b[i + 1], b[i + 2])))
         im = Image.frombytes('RGB', im.size, px)
-        s.im.paste(im, ((s.W - s.lw) // 2, 6))
+        s.im.paste(im, ((s.W - s.lw) // 2, 2))
 
 def render(d, mode):
+    """wie UITask::render() in examples/companion_radio/ui-brand/UITask.cpp"""
     W, H = d.W, d.H; small = W <= 240
     d.logo()
-    top = 8 + d.lh + (14 if (H >= 240 and W <= 240) else 12)
-    bx = W // 12; bw = W - 2 * bx; by = top; bh = H - top - (18 if W <= 240 else 22)
+    bx = W // 20; bw = W - 2 * bx; by = 2 + d.lh + 4; bh = H - by - 5
     big = 2 if small else 3
+    hs, hb = d.th(1), d.th(big)
     if mode == 'kopplung':
+        hp = d.th(3)
         d.fill(bx, by, bw, bh, WHITE)
-        d.ctext(W // 2, by + 6, 1 + (0 if small else 1), BG, "Bluetooth-Kopplung - PIN:")
-        d.ctext(W // 2, by + bh // 2 - 4 * (3 if small else 4) + 4, 3 if small else 4, BG, "XXXXXX")
-        d.ctext(W // 2, by + bh - 12, 1, GREY, "am Handy eingeben")
+        d.ctext(W // 2, by + 2, 1, BG, "Bluetooth-Kopplung - PIN:")
+        d.ctext(W // 2, by + (bh - hp) // 2 + 2, 3, BG, "XXXXXX")
+        d.ctext(W // 2, by + bh - hs - 1, 1, GREY, "am Handy eingeben")
     elif mode in ('gesendet', 'warten'):
         c, t = (GREEN, "Advert gesendet") if mode == 'gesendet' else (ORANGE, "Bitte 7 s warten")
-        d.fill(bx, by, bw, bh, c); d.ctext(W // 2, by + bh // 2 - 4 * big, big, BG, t)
+        d.fill(bx, by, bw, bh, c); d.ctext(W // 2, by + (bh - hb) // 2, big, BG, t)
     else:
         d.fill(bx, by, bw, bh, GREEN); d.rect(bx, by, bw, bh, WHITE)
-        d.ctext(W // 2, by + bh // 2 - 4 * big - 4, big, BG, "Advert senden")
-        d.ctext(W // 2, by + bh - 14, 1, BG, "antippen" if d.touch else "Trackball 2,5 s halten")
+        gap = max(1, (bh - hb - hs) // 3)
+        d.ctext(W // 2, by + gap, big, BG, "Advert senden")
+        d.ctext(W // 2, by + 2 * gap + hb, 1, BG, "antippen" if d.touch else "Trackball 2,5 s halten")
 
 out.mkdir(parents=True, exist_ok=True)
 for i, m in enumerate(['start', 'gesendet', 'warten', 'kopplung'], 1):

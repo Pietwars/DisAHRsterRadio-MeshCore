@@ -59,10 +59,12 @@ void UITask::requestAdvert() {
   _dirty = true;
 }
 
+#define BRAND_LOGO_Y 2
+
 void UITask::buttonRect(int& x, int& y, int& w, int& h) const {
+  // Bild moeglichst gross (volle Breite), darunter der Knopf bis kurz vor den unteren Rand
   int W = _display->nativeWidth(), H = _display->nativeHeight();
-  int top = 8 + BRAND_LOGO_H + (H >= 240 && W <= 240 ? 14 : 12);
-  x = W / 12; w = W - 2 * x; y = top; h = H - top - (W <= 240 ? 18 : 22);
+  x = W / 20; w = W - 2 * x; y = BRAND_LOGO_Y + BRAND_LOGO_H + 4; h = H - y - 5;
 }
 
 static void centerText(DisplayDriver* d, int cx, int y, int size, uint16_t c, const char* s) {
@@ -71,34 +73,37 @@ static void centerText(DisplayDriver* d, int cx, int y, int size, uint16_t c, co
 
 void UITask::render() {
   DisplayDriver* d = _display;
-  int W = d->nativeWidth(), H = d->nativeHeight();
+  int W = d->nativeWidth();
   bool small = W <= 240;
   d->startFrame(C_BG);
-  d->nativeImage((W - BRAND_LOGO_W) / 2, 6, BRAND_LOGO_W, BRAND_LOGO_H, BRAND_LOGO);
+  d->nativeImage((W - BRAND_LOGO_W) / 2, BRAND_LOGO_Y, BRAND_LOGO_W, BRAND_LOGO_H, BRAND_LOGO);
 
   int bx, by, bw, bh; buttonRect(bx, by, bw, bh);
   int big = small ? 2 : 3;
+  int hs = d->nativeTextHeight(1), hb = d->nativeTextHeight(big);
   if (_pairing) {
     char pin[16]; snprintf(pin, sizeof(pin), "%06lu", (unsigned long)the_mesh.getBLEPin());
+    int sp = 3, hp = d->nativeTextHeight(sp);
     d->nativeFill(bx, by, bw, bh, C_WHITE);
-    centerText(d, W / 2, by + 6, 1 + (small ? 0 : 1), C_BG, "Bluetooth-Kopplung - PIN:");
-    centerText(d, W / 2, by + bh / 2 - 4 * (small ? 3 : 4) + 4, small ? 3 : 4, C_BG, pin);
-    centerText(d, W / 2, by + bh - 12, 1, C_GREY, "am Handy eingeben");
+    centerText(d, W / 2, by + 2, 1, C_BG, "Bluetooth-Kopplung - PIN:");
+    centerText(d, W / 2, by + (bh - hp) / 2 + 2, sp, C_BG, pin);
+    centerText(d, W / 2, by + bh - hs - 1, 1, C_GREY, "am Handy eingeben");
   } else if (_status && millis() < _status_until) {
     char t[32];
     uint16_t c = _status == 1 ? C_GREEN : (_status == 2 ? C_ORANGE : C_RED);
     const char* s = _status == 1 ? "Advert gesendet" : (_status == 2 ? t : "Advert-Fehler");
     if (_status == 2) snprintf(t, sizeof(t), "Bitte %d s warten", _wait_secs);
     d->nativeFill(bx, by, bw, bh, c);
-    centerText(d, W / 2, by + bh / 2 - 4 * big, big, C_BG, s);
+    centerText(d, W / 2, by + (bh - hb) / 2, big, C_BG, s);
   } else {
     d->nativeFill(bx, by, bw, bh, C_GREEN);
     d->nativeRect(bx, by, bw, bh, C_WHITE);
-    centerText(d, W / 2, by + bh / 2 - 4 * big - 4, big, C_BG, "Advert senden");
+    int gap = (bh - hb - hs) / 3; if (gap < 1) gap = 1;
+    centerText(d, W / 2, by + gap, big, C_BG, "Advert senden");
 #if defined(UI_HAS_TOUCH)
-    centerText(d, W / 2, by + bh - 14, 1, C_BG, "antippen");
+    centerText(d, W / 2, by + 2 * gap + hb, 1, C_BG, "antippen");
 #else
-    centerText(d, W / 2, by + bh - 14, 1, C_BG, "Trackball 2,5 s halten");
+    centerText(d, W / 2, by + 2 * gap + hb, 1, C_BG, "Trackball 2,5 s halten");
 #endif
   }
   d->endFrame();
