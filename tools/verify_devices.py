@@ -1,15 +1,19 @@
 #!/usr/bin/env python3
 """Prüft die Gerätepakete (tools/build_device.sh) vor der Veröffentlichung.
 
-Aufruf: verify_devices.py <Ordner> <Version>
-Jedes Gerät aus tools/devices.json braucht DisAHRsterRadio-MeshCore-<Version>-<Gerät>.zip mit SHA256SUMS (alle Summen
+Aufruf: verify_devices.py <Ordner> <Version> [<Gerät> …]
+Jedes angegebene Gerät (ohne Angabe: jedes Gerät aus tools/devices.json) braucht DisAHRsterRadio-MeshCore-<Version>-<Gerät>.zip mit SHA256SUMS (alle Summen
 stimmen, keine leere Datei), mindestens einem Flash-Abbild (factory.bin / .uf2 / .bin / .hex) und LIESMICH mit Version.
 """
 import hashlib, json, sys, zipfile
 from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
-d, version = sys.argv[1:3]
+d, version, *only = sys.argv[1:]
 devices = [e['device'] for e in json.load(open(ROOT / 'tools' / 'devices.json'))]
+if only:
+    unknown = [x for x in only if x not in devices]
+    if unknown: sys.exit(f'Unbekannte Geräte: {unknown}')
+    devices = only
 errors = []
 for dev in devices:
     name = f'DisAHRsterRadio-MeshCore-{version}-{dev}'
