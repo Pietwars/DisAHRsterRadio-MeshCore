@@ -14,7 +14,7 @@
 
 **Version 0.9.3** · MeshCore 1.18.0 · Weboberfläche MeshAhrtal · 868 MHz · Firmwarekennung `v1.18.0-dar0.9.3`
 
-**Release v0.9.2** vom 18.10.2026 – auf echter Hardware getestet (LILYGO T-Deck Plus und LILYGO T-Watch S3).
+**Release v0.9.3** vom 18.10.2026 – **noch nicht auf echter Hardware getestet** (auf LILYGO T-Deck Plus und LILYGO T-Watch S3 getestet wurde die Vorversion 0.9.2). Neu in 0.9.3: Nachrichten zwischen Weboberfläche und MeshCore-App werden geteilt (empfangene Nachrichten in beiden, gesendete Nachrichten der einen Seite auch in der anderen sichtbar); Details: [WLAN-Portal und MeshCore-App gleichzeitig](docs/DETAILS.md#wlan-portal-und-meshcore-app-gleichzeitig-bluetooth).
 
 [![Release](https://img.shields.io/github/v/release/Pietwars/DisAHRsterRadio-MeshCore?label=Release)](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/latest)
 [![Live-Demo](https://img.shields.io/badge/Live--Demo-online-2ea44f)](https://pietwars.github.io/DisAHRsterRadio-MeshCore/)
@@ -35,10 +35,10 @@ Nachrichten, Kontakte und Einstellungen laufen **nur über die Weboberfläche un
 
 ## Unterstützte Geräte
 
-| Board | Paket (Release v0.9.2) |
+| Board | Paket (Release v0.9.3) |
 |---|---|
-| **LILYGO T-Deck Plus** (ESP32-S3, SX1262, 868 MHz) | `DisAHRsterRadio-MeshCore-0.9.2-LilyGo_TDeck.zip` |
-| **LILYGO T-Watch S3** (ESP32-S3, SX1262, 868 MHz) | `DisAHRsterRadio-MeshCore-0.9.2-LilyGo_TWatchS3.zip` |
+| **LILYGO T-Deck Plus** (ESP32-S3, SX1262, 868 MHz) | `DisAHRsterRadio-MeshCore-0.9.3-LilyGo_TDeck.zip` |
+| **LILYGO T-Watch S3** (ESP32-S3, SX1262, 868 MHz) | `DisAHRsterRadio-MeshCore-0.9.3-LilyGo_TWatchS3.zip` |
 
 Jedes Paket enthält `…-factory.bin` (komplett an **0x0**), `…-firmware.bin` (Update an **0x10000**), die Einzelteile, `SHA256SUMS` und eine deutsche `ANLEITUNG.md`.
 
@@ -76,7 +76,7 @@ Jeder Advert ist ein **Flood-Advert**; danach steht kurz „Advert gesendet“ i
 
 ## Schnellstart
 
-1. **Flashen:** am einfachsten mit dem [Web-Flasher](https://pietwars.github.io/DisAHRsterRadio-MeshCore/flasher/) (Chrome/Edge am Computer). Grüner Knopf **„Update auf 0.9.2 – … (Einstellungen bleiben)“** (empfohlen, schreibt nur `…-firmware.bin` an 0x10000) oder orange umrandeter Knopf **„Neuinstallation – … (alles löschen)“** (`…-factory.bin` an 0x0, löscht Identität, Kontakte und Verlauf). Ohne Web-Flasher: [Anleitung Flashen](docs/FLASHEN.md) (esptool).
+1. **Flashen:** am einfachsten mit dem [Web-Flasher](https://pietwars.github.io/DisAHRsterRadio-MeshCore/flasher/) (Chrome/Edge am Computer). Grüner Knopf **„Update auf 0.9.3 – … (Einstellungen bleiben)“** (empfohlen, schreibt nur `…-firmware.bin` an 0x10000) oder orange umrandeter Knopf **„Neuinstallation – … (alles löschen)“** (`…-factory.bin` an 0x0, löscht Identität, Kontakte und Verlauf). Ohne Web-Flasher: [Anleitung Flashen](docs/FLASHEN.md) (esptool).
 2. **Verbinden:** Handy mit dem offenen WLAN `DisAHRsterRadio-XXXXXX` verbinden, **http://192.168.4.1** öffnen – kein Passwort, höchstens 4 Handys.
 3. **MeshCore-App (optional):** per Bluetooth koppeln; die PIN zeigt das Display nur während der Kopplung an. Danach in der App eine eigene PIN setzen. Details: [Offener Zugang](docs/OFFENER_ZUGANG.md)
 

@@ -1,5 +1,17 @@
 # Änderungen
 
+## 0.9.3 · 18.10.2026 · Release
+
+[Release v0.9.3](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.3) „DisAHRsterRadio-MeshCore v0.9.3“ für **LILYGO T-Deck Plus** (`DisAHRsterRadio-MeshCore-0.9.3-LilyGo_TDeck.zip`) und **LILYGO T-Watch S3** (`DisAHRsterRadio-MeshCore-0.9.3-LilyGo_TWatchS3.zip`), plus `SHA256SUMS-DisAHRsterRadio-MeshCore-0.9.3.txt` und die unveränderten Flyer aus 0.9.2. Firmwarekennung `v1.18.0-dar0.9.3-wifi`. **0.9.3 ist noch nicht auf echter Hardware getestet** (getestet wurde 0.9.2); der Fix ist mit Hosttests (`tests/shared_queue.test.cpp`) und den CI-Builds geprüft.
+
+- **Fix: Nachrichten zwischen Weboberfläche und MeshCore-App.** Bisher holte die Weboberfläche jede Sekunde alle empfangenen Nachrichten aus der einzigen Offline-Warteschlange (`MyMesh::getFromOfflineQueue`, Abruf `CMD_SYNC_NEXT_MESSAGE` in `DisasterPortal::checkRecvFrame`) und entfernte sie damit auch für die App. Die Abruf-Antworten des Portals (u. a. „keine weiteren Nachrichten“) gingen über `MultiSerialInterface` zusätzlich an die App. Gesendete Befehle sieht die jeweils andere Seite im MeshCore-Protokoll grundsätzlich nicht.
+  - Gemeinsame Warteschlange mit Merker je Leser (`examples/companion_radio/SharedQueue.h`): eine empfangene Kanal- oder Direktnachricht wird erst entfernt, wenn Web **und** App sie abgeholt haben; eine später verbundene App bekommt sie nachgeliefert (bis 256 Nachrichten, bei vollem Speicher fallen zuerst die ältesten schon im Web angezeigten heraus).
+  - Antworten auf Abruf (10) und Senden (2, 3) gehen nur an den Anfragenden (`MultiSerialInterface::setReplyOnly`).
+  - In der App gesendete Kanal- und Direktnachrichten stehen im Web-Verlauf als eigene Nachricht („Du“, `DisasterPortal::recordAppSend`).
+  - Im Web gesendete Nachrichten bekommt die App als **empfangene** Nachricht mit Markierung (Protokollgrenze, keine „von anderem Gerät gesendet“-Meldung): Kanal mit Absender „<Knotenname> (Web)“, Direktnachricht im Chat des Empfängers mit Textanfang „[von mir über Web]“; ohne Zustellbestätigung in der App.
+  - Nur der erste Sendeversuch wird geteilt.
+- Doku (README, `docs/DETAILS.md`, `docs/FLASHEN.md`, `docs/OFFENER_ZUGANG.md`, ANLEITUNG im Paket) und **Web-Flasher** auf 0.9.3 („Update auf 0.9.3 – …“ und „Neuinstallation – …“, Dateien und SHA-256 aus dem Release v0.9.3). Release v0.9.2 bleibt unverändert.
+
 ## 0.9.2 · 18.10.2026 · Release
 
 [Release v0.9.2](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.2) „DisAHRsterRadio-MeshCore v0.9.2“ mit den von Peter auf **LILYGO T-Deck Plus** und **LILYGO T-Watch S3** getesteten Paketen (plus `SHA256SUMS-DisAHRsterRadio-MeshCore-0.9.2.txt` und Flyer). Geräte: **LILYGO T-Deck Plus** (`DisAHRsterRadio-MeshCore-0.9.2-LilyGo_TDeck.zip`) und **LILYGO T-Watch S3** (`DisAHRsterRadio-MeshCore-0.9.2-LilyGo_TWatchS3.zip`). Firmwarekennung `v1.18.0-dar0.9.2-wifi`.
