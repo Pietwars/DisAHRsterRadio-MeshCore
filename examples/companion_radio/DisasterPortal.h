@@ -8,9 +8,9 @@
 #if LORA_TX_POWER != 10
 #error "Unexpected portal default TX power"
 #endif
-#if defined(ENABLE_PRIVATE_KEY_EXPORT) || defined(ENABLE_PRIVATE_KEY_IMPORT)
-#error "Private key transfer must be disabled for the portal profile"
-#endif
+// 0.9.1 (Peter): private key export/import is compiled in. The portal never sends these commands;
+// OpenAccess.h allows them only over USB and PIN-paired Bluetooth, and MultiSerialInterface returns
+// the export reply only to the requesting USB/Bluetooth link (never WiFi, Ethernet or the portal).
 #include <helpers/BaseSerialInterface.h>
 #include <WebServer.h>
 #include <DNSServer.h>
