@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Erzeugt kompakte Offline-Karten (gzip) fuer die Weboberflaeche aus den
-DisasterMesh-GeoJSON-Paketen (OpenStreetMap, ODbL 1.0).
+GeoJSON-Kartenpaketen (OpenStreetMap, ODbL 1.0).
 Format: {"name","attr","bbox","view","l":[[art, x0,y0,dx,dy,...]],"p":[[art,name,x,y]]}
 Koordinaten als ganze Zahlen in 1e-5 Grad, Linien delta-kodiert."""
 import json, gzip, sys, os
-SRC = sys.argv[1] if len(sys.argv) > 1 else '/workspace/DisasterMesh/maps'
+SRC = sys.argv[1] if len(sys.argv) > 1 else 'maps'  # Ordner mit den GeoJSON-Paketen
 OUT = sys.argv[2] if len(sys.argv) > 2 else os.path.join(os.path.dirname(__file__), '..', 'web', 'static', 'map')
 MAJOR = {'motorway','trunk','primary','secondary','tertiary','motorway_link','trunk_link','primary_link','secondary_link','tertiary_link'}
 MINOR = {'residential','unclassified','living_street','service','road','pedestrian'}

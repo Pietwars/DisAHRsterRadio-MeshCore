@@ -1,15 +1,15 @@
 name: Release
-# Baut bei jedem Versions-Tag v* die Release-Boards: Heltec V2 (tools/package.sh) und LILYGO T-Deck Plus
-# (tools/build_device.sh LilyGo_TDeck), prüft jedes Paket (Vollständigkeit, Prüfsummen, Version) und veröffentlicht
-# ein GitHub-Release. Übrige Boards bleiben im Code, sind aber vorerst nicht im Release.
+# Baut bei jedem Versions-Tag v* die Release-Geräte LILYGO T-Deck Plus und LILYGO T-Watch S3
+# (tools/build_device.sh LilyGo_TDeck / LilyGo_TWatchS3), prüft jedes Paket (Vollständigkeit, Prüfsummen, Version) und
+# veröffentlicht das GitHub-Release „DisAHRsterRadio-MeshCore v<Version>“. Übrige Boards bleiben im Code, sind aber nicht im Release.
 # Gibt es das Release zum Tag schon (z. B. mit den auf Hardware getesteten Paketen), wird nichts hochgeladen oder ersetzt;
 # die CI-Pakete bleiben dann nur als Workflow-Artefakte zum Vergleich.
 on:
   push:
     tags: ['v*']
   pull_request:
-    # Probelauf (nur Haupt-Boards, ohne Veröffentlichung), wenn sich Paketierung oder dieser Workflow ändern
-    paths: ['tools/package.sh', 'tools/verify_release.py', 'tools/verify_devices.py', 'tools/release_notes.py', 'tools/ANLEITUNG.template.md', '.github/workflows/release.yml']
+    # Probelauf (beide Geräte, ohne Veröffentlichung), wenn sich Paketierung oder dieser Workflow ändern
+    paths: ['tools/build_device.sh', 'tools/write_liesmich.py', 'tools/verify_release.py', 'tools/verify_devices.py', 'tools/release_notes.py', 'tools/ANLEITUNG.template.md', '.github/workflows/release.yml']
   workflow_dispatch:
     inputs:
       tag:
@@ -40,38 +40,9 @@ jobs:
           [ -z "$TAG" ] || [ "$TAG" = "v$V" ] || { echo "Tag $TAG passt nicht zu VERSION=$V"; exit 1; }
       - id: m
         run: |
-          if [ -n "$TAG" ]; then
-            echo 'devices=["LilyGo_TDeck"]' >> "$GITHUB_OUTPUT"
-          else
-            echo 'devices=[]' >> "$GITHUB_OUTPUT"
-          fi
-  boards:
-    needs: check
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: true
-      matrix:
-        env: [disaster_heltec_v2_sx1276_wifi]
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ env.TAG }}
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - run: pip install platformio==6.2.0 esptool==5.6.0
-      - name: Weboberfläche eingebettet und aktuell
-        run: python tools/embed_web.py && git diff --exit-code -- examples/companion_radio/PortalPage.h examples/companion_radio/PortalAssets.h
-      - name: Bauen und packen
-        run: ENVS="${{ matrix.env }}" tools/package.sh dist
-      - uses: actions/upload-artifact@v4
-        with:
-          name: paket-${{ matrix.env }}
-          path: dist/*.zip
-          if-no-files-found: error
+          echo 'devices=["LilyGo_TDeck","LilyGo_TWatchS3"]' >> "$GITHUB_OUTPUT"
   devices:
     needs: check
-    if: needs.check.outputs.devices != '[]'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
@@ -85,7 +56,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: pip install platformio==6.2.0 esptool==5.6.0
+      - run: pip install platformio==6.2.0 esptool==5.6.0 pillow==11.3.0
+      - name: Weboberfläche eingebettet und aktuell
+        run: python tools/embed_web.py && git diff --exit-code -- examples/companion_radio/PortalPage.h examples/companion_radio/PortalAssets.h
       - name: Bauen und packen
         run: tools/build_device.sh "${{ matrix.device }}" dist/devices
       - uses: actions/upload-artifact@v4
@@ -94,8 +67,7 @@ jobs:
           path: dist/devices/*.zip
           if-no-files-found: error
   release:
-    needs: [check, boards, devices]
-    if: always() && needs.check.result == 'success' && needs.boards.result == 'success' && (needs.devices.result == 'success' || (needs.devices.result == 'skipped' && needs.check.outputs.devices == '[]'))
+    needs: [check, devices]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -108,16 +80,13 @@ jobs:
       - name: Pakete prüfen (Vollständigkeit, Prüfsummen, Version)
         run: |
           V=$(python3 tools/version.py --get)
-          python3 tools/verify_release.py dist DisAHRsterRadio-MeshCore "$V" spiffs.bin heltec-v2
-          if [ -n "$TAG" ]; then python3 tools/verify_devices.py dist "$V" LilyGo_TDeck; fi
+          python3 tools/verify_devices.py dist "$V" LilyGo_TDeck LilyGo_TWatchS3
           (cd dist && sha256sum *.zip > SHA256SUMS-DisAHRsterRadio-MeshCore-$V.txt)
           ls dist | wc -l
       - name: Release-Text erzeugen
         run: |
           python3 tools/release_notes.py "$(python3 tools/version.py --get)" "${{ github.repository }}" DisAHRsterRadio-MeshCore \
-            "heltec-v2=Heltec WiFi LoRa 32 V2 (SX1276)" | tee notes.md
-          echo "" >> notes.md
-          echo "Zusätzlich das Paket für den LILYGO T-Deck / T-Deck Plus (\`DisAHRsterRadio-MeshCore-<Version>-LilyGo_TDeck.zip\`)." >> notes.md
+            "LilyGo_TDeck=LILYGO T-Deck Plus" "LilyGo_TWatchS3=LILYGO T-Watch S3" | tee notes.md
       - name: Release veröffentlichen
         if: env.TAG != ''
         env:

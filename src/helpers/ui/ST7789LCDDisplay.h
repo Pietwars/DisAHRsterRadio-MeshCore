@@ -73,4 +73,15 @@ public:
   void drawXbm(int x, int y, const uint8_t* bits, int w, int h) override;
   uint16_t getTextWidth(const char* str) override;
   void endFrame() override;
+
+  int  nativeWidth() override  { return display.width(); }
+  int  nativeHeight() override { return display.height(); }
+  void nativeFill(int x, int y, int w, int h, uint16_t c) override { display.fillRect(x, y, w, h, c); }
+  void nativeRect(int x, int y, int w, int h, uint16_t c) override { display.drawRect(x, y, w, h, c); }
+  void nativeText(int x, int y, int size, uint16_t c, const char* s) override {
+    display.setTextSize(size); display.setTextColor(c); display.setCursor(x, y); display.print(s);
+  }
+  void nativeImage(int x, int y, int w, int h, const uint16_t* rgb565) override {
+    display.drawRGBBitmap(x, y, rgb565, w, h);
+  }
 };

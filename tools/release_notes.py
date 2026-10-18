@@ -18,6 +18,8 @@ print(f"""> ⚠️ **Kein zertifiziertes Notrufsystem.** In Lebensgefahr immer *
 |---|---|
 {rows}
 
-Jedes Paket enthält `…-factory.bin` (komplett an **0x0** flashen, z. B. mit https://espressif.github.io/esptool-js/), die Einzelteile unter `teile/`, `SHA256SUMS` und eine deutsche `ANLEITUNG.md`. **Antenne zuerst anschrauben!** Update ohne Datenverlust: nur `teile/firmware.bin` an 0x10000.
+Jedes Paket enthält `…-factory.bin` (komplett an **0x0** flashen, z. B. mit https://espressif.github.io/esptool-js/), die Einzelteile (`firmware.bin` für das Update an **0x10000**), `SHA256SUMS` und eine deutsche `ANLEITUNG.md`. **Antenne zuerst anschrauben!**
+
+Das Display zeigt nur das DisAHRsterRadio-Logo und den Knopf „Advert senden“ (Flood-Advert); Nachrichten und Einstellungen über die MeshCore-App (Bluetooth mit PIN, die PIN steht nur während der Kopplung auf dem Display) und die Weboberfläche im offenen WLAN.
 
 Automatisch gebaut vom Workflow „Release“ aus dem Tag `v{version}` ({repo}); vor der Veröffentlichung auf Vollständigkeit und Prüfsummen geprüft.""")

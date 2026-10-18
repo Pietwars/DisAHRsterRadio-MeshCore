@@ -8,7 +8,10 @@ read -r CHIP WEBUI ENVS < <(python3 -c "
 import json,sys;d={e['device']:e for e in json.load(open('tools/devices.json'))}['$DEV']
 print(d['chip'],int(d['webui']),' '.join(k+'='+v for k,v in d['envs'].items()))")
 NAME=DisAHRsterRadio-MeshCore-$VERSION-$DEV; D=$OUT/$NAME; rm -rf "$D"; mkdir -p "$D"; FAIL=0
+# Dateinamen: bei nur einer Rolle ohne Rollen-Suffix (NAME-factory.bin, NAME-firmware.bin, teile/), sonst NAME-<Rolle>-…, teile-<Rolle>/
+NROLES=$(echo $ENVS | wc -w)
 for kv in $ENVS; do role=${kv%%=*}; env=${kv#*=}
+  if [ "$NROLES" = 1 ]; then SUF=""; TEILE=teile; else SUF="-$role"; TEILE="teile-$role"; fi
   if ! pio run -e "$env" > "$OUT/$DEV-$role.log" 2>&1; then echo "FEHLER $DEV $role ($env)"; FAIL=1; continue; fi
   B=.pio/build/$env
   case $CHIP in
@@ -16,7 +19,7 @@ for kv in $ENVS; do role=${kv%%=*}; env=${kv#*=}
     BOOT=0x0; [ "$CHIP" = esp32 ] && BOOT=0x1000
     BOOTAPP0=$(find ~/.platformio/packages/ -path '*framework-arduinoespressif32*' -name boot_app0.bin | head -1)
     ARGS="$BOOT $B/bootloader.bin 0x8000 $B/partitions.bin 0xe000 $BOOTAPP0 0x10000 $B/firmware.bin"
-    mkdir -p "$D/teile-$role"; cp $B/bootloader.bin $B/partitions.bin $B/firmware.bin "$BOOTAPP0" "$D/teile-$role/"
+    mkdir -p "$D/$TEILE"; cp $B/bootloader.bin $B/partitions.bin "$BOOTAPP0" "$D/$TEILE/"; cp $B/firmware.bin "$D/$NAME$SUF-firmware.bin"
     FSOFF=-
     if [ "$role" = wifi ]; then
       pio run -e "$env" -t buildfs >> "$OUT/$DEV-$role.log" 2>&1 || { echo "FEHLER buildfs $DEV"; FAIL=1; continue; }
@@ -24,10 +27,14 @@ for kv in $ENVS; do role=${kv%%=*}; env=${kv#*=}
 for i in range(0,len(d),32):
   m,t,st,o,sz=struct.unpack('<HBBII',d[i:i+12])
   if m==0x50aa and t==1 and st in(0x82,0x83):print(hex(o));break" $B/partitions.bin)
-      cp $B/spiffs.bin "$D/teile-$role/"; ARGS="$ARGS $FSOFF $B/spiffs.bin"
+      cp $B/spiffs.bin "$D/$TEILE/"; ARGS="$ARGS $FSOFF $B/spiffs.bin"
     fi
-    $ESPTOOL --chip $CHIP merge-bin -o "$D/$NAME-$role-factory.bin" --flash-mode keep --flash-freq keep --flash-size keep $ARGS >/dev/null || { echo "FEHLER merge $DEV $role"; FAIL=1; continue; }
-    echo "$role|$CHIP|$BOOT|$FSOFF" >> "$D/.offsets";;
+    $ESPTOOL --chip $CHIP merge-bin -o "$D/$NAME$SUF-factory.bin" --flash-mode keep --flash-freq keep --flash-size keep $ARGS >/dev/null || { echo "FEHLER merge $DEV $role"; FAIL=1; continue; }
+    echo "$role|$CHIP|$BOOT|$FSOFF|$SUF|$TEILE" >> "$D/.offsets"
+    # Vorschau der Marken-Anzeige (nur Geraete mit ui-brand; braucht Pillow, sonst uebersprungen)
+    if [ "$role" = wifi ] && python3 tools/brand_preview.py --has "$DEV"; then
+      ${PREVIEW_PYTHON:-python3} tools/brand_preview.py "$DEV" "$D/vorschau" "$env" >> "$OUT/$DEV-$role.log" 2>&1 || echo "Hinweis: keine Vorschau fuer $DEV"
+    fi;;
    nrf52|rp2040)
     [ $CHIP = nrf52 ] && [ ! -f $B/firmware.uf2 ] && python3 bin/uf2conv/uf2conv.py $B/firmware.hex -c -o $B/firmware.uf2 -f 0xADA52840 >/dev/null
     for f in $B/firmware.uf2 $B/firmware.zip; do [ -f $f ] && cp $f "$D/$NAME-$role.${f##*.}"; done

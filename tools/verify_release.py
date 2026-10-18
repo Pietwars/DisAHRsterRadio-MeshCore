@@ -2,7 +2,7 @@
 """Prüft Release-Pakete vor der Veröffentlichung. Bricht ab, wenn eine Datei fehlt oder eine Prüfsumme nicht stimmt.
 
 Aufruf: verify_release.py <Ordner> <Präfix> <Version> <fs-Datei> <Board> [<Board> …]
-z. B.   verify_release.py dist DisAHRsterRadio 0.1.1-alpha littlefs.bin t3s3 t3-v161 heltec-v2
+z. B.   verify_release.py dist DisAHRsterRadio-MeshCore 0.9.2 spiffs.bin <paket-kürzel> …
 """
 import hashlib, sys, zipfile
 from pathlib import Path
