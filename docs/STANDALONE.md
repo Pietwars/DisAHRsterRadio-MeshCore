@@ -120,10 +120,10 @@ Hosttests (C++11, ASAN/UBSAN, in `open-access.yml`): `local_companion`, `quick_m
 
 | Messwert | normal `dar_LilyGo_TDeck_wifi` (main) | Standalone | Unterschied |
 |---|---:|---:|---:|
-| Flash laut Linker | 2.063.913 B | 1.621.705 B | **−442.208 B (−21,4 %)** |
-| `firmware.bin` | 2.064.336 B | 1.622.128 B | −442.208 B |
+| Flash laut Linker | 2.063.913 B | 1.622.481 B | **−441.432 B (−21,4 %)** |
+| `firmware.bin` | 2.064.336 B | 1.622.896 B | −441.440 B |
 | Statisches RAM (.data/.bss) | 160.988 B | 153.612 B | **−7.376 B (−4,6 %)** |
-| Frei in App-Partition (3 MiB) | 1.081.392 B | 1.523.600 B | |
+| Frei in App-Partition (3 MiB) | 1.081.392 B | 1.522.832 B | |
 
 Gegenüber Schritt 1 (1.365.005 B Flash, 135.564 B RAM) kommen die Seiten, die Karten (ca. 164 KB), SD und der
 Companion-Kern dazu. Der normale T-Deck-Build wird auf diesem Stand um 748 B Flash und 112 B RAM größer
