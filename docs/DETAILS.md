@@ -84,10 +84,10 @@ Karte → Chat/Brett und auf dem Board mehrere WLAN-Clients sowie BLE parallel p
 
 | PlatformIO-Env | Board | Release-Paket | Flash |
 |---|---|---|---|
-| `dar_LilyGo_TDeck_wifi` | **LILYGO T-Deck Plus** (ESP32-S3, SX1262) | `DisAHRsterRadio-MeshCore-0.9.3-LilyGo_TDeck.zip` | `factory.bin` an **0x0**, Update `firmware.bin` an **0x10000** |
-| `dar_LilyGo_TWatchS3_wifi` | **LILYGO T-Watch S3** (ESP32-S3, SX1262, AXP2101) | `DisAHRsterRadio-MeshCore-0.9.3-LilyGo_TWatchS3.zip` | `factory.bin` an **0x0**, Update `firmware.bin` an **0x10000** |
+| `dar_LilyGo_TDeck_wifi` | **LILYGO T-Deck Plus** (ESP32-S3, SX1262) | `DisAHRsterRadio-MeshCore-0.9.4-test-LilyGo_TDeck.zip` | `factory.bin` an **0x0**, Update `firmware.bin` an **0x10000** |
+| `dar_LilyGo_TWatchS3_wifi` | **LILYGO T-Watch S3** (ESP32-S3, SX1262, AXP2101) | `DisAHRsterRadio-MeshCore-0.9.4-test-LilyGo_TWatchS3.zip` | `factory.bin` an **0x0**, Update `firmware.bin` an **0x10000** |
 
-Beide nutzen `huge_app.csv` (3 MB App, kein OTA, SPIFFS ab 0x310000). Die `factory.bin` enthält Bootloader, Partitionen, Firmware und Dateisystem und **löscht beim Flashen alle Einstellungen** (Knotenidentität, Kontakte, Verlauf, Bluetooth-PIN). Firmwarekennung `v1.18.0-dar0.9.2-wifi`.
+Beide nutzen `huge_app.csv` (3 MB App, kein OTA, SPIFFS ab 0x310000). Die `factory.bin` enthält Bootloader, Partitionen, Firmware und Dateisystem und **löscht beim Flashen alle Einstellungen** (Knotenidentität, Kontakte, Verlauf, Bluetooth-PIN). Firmwarekennung `v1.18.0-dar<Version>-wifi` (z. B. `v1.18.0-dar0.9.3-wifi`).
 
 **T-Deck Plus:** Display und LoRa teilen sich einen SPI-Bus (Fix gegen das Hängenbleiben bei „Loading...“). **T-Watch S3:** Display 240×240 mit Touch, Seitentaste über die Tasten-Interrupts des AXP2101.
 
@@ -101,7 +101,7 @@ Oberfläche: `examples/companion_radio/ui-brand/` (für beide Geräte).
 
 **Knopf** darunter (grün, weiß umrandet): „Advert senden“, darunter „Trackball 2,5 s halten“ (T-Deck) bzw. „antippen“ (T-Watch). Schrift: T-Watch S3 glatte Schriften (FreeSans 9 pt, FreeSansBold 12 pt) in voller Auflösung 240×240; T-Deck Plus die eingebaute Pixelschrift.
 
-- Angezeigt werden nur das Bild und der Knopf **„Advert senden“**. Keine weiteren Seiten, keine Nachrichtenvorschau, keine Nachrichten per Tastatur oder Touch.
+- Angezeigt werden nur das Bild, die Akku-Zeile (ab 0.9.4-test, siehe unten) und der Knopf **„Advert senden“**. Keine weiteren Seiten, keine Nachrichtenvorschau, keine Nachrichten per Tastatur oder Touch.
 - Jeder Advert ist ein **Flood-Advert** (wie „Advert senden → Flood“ in der App). Danach 2 s **„Advert gesendet“** (grün); höchstens ein Advert je **10 s**, sonst „Bitte N s warten“ (orange); bei einem Fehler „Advert-Fehler“ (rot).
 - Display geht nach **30 s** ohne Bedienung aus; neue Nachrichten wecken es nicht.
 - **Bluetooth-PIN:** nur während einer laufenden Kopplung (Passkey-Abfrage bis Kopplung fertig/abgebrochen, höchstens 60 s; bei einer Verbindung ohne Kopplung nach 2,5 s, ebenfalls höchstens 60 s). Das Display geht dafür an und bleibt so lange an; der Knopf zeigt dann die PIN statt „Advert senden“.
@@ -123,6 +123,24 @@ Oberfläche: `examples/companion_radio/ui-brand/` (für beide Geräte).
 | Antippen bei dunklem Display | nur aufwecken |
 
 Tastenereignisse der Uhr werden alle 20 ms abgefragt und mit 300 ms entprellt.
+
+### Akku-Zeile (Testversion 0.9.4-test, noch nicht auf Hardware getestet)
+
+Zwischen Bild und Knopf steht eine Statuszeile: Akkusymbol (Füllung grün ab 40 %, orange ab 15 %, sonst rot), Ladestand, Spannung und der **geschätzte Verbrauch**. Code: `ui-brand/BattTrend.h` (Rechnung, Hosttest `tests/batt_trend.test.cpp`) und `UITask::drawBattery()`.
+
+| | LILYGO T-Deck Plus | LILYGO T-Watch S3 |
+|---|---|---|
+| Messbar | nur **Akkuspannung** (Spannungsteiler 1:2 an GPIO 4, ADC mit eFuse-Kalibrierung) | Power-Chip **AXP2101**: Akkuspannung, Ladestand-% (Fuel Gauge), Akku erkannt, USB-Spannung da, lädt ja/nein |
+| Nicht messbar | Strom, Ladezustand, USB | **Lade-/Entladestrom** (der AXP2101 hat dafür keinen Messkanal; XPowersLib bietet Strom nur für AXP192/AXP202) |
+| Ladestand | „ca. NN %“ aus der Spannung (LiPo-Kennlinie, unter Last etwas zu niedrig) | „NN %“ vom AXP2101 |
+| Laden | nicht erkennbar; steigt die Spannung: „Spannung steigt (Laden?)“ | „USB: Laden“ bzw. „USB: kein Laden“ |
+| Darstellung | eine Zeile, Pixelschrift, Verbrauch rechts | zwei Zeilen FreeSans 9 pt, Verbrauch zentriert darunter |
+
+**Verbrauch = Schätzung, kein Messwert:** Ein Messpunkt pro Minute (auch bei dunklem Display; eine ADC- bzw. I2C-Abfrage), Fenster bis 60 min, lineare Regression des aus der Spannung berechneten Ladestands → „Verbr. ca. X %/h, Rest ca. Y h“ (Restlaufzeit = Ladestand jetzt ÷ Abfall pro Stunde). Erst nach **20 min** Daten, vorher „Verbrauch: Messung, noch N min“. Neu gemessen wird nach einem Spannungssprung über 60 mV zwischen zwei Messpunkten, bei USB-Wechsel (T-Watch) und beim Neustart. Unter 0,1 %/h: „Verbrauch unter 0,1 %/h“; über 99 h: „mehr als 99 h“. Ein mA-Wert wird nirgends angezeigt, weil keines der Geräte den Strom misst.
+
+**Stromverbrauch der Anzeige selbst:** Die Akku-Zeile wird nur bei hellem Display gezeichnet – beim Einschalten und danach höchstens alle 15 s, und nur wenn sich der Text geändert hat (T-Watch: nur dann wird der Bildpuffer übertragen).
+
+T-Deck Plus: die Akkuspannung für die MeshCore-App (`getBattMilliVolts`) nutzt jetzt ebenfalls die kalibrierte ADC-Messung (`analogReadMilliVolts`) statt Rohwert × 3,3 V / 4096.
 
 ## WLAN-Portal und MeshCore-App gleichzeitig (Bluetooth)
 
@@ -158,8 +176,8 @@ pip install platformio
 python tools/embed_web.py                         # nach Änderungen an web/
 pio run -e dar_LilyGo_TDeck_wifi -t upload        # bzw. dar_LilyGo_TWatchS3_wifi
 pio run -e dar_LilyGo_TDeck_wifi -t uploadfs      # nur einmal! (Dateisystem, löscht Identität)
-tools/build_device.sh LilyGo_TDeck dist           # dist/DisAHRsterRadio-MeshCore-0.9.3-LilyGo_TDeck.zip
-tools/build_device.sh LilyGo_TWatchS3 dist        # dist/DisAHRsterRadio-MeshCore-0.9.3-LilyGo_TWatchS3.zip
+tools/build_device.sh LilyGo_TDeck dist           # dist/DisAHRsterRadio-MeshCore-0.9.4-test-LilyGo_TDeck.zip
+tools/build_device.sh LilyGo_TWatchS3 dist        # dist/DisAHRsterRadio-MeshCore-0.9.4-test-LilyGo_TWatchS3.zip
 ```
 
 Version und MeshCore-Basis stehen nur in der Datei `VERSION`; `python3 tools/version.py` überträgt sie in Oberfläche, Demo, Firmwarekennung und README (`--check` läuft im CI). Bibliotheken sind auf feste Versionen gesetzt (`tools/pin_libs.py`, CI prüft mit `--check`).

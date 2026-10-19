@@ -1,5 +1,16 @@
 # Änderungen
 
+## 0.9.4-test · 19.10.2026 · Testversion (kein Release)
+
+- Gemeinsamer Teststand aus Akku-Anzeige (PR #31) und Flash-/Speicherprüfungen (PR #32): Board-Flashgröße, ESP32-Image-Header, Partitionen und Firmware-/RAM-Budgets werden vor dem Packen und im fertigen ZIP geprüft. Speicherbericht je Board in CI und Testpaketen; Details und offene Hardwaretests in `docs/SPEICHER.md`.
+
+Testpakete für **LILYGO T-Deck Plus** und **LILYGO T-Watch S3** zum Ausprobieren durch Peter; **nicht auf echter Hardware getestet**, kein Release, Web-Flasher unverändert (0.9.3). Firmwarekennung `v1.18.0-dar0.9.4-test-wifi`.
+
+- **Akku-Zeile im Display** zwischen Bild und Knopf „Advert senden“ (Bild, Knopf und Tasten unverändert): Akkusymbol, Ladestand, Spannung, Laden (nur T-Watch) und **geschätzter Verbrauch** in %/h mit Restlaufzeit (Trend über bis 60 min, erst nach 20 min, immer mit „ca.“). Keines der beiden Geräte misst den Akkustrom (T-Deck: nur Spannung am ADC; T-Watch: AXP2101 ohne Strommessung), daher kein mA-Wert. Details: `docs/DETAILS.md` → „Akku-Zeile“. Neu `ui-brand/BattTrend.h`, Hosttest `tests/batt_trend.test.cpp` (im Workflow open-access).
+- T-Watch S3: Akku-Erkennung und Ladestandsanzeige des AXP2101 beim Start ausdrücklich eingeschaltet; neue Funktion `TWatchS3Board::readPower()`.
+- T-Deck Plus: Akkuspannung mit kalibriertem ADC (`analogReadMilliVolts`), gilt auch für die Akkuanzeige in der MeshCore-App.
+- Vorschaubilder (`tools/brand_preview.py`) mit Akku-Zeile und Beispielwerten; ANLEITUNG im Paket beschreibt die Akku-Zeile; Testversionen mit `-test` erlaubt (`tools/version.py`).
+
 ## 0.9.3 · 18.10.2026 · Release
 
 [Release v0.9.3](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.3) „DisAHRsterRadio-MeshCore v0.9.3“ für **LILYGO T-Deck Plus** (`DisAHRsterRadio-MeshCore-0.9.3-LilyGo_TDeck.zip`) und **LILYGO T-Watch S3** (`DisAHRsterRadio-MeshCore-0.9.3-LilyGo_TWatchS3.zip`), plus `SHA256SUMS-DisAHRsterRadio-MeshCore-0.9.3.txt` und die unveränderten Flyer aus 0.9.2. Firmwarekennung `v1.18.0-dar0.9.3-wifi`. **0.9.3 ist noch nicht auf echter Hardware getestet** (getestet wurde 0.9.2); der Fix ist mit Hosttests (`tests/shared_queue.test.cpp`) und den CI-Builds geprüft.

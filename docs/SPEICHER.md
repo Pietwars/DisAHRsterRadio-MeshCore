@@ -1,5 +1,10 @@
 # Flash- und RAM-Prüfung
 
+Der gemeinsame Teststand **0.9.4-test** enthält die Akku-Anzeige aus PR #31
+und die Flash-/Speicherprüfungen aus PR #32. Kein Release, kein Merge nach
+`main`; der Web-Flasher bleibt auf 0.9.3. Die Hardware-Rückmeldung zur bisherigen
+Akku-Testversion ersetzt noch keine Prüfung der hier gemeinsam gebauten Pakete.
+
 Release-Boards sind derzeit **LILYGO T-Deck Plus** (`dar_LilyGo_TDeck_wifi`)
 und **LILYGO T-Watch S3** (`dar_LilyGo_TWatchS3_wifi`). Die übrigen Profile im
 Repository gehören nicht zum unterstützten Release. Der unabhängige Boardvertrag
@@ -24,20 +29,22 @@ Dies sind Messungen der vollständigen WLAN/BLE-Firmware, keine geschätzten Wer
 | Linker-RAM-Budget | 327.680 | 327.680 |
 | RAM nach statischer Belegung | 167.428 | 166.928 |
 
-Lokale Neubauten dieses PRs am 19.10.2026 (gleicher Firmware-Quellstand,
-vollständige WLAN/BLE-Profile) ergaben zusätzlich folgende Dateimessungen:
+Lokale Neubauten des gemeinsamen Teststands **0.9.4-test mit Akku-Anzeige**
+am 19.10.2026 (Akku-Branch `9f906f2c`, vollständige WLAN/BLE-Profile) ergaben:
 
 | Messwert (Bytes) | T-Deck Plus | T-Watch S3 |
 |---|---:|---:|
-| Flash laut lokalem Linker | 2.058.077 | 2.092.521 |
-| Tatsächliche `firmware.bin` | 2.058.496 | 2.092.944 |
-| Frei in App-Partition nach Binärdatei | 1.087.232 | 1.052.784 |
+| Flash laut lokalem Linker | 2.063.825 | 2.095.965 |
+| Tatsächliche `firmware.bin` | 2.064.240 | 2.096.384 |
+| Frei in App-Partition nach Binärdatei | 1.081.488 | 1.049.344 |
+| Statisches RAM laut Linker | 160.988 | 161.496 |
+| RAM nach statischer Belegung | 166.692 | 166.184 |
 | SPIFFS-Abbild | 917.504 | 917.504 |
 | Factory-Abbild | 4.128.768 | 4.128.768 |
 
-Die statischen RAM-Werte stimmen mit der CI-Referenz überein. Die leicht
-abweichenden Linkerwerte sind separat ausgewiesen, damit Messwerte verschiedener
-Buildumgebungen nachvollziehbar bleiben.
+Die erste Tabelle bleibt die CI-Referenz für 0.9.3. Die zweite Tabelle gilt
+für die gemeinsam gebaute Testversion einschließlich Akku-Anzeige; ihre
+JSON-/Markdown-Berichte sind in den beiden Testpaketen enthalten.
 
 **Linker-Flashverbrauch und Dateigröße von `firmware.bin` unterscheiden sich**:
 Header, Segmentausrichtung, Prüfsumme und Digest kommen zur Binärdatei hinzu.
@@ -105,7 +112,7 @@ führt dieselben Prüfungen einschließlich Factory-Abbild automatisch aus.
   fehlerhafte Release-ZIPs trotz korrekter SHA256SUMS. Ein Buildfehler darf auch
   kein altes Release-ZIP zurücklassen.
 - Bestehende Web-, Flasher-, Versions-, Bibliotheks-, Karten- und Portal-Routentests.
-- Bestehende C++-Tests: OpenAccess, RoomAccess, SlotFile, AutoAdd und SharedQueue,
+- Bestehende C++-Tests: OpenAccess, RoomAccess, SlotFile, AutoAdd, SharedQueue und BattTrend,
   mit AddressSanitizer und UndefinedBehaviorSanitizer. LeakSanitizer ist lokal
   wegen der Ausführung unter ptrace in der Sandbox deaktiviert (`ASAN_OPTIONS=detect_leaks=0`).
 - Native PlatformIO-Suites (`native`, `native_kiss_modem`): **54/54 Testfälle bestanden**.
@@ -129,5 +136,8 @@ und vor einer Hardwarefreigabe auf **beiden** Release-Boards auszuführen:
    Kartenabruf und Flood-Advert mit zweitem MeshCore-Knoten prüfen.
 5. Unter dieser Last freien/minimal freien Heap, größten freien Block, PSRAM und
    Stackreserven messen; keine Neustarts, Brownouts, Speicherfehler oder BLE-Abbrüche.
+6. Akku-Zeile auf beiden Geräten prüfen: Spannung und Ladestand, auf T-Watch
+   zusätzlich USB-/Ladestatus; Trend erst nach mindestens 20 Minuten ohne USB
+   beurteilen. Prozent und Verbrauch am T-Deck bleiben Schätzungen aus der Spannung.
 
 Hosttests und Compiler-Builds ersetzen diese Hardwaretests nicht.
