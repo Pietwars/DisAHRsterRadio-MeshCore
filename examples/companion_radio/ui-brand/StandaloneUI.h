@@ -49,6 +49,7 @@ private:
   const uint16_t *logo = nullptr; int logoW = 0, logoH = 0;
   int battPct = -1; char battLine[48] = "", battEst[48] = "";
   bool displayOffReq = false;
+  bool touchCalibrationReq = false;
   int listSel[PAGE_COUNT] = {0}, listTop[PAGE_COUNT] = {0};
   int locSel = 0, devSel = 0, scroll = 0;
   char conv[14] = "c0", convName[40] = "";
@@ -106,6 +107,7 @@ public:
   bool back();
   // true once after "Display aus" (Gerät button or key 'd'): the caller switches the display off.
   bool takeDisplayOff() { bool r = displayOffReq; displayOffReq = false; return r; }
+  bool takeTouchCalibration() { bool r=touchCalibrationReq; touchCalibrationReq=false; return r; }
   // Poll the history / status; returns true if something visible changed.
   bool tick(uint32_t ms);
   // true once per new incoming message (display wake-up).

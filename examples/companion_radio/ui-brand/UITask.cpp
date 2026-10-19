@@ -16,15 +16,22 @@
 
 #ifdef DAR_STANDALONE_UI
   #include <Wire.h>
+  #include <Preferences.h>
+  extern const uint8_t tdeckSplash[] asm("_binary_examples_companion_radio_ui_brand_assets_tdeck_splash_rgb565_start");
   // Trackball directions of the T-Deck (Hall sensors, one pulse per step), counted in interrupts.
   static volatile uint16_t tb_count[4] = {0, 0, 0, 0};   // up, down, left, right
-  static void IRAM_ATTR tb_up() { tb_count[0]++; }
-  static void IRAM_ATTR tb_down() { tb_count[1]++; }
-  static void IRAM_ATTR tb_left() { tb_count[2]++; }
-  static void IRAM_ATTR tb_right() { tb_count[3]++; }
+  static portMUX_TYPE tb_mux = portMUX_INITIALIZER_UNLOCKED;
+  static void IRAM_ATTR tb_pulse(int i) {
+    portENTER_CRITICAL_ISR(&tb_mux); if(tb_count[i]<32)++tb_count[i]; portEXIT_CRITICAL_ISR(&tb_mux);
+  }
+  static void IRAM_ATTR tb_up() { tb_pulse(0); }
+  static void IRAM_ATTR tb_down() { tb_pulse(1); }
+  static void IRAM_ATTR tb_left() { tb_pulse(2); }
+  static void IRAM_ATTR tb_right() { tb_pulse(3); }
   #define TDECK_KEYBOARD_ADDR 0x55   // keyboard MCU on SDA 18 / SCL 8, character mode
-  #include "TDeckTouch.h"
-  static tdeck::Touch tdeck_touch;
+  #include "TDeckTouchRaw.h"
+  static TDeckTouch tdeck_touch;
+  static bool tdeck_touch_found=false;
 #endif
 
 // Farben (RGB565)
@@ -47,10 +54,19 @@ void UITask::begin(DisplayDriver* display, SensorManager* sensors, NodePrefs* no
   _sui.begin(&dev::api());
   _sui.setLogo(BRAND_LOGO, BRAND_LOGO_W, BRAND_LOGO_H);   // boot logo, then Chat
   pushBattery();
-  tdeck_touch.probe();
+  Wire.setTimeOut(20);
+  tdeck_touch_found=tdeck_touch.begin();
+  Preferences touchPrefs;
+  if(touchPrefs.begin("dar-mc-touch",true)) {
+    _touch_cal_loaded=touchPrefs.getBytesLength("cal-v1")==sizeof(_touch_transform) &&
+      touchPrefs.getBytes("cal-v1",&_touch_transform,sizeof(_touch_transform))==sizeof(_touch_transform) && _touch_transform.valid();
+    touchPrefs.end();
+  }
+  if(!_touch_cal_loaded)_touch_transform=TDeckTouchTransform();
+  _touch_cal_needed=tdeck_touch_found && !_touch_cal_loaded;
   const uint8_t pins[4] = {PIN_TB_UP, PIN_TB_DOWN, PIN_TB_LEFT, PIN_TB_RIGHT};
   void (*isr[4])() = {tb_up, tb_down, tb_left, tb_right};
-  for (int i = 0; i < 4; i++) { pinMode(pins[i], INPUT_PULLUP); attachInterrupt(digitalPinToInterrupt(pins[i]), isr[i], FALLING); }
+  for (int i = 0; i < 4; i++) { pinMode(pins[i], INPUT_PULLUP); attachInterrupt(digitalPinToInterrupt(pins[i]), isr[i], CHANGE); }
 #endif
   if (_display) _display->turnOn();
   _auto_off = millis() + BRAND_AUTO_OFF_MILLIS;
@@ -187,6 +203,13 @@ void UITask::render() {
   int W = d->nativeWidth();
   bool small = W <= 240;
 #ifdef DAR_STANDALONE_UI
+  if(!_pairing && _touch_calibrating) {renderCalibration(); return;}
+  if(!_pairing && _sui.onBoot()) {
+    d->startFrame(C_BG);
+    uint16_t row[320];
+    for(int y=0;y<213;++y) {memcpy(row,tdeckSplash+y*640,sizeof(row)); d->nativeImage(0,13+y,320,1,row);}
+    d->endFrame(); return;
+  }
   if (!_pairing) { _sui.render(d); return; }      // boot logo or page; the PIN screen below stays as before
 #endif
   d->startFrame(C_BG);
@@ -233,13 +256,19 @@ void UITask::loop() {
 #ifdef DAR_STANDALONE_UI
   // click = Enter on the pages (map: "Zurück"); dark display: the click only wakes it
   if (ev == BUTTON_EVENT_CLICK) {
-    if (_display->isOn() && !_pairing && _sui.click()) input();
+    if(_touch_calibrating && !_pairing)cancelCalibration();
+    else if (_display->isOn() && !_pairing && _sui.click()) input();
     else toggleDisplay();
   }
 #else
   if (ev == BUTTON_EVENT_CLICK) toggleDisplay();
 #endif
-  else if (ev == BUTTON_EVENT_LONG_PRESS) requestAdvert();
+  else if (ev == BUTTON_EVENT_LONG_PRESS) {
+#ifdef DAR_STANDALONE_UI
+    if(!_touch_calibrating)
+#endif
+      requestAdvert();
+  }
 #endif
 
 #if defined(LILYGO_TWATCH_S3)
@@ -248,7 +277,7 @@ void UITask::loop() {
   else if (k == PKEY_LONG) requestAdvert();
 #endif
 
-#if defined(UI_HAS_TOUCH)
+#if defined(UI_HAS_TOUCH) && !defined(DAR_STANDALONE_UI)
   {
     int tx, ty;
     bool down = _display->getTouch(&tx, &ty);
@@ -282,6 +311,12 @@ void UITask::loop() {
   pollTouch(now);
   if (_sui.takeDisplayOff() && !_pairing) _display->turnOff();   // Gerät "Display aus" or key 'd'
   if (_sui.tick(now)) _dirty = true;
+  if(_sui.takeTouchCalibration()) {
+    if(tdeck_touch_found)beginCalibration();
+    else {_sui.notify("Touch nicht erkannt"); input();}
+  }
+  if(_touch_cal_needed && !_sui.onBoot() && !_pairing)beginCalibration();
+  if(_touch_calibrating)_auto_off=now+BRAND_AUTO_OFF_MILLIS;
   if (_sui.takeIncoming()) wake();                // incoming message: display on (unread badge)
 #endif
 
@@ -292,7 +327,7 @@ void UITask::loop() {
     } else if (_dirty) {
       _dirty = false;
 #ifdef DAR_STANDALONE_UI
-      if (!_pairing && _sui.pending() == sui::UI::PART) _sui.renderPart(_display);
+      if (!_pairing && !_touch_calibrating && !_sui.onBoot() && _sui.pending() == sui::UI::PART) _sui.renderPart(_display);
       else
 #endif
       render();
@@ -341,6 +376,7 @@ void UITask::pollKeyboard(unsigned long now) {
   }
   uint8_t key = Wire.read();
   if (!key || _pairing) return;
+  if(_touch_calibrating) {if(key==sui::K_ESC)cancelCalibration(); return;}
   if (!_display->isOn()) { wake(); return; }      // a key only wakes the display, never sends
   // The keyboard sends 0x08 for Backspace with and without ALT. ALT+Backspace = "back": ask the keyboard for its
   // key matrix (raw mode 0x03, LilyGO keyboard firmware from 2025-06) while the keys are still held.
@@ -351,18 +387,70 @@ void UITask::pollKeyboard(unsigned long now) {
 
 // T-Deck Plus touch panel (GT911): a tap acts on release at the press position; dark display: wake only.
 void UITask::pollTouch(unsigned long now) {
-  if ((long)(now - _next_touch) < 0) return;
-  _next_touch = now + 30;
-  if (!tdeck_touch.present()) { if ((long)(now - _next_touch_probe) >= 0) { _next_touch_probe = now + 5000; tdeck_touch.probe(); } return; }
-  int x, y;
-  bool down = tdeck_touch.read(x, y);
-  if (down) { if (!_touch_down) { _touch_x = x; _touch_y = y; } _touch_down = true; return; }
-  if (!_touch_down) return;
-  _touch_down = false;
-  if (_pairing) return;
-  if (!_display->isOn()) { wake(); return; }
-  if (_sui.tap(_touch_x, _touch_y)) input();
-  else _auto_off = now + BRAND_AUTO_OFF_MILLIS;
+  if ((long)(now-_next_touch)<0) return;
+  _next_touch=now+20;
+  if(!tdeck_touch_found) {
+    if((long)(now-_next_touch_probe)>=0) {
+      _next_touch_probe=now+5000; tdeck_touch_found=tdeck_touch.begin();
+      if(tdeck_touch_found&&!_touch_cal_loaded)_touch_cal_needed=true;
+    }
+    return;
+  }
+  bool down=false; int x=0,y=0;
+  if(!tdeck_touch.sample(down,x,y))return;
+  if(down) {
+    if(!_touch_down) {_touch_x=x;_touch_y=y;_touch_started=now;_touch_valid=x>=0&&y>=0;}
+    if(x<0||y<0)_touch_valid=false;
+    _touch_last_x=x;_touch_last_y=y;_touch_down=true; return;
+  }
+  if(!_touch_down)return;
+  _touch_down=false;
+  if(_pairing||!_touch_valid||now-_touch_started<25||now-_touch_started>900)return;
+  if(!_display->isOn()){wake();return;}
+  if(_touch_calibrating){calibrationTap(_touch_last_x,_touch_last_y);return;}
+  int sx,sy,ex,ey;
+  _touch_transform.map(_touch_x,_touch_y,sx,sy);
+  _touch_transform.map(_touch_last_x,_touch_last_y,ex,ey);
+  if(abs(sx-ex)>20||abs(sy-ey)>20||sx<0||sx>=320||sy<0||sy>=240)return;
+  if(_sui.tap(sx,sy))input();
+  else _auto_off=now+BRAND_AUTO_OFF_MILLIS;
+}
+
+void UITask::beginCalibration() {
+  _touch_cal_needed=false;_touch_calibrating=true;_touch_step=0;
+  _touch_down=false;_cal_accept_at=millis()+300;wake();input();
+}
+void UITask::cancelCalibration() {
+  _touch_calibrating=false;_touch_cal_needed=false;_touch_down=false;
+  _sui.forceRedraw();_sui.notify("Kalibrierung abgebrochen");input();
+}
+void UITask::calibrationTap(int x,int y) {
+  if((long)(millis()-_cal_accept_at)<0)return;
+  _cal_accept_at=millis()+250;
+  if(_touch_step<3) {
+    _cal_x[_touch_step]=x;_cal_y[_touch_step]=y;++_touch_step;
+    if(_touch_step==3&&!_pending_transform.fit(_cal_x,_cal_y))_touch_step=0;
+    input();return;
+  }
+  int sx,sy;_pending_transform.map(x,y,sx,sy);
+  if(abs(sx-160)>20||abs(sy-120)>20){_touch_step=0;input();return;}
+  _touch_transform=_pending_transform;
+  Preferences prefs;bool saved=false;
+  if(prefs.begin("dar-mc-touch",false)) {
+    saved=prefs.putBytes("cal-v1",&_touch_transform,sizeof(_touch_transform))==sizeof(_touch_transform);prefs.end();
+  }
+  _touch_cal_loaded=saved;_touch_calibrating=false;_sui.forceRedraw();
+  _sui.notify(saved?"Touch gespeichert":"Touch nur bis Neustart gespeichert");input();
+}
+void UITask::renderCalibration() {
+  static const int px[4]={24,296,24,160},py[4]={44,44,196,120};
+  const int x=px[_touch_step],y=py[_touch_step];
+  _display->startFrame(C_BG);
+  _display->nativeText(45,5,1,C_WHITE,"Touch kalibrieren");
+  _display->nativeText(45,219,1,C_GREY,"Klick / Esc: abbrechen");
+  _display->nativeLine(x-10,y,x+10,y,C_GREEN);
+  _display->nativeLine(x,y-10,x,y+10,C_GREEN);
+  _display->endFrame();
 }
 
 // Raw matrix of the T-Deck keyboard: 5 bytes (one per column, bit = row). ALT = column 0 row 4, Backspace =
@@ -384,21 +472,17 @@ bool UITask::altHeld() {
 }
 
 void UITask::pollTrackball(unsigned long now) {
-  if ((long)(now - _next_ball) < 0) return;
-  _next_ball = now + 60;
   uint16_t c[4];
-  noInterrupts(); for (int i = 0; i < 4; i++) { c[i] = tb_count[i]; tb_count[i] = 0; } interrupts();
-  int dy = int(c[1]) - int(c[0]), dx = int(c[3]) - int(c[2]);
-  if (!dx && !dy) return;
-  if (_pairing) return;
-  if (!_display->isOn()) { wake(); return; }
-  if (dx > 3) dx = 3;
-  if (dx < -3) dx = -3;
-  if (dy > 3) dy = 3;
-  if (dy < -3) dy = -3;
-  // the dominant axis only: a diagonal roll must not move the selection sideways while scrolling
-  if (abs(dx) >= abs(dy)) dy = 0; else dx = 0;
-  if (_sui.move(dx, dy)) input();
-  else _auto_off = now + BRAND_AUTO_OFF_MILLIS;
+  portENTER_CRITICAL(&tb_mux);
+  for(int i=0;i<4;++i){c[i]=tb_count[i];tb_count[i]=0;}
+  portEXIT_CRITICAL(&tb_mux);
+  if(_pairing||_touch_calibrating){_ball_filter=TDeckTrackball();return;}
+  auto action=_ball_filter.update(now,int(c[3])-int(c[2]),int(c[1])-int(c[0]),false);
+  if(action==TDeckTrackball::NONE)return;
+  if(!_display->isOn()){wake();return;}
+  int dx=action==TDeckTrackball::LEFT?-1:action==TDeckTrackball::RIGHT?1:0;
+  int dy=action==TDeckTrackball::UP?-1:action==TDeckTrackball::DOWN?1:0;
+  if(_sui.move(dx,dy))input();
+  else _auto_off=now+BRAND_AUTO_OFF_MILLIS;
 }
 #endif

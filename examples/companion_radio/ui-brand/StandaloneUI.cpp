@@ -25,7 +25,7 @@ const char *title(Page p) {
 constexpr int LIST_TOP = NAV_H + 2, ROW_H = 21, HINT_Y = H - 9;
 constexpr int COMPOSE_Y = 203, COMPOSE_H = 26;
 constexpr int LIST_ROWS = (HINT_Y - LIST_TOP) / ROW_H;   // 10
-constexpr int DEVICE_BUTTONS = 4;                         // Kontakte, Advert, Display aus, SD speichern
+constexpr int DEVICE_BUTTONS = 5;                         // plus saved touch calibration
 constexpr int MENU_TOP = NAV_H + 2, MENU_ROW_H = 34;
 }
 
@@ -264,6 +264,7 @@ bool UI::click() {
       if (devSel == 0) { setStatus(api->refresh() ? "Kontakte werden neu gelesen" : "Funkkern besch\xc3\xa4" "ftigt \xe2\x80\x93 sp\xc3\xa4ter erneut"); }
       else if (devSel == 1) { api->advert(st, sizeof(st)); setStatus(st); }
       else if (devSel == 2) { requestDisplayOff(); return true; }
+      else if (devSel == 4) { touchCalibrationReq=true; return true; }
       else { api->saveConfig(st, sizeof(st)); setStatus(st); }
       dirty = FULL; return true;
     default: return false;
@@ -630,8 +631,8 @@ void UI::drawDevice(DisplayDriver *d) {
   row("Verbrauch", est[0] ? est : "noch keine Sch\xc3\xa4tzung", est[0] ? TEXT : MUTED);
   y += 2;
   const char *buttons[DEVICE_BUTTONS] = {"Kontakte neu lesen", "Advert senden (Bekanntgabe)", "Display aus (Taste/Trackball weckt)",
-                                         "Einstellungen auf SD speichern"};
-  for (int i = 0; i < DEVICE_BUTTONS; ++i) { ui::button(d, 4, y, W - 8, 16, buttons[i], i == devSel); addHit(4, y, W - 8, 17, i); y += 18; }
+                                         "Einstellungen auf SD speichern", "Touch neu kalibrieren"};
+  for (int i = 0; i < DEVICE_BUTTONS; ++i) { ui::button(d, 4, y, W - 8, 14, buttons[i], i == devSel); addHit(4, y, W - 8, 15, i); y += 16; }
   d->nativeFill(0, y, W, 11, WARN_BG);
   ui::text(d, 4, y + 2, BAD, "Kein zertifiziertes Notrufsystem \xc2\xb7 Lebensgefahr: 112");
   drawHint(d);

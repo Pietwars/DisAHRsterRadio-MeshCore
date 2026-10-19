@@ -9,7 +9,7 @@ Die Web-Schicht wird im Standalone-Build **weggelassen, nicht per Flag unterdrü
 Sendepause, App-Echo und Brett-Anmeldung liegen in webfreien Bausteinen, die Web- und Standalone-Build gemeinsam
 nutzen.
 
-> **Status: Testbuild `0.9.5-standalone-test3`** (Firmwarekennung `v1.18.0-dar0.9.5-standalone-test3`; test3 =
+> **Status: Testbuild `0.9.5-standalone-test4`** (Firmwarekennung `v1.18.0-dar0.9.5-standalone-test4`; test3 =
 > Boot-Logo, Hauptmenü statt Reiterleiste, Trackball nur innerhalb einer Seite, ALT+Backspace = zurück, Touch
 > überall, Akku und Seitentitel in einer schmalen Statuszeile oben).
 > Alle Punkte aus Issue #35 sind umgesetzt und ohne Hardware geprüft (Hosttests, Builds, Vorschaubilder).
@@ -203,3 +203,11 @@ python3 tools/standalone_preview.py <Ordner>      # Vorschaubilder
 6. GPS-Fix (Baudraten-Erkennung), „Standort teilen“: Bekanntgabe mit/ohne Position, `!DP1`-Meldung.
 7. SD-Karte: CS-Pin 39 am gemeinsamen Bus, Einhängen neben LoRa/Display, `config.txt`, `log.txt`, Archiv.
 8. Heap (frei/minimal) und Akkulaufzeit im Vergleich zu 0.9.4.
+
+## Test4: Bedienung aus dem erprobten T-Deck-Profil
+
+Vollstaendiges Tal-und-Funk-Startmotiv, impulsbasierter Trackball (vier Flanken je Schritt, 350 ms Ruhezeit) und gespeicherte Touch-Kalibrierung. Beim ersten Start drei Kreuze antippen, danach die Mitte bestaetigen. Erst nach erfolgreicher Kontrolle wird gespeichert. Unter Geraet: Touch neu kalibrieren. Klick oder Esc bricht ab. Die Kalibrierung blockiert den Funkbetrieb nicht.
+
+MeshCore-Kanaele, Kontakte und Room-Server bleiben die Funkanbindung. Vor einem Wechsel von LoRaLayer2 komplett sichern und die MeshCore-Erstinstallationsanleitung verwenden: die Partitionen sind verschieden. Ein App-Update allein ist nur bei bereits passender MeshCore-Partitionierung geeignet.
+
+Der eigene Test4-Geraetetest fuer Eingaben, Touch, Bluetooth, Funk, GPS/Karte und Dauerbetrieb steht noch aus.

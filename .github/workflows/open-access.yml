@@ -54,3 +54,7 @@ jobs:
           /tmp/gps-share
           $C11 tests/device_config.test.cpp -o /tmp/device-config
           /tmp/device-config
+          $C11 tests/tdeck_input.test.cpp -o /tmp/tdeck-input
+          /tmp/tdeck-input
+          $C11 tests/tdeck_calibration.test.cpp -o /tmp/tdeck-calibration
+          /tmp/tdeck-calibration

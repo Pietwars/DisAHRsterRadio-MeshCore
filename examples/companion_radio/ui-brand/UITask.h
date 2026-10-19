@@ -15,6 +15,8 @@
 #include "../DarBuild.h"
 #ifdef DAR_STANDALONE_UI
 #include "StandaloneUI.h"
+#include "TDeckTrackball.h"
+#include "TDeckTouchTransform.h"
 #endif
 
 #ifndef BRAND_AUTO_OFF_MILLIS
@@ -44,6 +46,16 @@ class UITask : public AbstractUITask {
 #ifdef DAR_STANDALONE_UI
   // T-Deck Plus standalone (Issue #35): boot logo, main menu, pages Chat, Meldung, Brett, Karte, Standort, Gerät
   sui::UI _sui;
+  TDeckTrackball _ball_filter;
+  TDeckTouchTransform _touch_transform, _pending_transform;
+  bool _touch_cal_loaded=false, _touch_cal_needed=false, _touch_calibrating=false, _touch_valid=false;
+  uint8_t _touch_step=0;
+  int _cal_x[3]={}, _cal_y[3]={}, _touch_last_x=0, _touch_last_y=0;
+  unsigned long _touch_started=0, _cal_accept_at=0;
+  void beginCalibration();
+  void calibrationTap(int rawX, int rawY);
+  void renderCalibration();
+  void cancelCalibration();
   bool _keyboard_present = false;
   unsigned long _next_keyboard = 0, _next_ball = 0;
   void pollKeyboard(unsigned long now);
