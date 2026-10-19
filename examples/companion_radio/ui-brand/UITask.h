@@ -12,6 +12,10 @@
 #include "../AbstractUITask.h"
 #include "../NodePrefs.h"
 #include "BattTrend.h"
+#include "../DarBuild.h"
+#ifdef DAR_STANDALONE_UI
+#include "StandaloneUI.h"
+#endif
 
 #ifndef BRAND_AUTO_OFF_MILLIS
   #define BRAND_AUTO_OFF_MILLIS   30000   // Display geht nach 30 s ohne Bedienung aus
@@ -37,6 +41,15 @@ class UITask : public AbstractUITask {
   unsigned long _next_sample = 0, _next_batt_draw = 0;
   int _last_usb = -1;
   char _bl[40] = "", _be[48] = "";   // zuletzt gezeichnete Akkutexte
+#ifdef DAR_STANDALONE_UI
+  // T-Deck Plus standalone (Issue #35): pages for Chat, Meldung, Brett, Karte, Standort, Gerät
+  sui::UI _sui;
+  bool _keyboard_present = false;
+  unsigned long _next_keyboard = 0, _next_ball = 0;
+  void pollKeyboard(unsigned long now);
+  void pollTrackball(unsigned long now);
+  void input();                  // any key/trackball action: keep the display on
+#endif
 #if defined(UI_HAS_TOUCH)
   bool _touch_down = false;
   int _touch_x = 0, _touch_y = 0;

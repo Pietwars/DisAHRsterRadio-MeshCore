@@ -2,9 +2,10 @@
 // Seam between the companion core (main.cpp) and the optional extra frontend of a build.
 // Exactly one implementation is linked:
 //   WebFrontend.cpp    DAR-MC web layer (DISASTER_PORTAL): WLAN access point, DisasterPortal, web history
-//   PlainFrontend.cpp  every build without web layer: upstream companion behaviour; also used by the
-//                      T-Deck Plus standalone build (DISASTER_STANDALONE), which drops WebFrontend.cpp
-//                      via build_src_filter (platformio.standalone.ini)
+//   PlainFrontend.cpp  every other build without web layer: upstream companion behaviour
+//   StandaloneFrontend.cpp  T-Deck Plus standalone (DISASTER_STANDALONE, Issue #35): local companion client for
+//                      the display pages, SD settings/log, "Standort teilen"; WebFrontend.cpp is dropped via
+//                      build_src_filter (platformio.standalone.ini)
 // main.cpp knows nothing about WLAN or the web portal.
 #include "DarBuild.h"
 

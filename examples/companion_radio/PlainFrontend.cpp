@@ -1,7 +1,7 @@
 // Frontend for every build without web layer (see Frontend.h): nothing besides the companion core.
-// The T-Deck Plus standalone build (DISASTER_STANDALONE) uses this file as well.
+// The T-Deck Plus standalone build (DISASTER_STANDALONE) has its own frontend (StandaloneFrontend.cpp).
 #include "Frontend.h"
-#ifndef DISASTER_PORTAL
+#if !defined(DISASTER_PORTAL) && !defined(DISASTER_STANDALONE)
 
 #ifdef ESP32
 #include <SPIFFS.h>
