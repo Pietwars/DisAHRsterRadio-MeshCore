@@ -13,7 +13,7 @@ if (d/'.offsets').exists():
 files=sorted(str(p.relative_to(d)) for p in d.rglob('*') if p.is_file() and not p.name.startswith('.'))
 NAMES={'LilyGo_TDeck':'LILYGO T-Deck Plus','LilyGo_TWatchS3':'LILYGO T-Watch S3'}
 L=[f'# DisAHRsterRadio-MeshCore {ver} für {NAMES.get(dev,dev)}','','> Offenes WLAN ohne Passwort, MeshCore-Bluetooth mit PIN-Kopplung (die PIN steht während der Kopplung auf dem Display). Komplett an **0x0** flashen. Alte Kopplungen vorher am Handy entfernen.','',f'Chip: **{e["chip"]}** · Web-Oberfläche: **{"ja" if e["webui"] else "nein – ohne Web-Oberfläche"}** · https://github.com/Pietwars/DisAHRsterRadio-MeshCore','',
-'> ⚠️ Kein zertifiziertes Notrufsystem. In Lebensgefahr immer **112** wählen. '+(('Version 0.9.2 wurde auf diesem Gerät auf echter Hardware getestet (18.10.2026).' if ver=='0.9.2' else f'Version {ver} ist **noch nicht auf echter Hardware getestet** (getestet wurde 0.9.2).') if dev in NAMES else 'Dieses Gerät ist **nicht auf echter Hardware getestet**.'),'',
+*(['> 🧪 **TEST-Version '+ver+' – kein Release.** Nur zum Ausprobieren; Rückmeldung an Peter.',''] if '-test' in ver else []),'> ⚠️ Kein zertifiziertes Notrufsystem. In Lebensgefahr immer **112** wählen. '+(('Version 0.9.2 wurde auf diesem Gerät auf echter Hardware getestet (18.10.2026).' if ver=='0.9.2' else f'Version {ver} ist **noch nicht auf echter Hardware getestet** (getestet wurde 0.9.2).') if dev in NAMES else 'Dieses Gerät ist **nicht auf echter Hardware getestet**.'),'',
 '**Antenne anschrauben, bevor das Gerät Strom bekommt.** Funkprofil: MeshCore-Standard EU/UK 869,618 MHz, 62,5 kHz, SF8, CR 4/8 – auf allen Geräten gleich einstellen.','']
 if e['chip'].startswith('esp32'):
     for r,(ch,b,fs,suf,teile) in off.items():
@@ -36,14 +36,16 @@ else:
     L+=['## STM32','','`.bin`/`.hex` mit STM32CubeProgrammer oder einem SWD-Programmer flashen. Ohne Web-Oberfläche.','']
 BRAND={
  'LilyGo_TDeck':['## Anzeige und Tasten (LILYGO T-Deck Plus)','',
-  'Das Display zeigt nur ein Bild des Ahrtals bei Nacht mit dem Schriftzug DisAHRsterRadio und darunter den Knopf **„Advert senden“**. Keine weiteren Seiten, keine Nachrichten am Gerät (Nachrichten und Einstellungen über MeshCore-App und Weboberfläche).','',
+  'Das Display zeigt nur ein Bild des Ahrtals bei Nacht mit dem Schriftzug DisAHRsterRadio, darunter eine Akku-Zeile und den Knopf **„Advert senden“**. Keine weiteren Seiten, keine Nachrichten am Gerät (Nachrichten und Einstellungen über MeshCore-App und Weboberfläche).','',
   '| Bedienung | Wirkung |','|---|---|','| Trackball kurz klicken | Display an/aus |','| Trackball **2,5 s** halten | Flood-Advert senden |','| Tastatur (auch Enter) | keine Funktion |','| Ein/Aus | Schiebeschalter (kein Abschalten per Trackball) |',''],
  'LilyGo_TWatchS3':['## Anzeige und Tasten (LILYGO T-Watch S3)','',
-  'Das Display zeigt nur ein Bild des Ahrtals bei Nacht mit dem Schriftzug DisAHRsterRadio und darunter den Knopf **„Advert senden“**. Keine weiteren Seiten, keine Nachrichten am Gerät (Nachrichten und Einstellungen über MeshCore-App und Weboberfläche).','',
+  'Das Display zeigt nur ein Bild des Ahrtals bei Nacht mit dem Schriftzug DisAHRsterRadio, darunter eine Akku-Zeile und den Knopf **„Advert senden“**. Keine weiteren Seiten, keine Nachrichten am Gerät (Nachrichten und Einstellungen über MeshCore-App und Weboberfläche).','',
   '| Bedienung | Wirkung |','|---|---|','| Seitentaste kurz | Display an/aus (bei ausgeschalteter Uhr: einschalten) |','| Seitentaste ca. **2 s** halten | Flood-Advert senden |','| Seitentaste ca. **6 s** halten | Uhr ausschalten (Power-Chip) |','| Knopf „Advert senden“ antippen | Flood-Advert senden |','| Antippen bei dunklem Display | nur aufwecken |',''],
 }
 if dev in BRAND:
-    L+=BRAND[dev]+['Jeder Advert ist ein echter **Flood-Advert** (wie „Advert senden → Flood“ in der App). Danach 2 s **„Advert gesendet“**; höchstens ein Advert je 10 s (sonst „Bitte N s warten“). Display geht nach 30 s ohne Bedienung aus; neue Nachrichten wecken es nicht.','',
+    AKKU={'LilyGo_TDeck':'**Akku-Zeile (T-Deck Plus):** Symbol, Ladestand „ca. NN %“ (aus der Spannung geschätzt) und Spannung. Das T-Deck misst nur die Akkuspannung – keinen Strom und nicht, ob es lädt. Rechts der **geschätzte Verbrauch**: Abfall des Ladestands in %/h und Restlaufzeit, berechnet aus dem Spannungsverlauf der letzten bis zu 60 min (erst nach 20 min, vorher „Verbrauch: Messung, noch N min“). Steigt die Spannung (Ladegerät), steht dort „Spannung steigt (Laden?)“.',
+          'LilyGo_TWatchS3':'**Akku-Zeile (T-Watch S3):** Symbol, Ladestand in % (Ladestandsanzeige des Power-Chips AXP2101) und Spannung; darunter „USB: Laden“ bzw. „USB: kein Laden“ oder der **geschätzte Verbrauch**: Abfall des Ladestands in %/h und Restlaufzeit aus dem Spannungsverlauf der letzten bis zu 60 min (erst nach 20 min ohne USB). Der AXP2101 misst keinen Strom; ein gemessener Verbrauch in mA ist daher nicht verfügbar.'}
+    L+=BRAND[dev]+[AKKU[dev],'','Jeder Advert ist ein echter **Flood-Advert** (wie „Advert senden → Flood“ in der App). Danach 2 s **„Advert gesendet“**; höchstens ein Advert je 10 s (sonst „Bitte N s warten“). Display geht nach 30 s ohne Bedienung aus; neue Nachrichten wecken es nicht.','',
       '**Bluetooth-PIN:** erscheint nur während einer laufenden Kopplung auf dem Display (ab der PIN-Abfrage des Handys bis die Kopplung fertig oder abgebrochen ist, höchstens 60 s; verbindet sich ein Handy ohne Kopplung, nach 2,5 s). Sie steht nicht in dieser Anleitung.','']
     if any(f.startswith('vorschau/') for f in files): L+=['`vorschau/` zeigt am PC nachgestellte Bildschirme (Simulation, PIN durch XXXXXX ersetzt).','']
 L+=['## Dateien','']+[f'- `{f}`' for f in files]+['','Prüfsummen: `SHA256SUMS`.']

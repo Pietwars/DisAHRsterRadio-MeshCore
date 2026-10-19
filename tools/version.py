@@ -17,8 +17,8 @@ def load():
         line = line.strip()
         if line and not line.startswith('#'):
             k, v = line.split('=', 1); d[k.strip()] = v.strip()
-    if not re.fullmatch(r'\d+\.\d+\.\d+(-(alpha|beta|rc|dev)[0-9.]*)?', d.get('VERSION', '')):
-        sys.exit('VERSION: ungültige oder fehlende Zeile VERSION=x.y.z[-alpha|-beta|-rc|-dev]')
+    if not re.fullmatch(r'\d+\.\d+\.\d+(-(alpha|beta|rc|dev|test)[0-9.]*)?', d.get('VERSION', '')):
+        sys.exit('VERSION: ungültige oder fehlende Zeile VERSION=x.y.z[-alpha|-beta|-rc|-dev|-test]')
     return d
 
 def run(rules, argv):
@@ -52,7 +52,7 @@ def run(rules, argv):
 
 ROW = r'^(\| \[Pietwars/DisAHRsterRadio-MeshCore\]\(https://github\.com/Pietwars/DisAHRsterRadio-MeshCore\) \| [^|]+ \| [^|]+ \| )[^|]+( \|)'
 FW = r"(FIRMWARE_VERSION='\"v)[0-9.]+-dar[^\"']*?((?:-(?:relay|room|s3-wifi|s3-repeater|s3-room|heltecv2-wifi|wifi))?\"')"
-ZIP = r'(DisAHRsterRadio-MeshCore-)\d+\.\d+\.\d+(?:-(?:alpha|beta|rc|dev)[0-9.]*)?(-(?:[A-Za-z0-9_]|-(?!(?:alpha|beta|rc|dev)))+\.zip|-<board>\.zip)'
+ZIP = r'(DisAHRsterRadio-MeshCore-)\d+\.\d+\.\d+(?:-(?:alpha|beta|rc|dev|test)[0-9.]*)?(-(?:[A-Za-z0-9_]|-(?!(?:alpha|beta|rc|dev|test)))+\.zip|-<board>\.zip)'
 RULES = [
     # Weboberfläche: Fußzeile im Gerät-Reiter, simulierte Demo-Firmwarekennung (PortalPage.h erzeugt tools/embed_web.py)
     ('web/index.html', r'(<p class="muted" id="uiver">Weboberfläche DisAHRsterRadio-MeshCore )[^ ]+( · MeshCore v)[0-9.]+(</p>)', r'\g<1>@VERSION@\g<2>@MESHCORE@\g<3>'),

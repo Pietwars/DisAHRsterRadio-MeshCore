@@ -52,6 +52,19 @@ public:
     esp_deep_sleep_start();
   }
 
+  // Akku-Werte des AXP2101 fuer die Display-Statuszeile. Der AXP2101 misst Spannungen und liefert eine
+  // eigene Ladestandsanzeige (Fuel Gauge, %), aber keinen Lade-/Entladestrom.
+  // mv = 0 und pct = -1, wenn kein Akku erkannt wird. false, wenn der PMU fehlt.
+  bool readPower(int& mv, int& pct, int& usb, int& charging) {
+    if (!PMU) return false;
+    bool bat = PMU->isBatteryConnect();
+    mv = bat ? PMU->getBattVoltage() : 0;
+    pct = bat ? PMU->getBatteryPercent() : -1;
+    usb = PMU->isVbusIn() ? 1 : 0;
+    charging = (bat && PMU->isCharging()) ? 1 : 0;
+    return true;
+  }
+
   uint16_t getBattMilliVolts() override {
     return PMU ? PMU->getBattVoltage() : 0;
   }
