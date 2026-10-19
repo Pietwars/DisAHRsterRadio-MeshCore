@@ -122,6 +122,19 @@ StdRNG fast_rng;
 SimpleMeshTables tables;
 MyMesh the_mesh(radio_driver, fast_rng, rtc_clock, tables, store);
 
+#if defined(LILYGO_TDECK) && defined(DISASTER_PORTAL)
+#include "ui-brand/QuickBridge.h"
+bool deviceQuickTarget(unsigned index, char* id, size_t id_size, char* name, size_t name_size) {
+  return disaster_portal.localTarget(index, id, id_size, name, name_size);
+}
+bool deviceQuickSend(const char* id, const char* text, uint32_t stamp, char* status, size_t size) {
+  return disaster_portal.localSend(id, text, stamp, status, size);
+}
+void deviceQuickStatus(char* status, size_t size) {
+  snprintf(status, size, "%s", disaster_portal.localSendStatus());
+}
+#endif
+
 /* END GLOBAL OBJECTS */
 
 void halt() {
@@ -319,6 +332,9 @@ void setup() {
   interface_manager.addInterface(InterfaceType::Portal, &disaster_portal);
   // 0.9.3: von der App gesendete Nachrichten auch im Web-Verlauf zeigen
   the_mesh.setAppSentObserver([](const uint8_t *cmd, size_t len, const uint8_t *tag) { disaster_portal.recordAppSend(cmd, len, tag); });
+#if defined(LILYGO_TDECK)
+  the_mesh.setPortalOriginProvider([]() { return disaster_portal.sendOrigin(); });
+#endif
 #endif
 
   the_mesh.startInterface(interface_manager);

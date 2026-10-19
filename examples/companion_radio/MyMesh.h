@@ -228,9 +228,11 @@ private:
   // 0.9.3: Nachrichten zwischen Weboberflaeche und MeshCore-App teilen.
   void queueWebEchoForApp(const uint8_t *cmd, size_t len);     // vom Portal gesendet -> App sieht sie
   void (*_app_sent_observer)(const uint8_t *cmd, size_t len, const uint8_t *ack_tag) = nullptr;
+  const char* (*_portal_origin_provider)() = nullptr;
 public:
   // Wird aufgerufen, wenn die App (Bluetooth) eine Text-/Kanalnachricht erfolgreich abgeschickt hat.
   void setAppSentObserver(void (*fn)(const uint8_t *cmd, size_t len, const uint8_t *ack_tag)) { _app_sent_observer = fn; }
+  void setPortalOriginProvider(const char* (*fn)()) { _portal_origin_provider = fn; }
 private:
 #endif
   int getBlobByKey(const uint8_t key[], int key_len, uint8_t dest_buf[]) override { 

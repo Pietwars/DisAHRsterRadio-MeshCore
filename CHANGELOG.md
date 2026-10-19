@@ -1,5 +1,12 @@
 # Änderungen
 
+## 0.9.5-test · 19.10.2026 · Teststand (kein Release)
+
+- Zweite T-Deck-Seite mit denselben acht Schnellmeldungen und zwölf Orten wie in der Weboberfläche, bearbeitbarem Text, Kanal-/Kontaktauswahl und „Position senden“. `M` öffnet die Seite, `Alt+C` wechselt das Feld; Original-Tastatur per I2C 0x55 eingebunden. T-Watch behält ihre bisherige Seite.
+- Geräte-GPS statt Advert-Cache: Empfänger erkennen, beim Öffnen aktivieren und nur bis zu 15 Sekunden alte gültige Fixes verwenden. NMEA-Erkennung an mehreren üblichen Baudraten für L76K/u-blox-Varianten. Manuelle Ortsauswahl ausdrücklich gekennzeichnet; kein Senden einer fehlenden oder veralteten Position.
+- Senden über die vorhandene Portal-/Companion-Strecke, einschließlich Web-Verlauf und App-Spiegelung mit Kennzeichnung „T-Deck“. Byte-Grenzen, Sendepause und bestehende WLAN/BLE-Funktionen bleiben erhalten.
+- Hosttests für Modell und echte Render-/Tastatursteuerung ergänzt; Hardwaretests und Bedienung in `docs/TDECK-0.9.5-TEST.md`. Nicht automatisch gemergt oder veröffentlicht.
+
 ## 0.9.4 · 19.10.2026 · Release
 
 - Akku-Anzeige (PR #31) und Flash-/Speicherprüfungen (PR #32) gemeinsam veröffentlicht: Board-Flashgröße, ESP32-Image-Header, Partitionen und Firmware-/RAM-Budgets werden vor dem Packen und im fertigen ZIP geprüft. Speicherbericht je Board in CI und Release-Paketen; Details und offene Hardwaretests in `docs/SPEICHER.md`.

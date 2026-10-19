@@ -1,7 +1,7 @@
 #pragma once
-// Marken-Anzeige (DisAHRsterRadio-MeshCore): Das Display zeigt NUR Schriftzug + Logo, eine Akku-Statuszeile
-// (Ladestand, Spannung, geschaetzter Verbrauch, siehe BattTrend.h) und einen Knopf "Advert senden" (Flood-Advert). Nachrichten, Einstellungen usw. laufen
-// ausschliesslich ueber die MeshCore-App (Bluetooth mit PIN) und die Weboberflaeche.
+// Marken-Anzeige: Logo, Akku-Statuszeile und Flood-Advert auf der Hauptseite.
+// T-Deck mit Portal: zweite Seite mit Web-Schnellmeldungen, GPS und Tastatureingabe.
+// T-Watch bleibt bei der bisherigen Hauptseite.
 // Waehrend einer Bluetooth-Kopplung wird kurz die PIN eingeblendet.
 
 #include <MeshCore.h>
@@ -12,6 +12,10 @@
 #include "../AbstractUITask.h"
 #include "../NodePrefs.h"
 #include "BattTrend.h"
+#if defined(LILYGO_TDECK) && defined(DISASTER_PORTAL)
+#define DAR_TDECK_QUICK
+#include "TDeckQuickPage.h"
+#endif
 
 #ifndef BRAND_AUTO_OFF_MILLIS
   #define BRAND_AUTO_OFF_MILLIS   30000   // Display geht nach 30 s ohne Bedienung aus
@@ -37,6 +41,14 @@ class UITask : public AbstractUITask {
   unsigned long _next_sample = 0, _next_batt_draw = 0;
   int _last_usb = -1;
   char _bl[40] = "", _be[48] = "";   // zuletzt gezeichnete Akkutexte
+#ifdef DAR_TDECK_QUICK
+  TDeckQuickPage _quick;
+  SensorManager* _quick_sensors = nullptr;
+  bool _quick_active = false, _keyboard_present = false;
+  uint32_t _next_keyboard = 0;
+  void openQuick();
+  void pollKeyboard(uint32_t now);
+#endif
 #if defined(UI_HAS_TOUCH)
   bool _touch_down = false;
   int _touch_x = 0, _touch_y = 0;

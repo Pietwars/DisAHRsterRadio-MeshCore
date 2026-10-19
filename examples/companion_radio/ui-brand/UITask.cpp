@@ -3,6 +3,9 @@
 #include "target.h"
 #include "BrandLogo.h"
 #include <helpers/esp32/SerialBLEInterface.h>
+#ifdef DAR_TDECK_QUICK
+#include <Wire.h>
+#endif
 #ifdef PIN_USER_BTN
   #include <helpers/ui/MomentaryButton.h>
   // T-Deck-Trackball: kurz klicken = Display an/aus, 2,5 s halten = Flood-Advert. Kein Ausschalten.
@@ -25,6 +28,10 @@
 void UITask::begin(DisplayDriver* display, SensorManager* sensors, NodePrefs* node_prefs) {
   _display = display;
   _node_prefs = node_prefs;
+#ifdef DAR_TDECK_QUICK
+  _quick.begin(sensors);
+  _quick_sensors = sensors;
+#endif
 #ifdef PIN_USER_BTN
   brand_btn.begin();
 #endif
@@ -117,6 +124,52 @@ void UITask::toggleDisplay() {
   else wake();
 }
 
+#ifdef DAR_TDECK_QUICK
+void UITask::openQuick() {
+  // Explicitly opening the local GPS page enables the receiver using the same
+  // setting as the app. Do not repeatedly restart it while waiting for a fix.
+  if (_quick_sensors && _quick_sensors->isGPSDetected() && !_node_prefs->gps_enabled) {
+    _node_prefs->gps_enabled = 1;
+    the_mesh.applyGpsPrefs();
+    the_mesh.savePrefs();
+  }
+  _quick_active = true;
+  wake();
+}
+
+void UITask::pollKeyboard(uint32_t now) {
+  if (int32_t(now - _next_keyboard) < 0) return;
+  if (!_keyboard_present) {
+    _next_keyboard = now + 5000;
+    Wire.beginTransmission(0x55); // T-Deck's keyboard MCU on the existing SDA18/SCL8 bus
+    _keyboard_present = Wire.endTransmission() == 0;
+    if (_keyboard_present) {
+      // Restore character mode if a previous firmware left the keyboard in raw matrix mode.
+      Wire.beginTransmission(0x55); Wire.write(uint8_t(0x04)); Wire.endTransmission();
+      Serial.println("[TDECK] Tastatur erkannt (I2C 0x55, Zeichenmodus)");
+    }
+    return;
+  }
+  _next_keyboard = now + 50;
+  if (Wire.requestFrom(uint8_t(0x55), uint8_t(1)) != 1) {
+    _keyboard_present = false; _next_keyboard = now + 5000;
+    Serial.println("[TDECK] Tastatur nicht erreichbar; erneuter Versuch in 5 s");
+    return;
+  }
+  uint8_t key = Wire.read();
+  if (!key || _pairing || ble_pairing_active()) return;
+  if (!_display->isOn()) { wake(); return; } // wake never accidentally transmits
+  if (!_quick_active) {
+    if (key == '\t' || key == 'm' || key == 'M') openQuick();
+    return;
+  }
+  if (key == 27) _quick_active = false;
+  else if (_quick.key(key, rtc_clock.getCurrentTime())) _quick_active = false;
+  _auto_off = now + BRAND_AUTO_OFF_MILLIS;
+  _dirty = true;
+}
+#endif
+
 void UITask::requestAdvert() {
   wake();
   unsigned long now = millis();
@@ -144,6 +197,9 @@ static void centerText(DisplayDriver* d, int cx, int y, int size, uint16_t c, co
 
 void UITask::render() {
   DisplayDriver* d = _display;
+#ifdef DAR_TDECK_QUICK
+  if (_quick_active && !_pairing) { _quick.render(d); return; }
+#endif
   int W = d->nativeWidth();
   bool small = W <= 240;
   d->startFrame(C_BG);
@@ -175,7 +231,11 @@ void UITask::render() {
 #if defined(UI_HAS_TOUCH)
     centerText(d, W / 2, by + 2 * gap + hb, 1, C_BG, "antippen");
 #else
+#ifdef DAR_TDECK_QUICK
+    centerText(d, W / 2, by + 2 * gap + hb, 1, C_BG, "2,5 s: Advert | M: Meldung");
+#else
     centerText(d, W / 2, by + 2 * gap + hb, 1, C_BG, "Trackball 2,5 s halten");
+#endif
 #endif
   }
   d->endFrame();
@@ -187,8 +247,20 @@ void UITask::loop() {
 
 #ifdef PIN_USER_BTN
   int ev = brand_btn.check();
-  if (ev == BUTTON_EVENT_CLICK) toggleDisplay();
-  else if (ev == BUTTON_EVENT_LONG_PRESS) requestAdvert();
+  if (ev == BUTTON_EVENT_CLICK) {
+#ifdef DAR_TDECK_QUICK
+    if (_quick_active && _display->isOn() && !_pairing) {
+      if (_quick.activate(rtc_clock.getCurrentTime())) _quick_active = false;
+      wake();
+    } else
+#endif
+    toggleDisplay();
+  } else if (ev == BUTTON_EVENT_LONG_PRESS) {
+#ifdef DAR_TDECK_QUICK
+    _quick_active = false;
+#endif
+    requestAdvert();
+  }
 #endif
 
 #if defined(LILYGO_TWATCH_S3)
@@ -224,6 +296,10 @@ void UITask::loop() {
     _dirty = true;
   }
   if (_status && now >= _status_until) { _status = 0; _dirty = true; }
+#ifdef DAR_TDECK_QUICK
+  pollKeyboard(now);
+  if (_quick_active && _quick.tick(now)) _dirty = true;
+#endif
   sampleBattery(now);
 
   if (_display->isOn()) {
@@ -240,6 +316,9 @@ void UITask::loop() {
       char ol[40], oe[48]; strcpy(ol, _bl); strcpy(oe, _be);
       readBattery();
       char nl[40], ne[48]; batt::texts(_batt, _trend, nl, sizeof(nl), ne, sizeof(ne), 0);
+#ifdef DAR_TDECK_QUICK
+      if (!_quick_active)
+#endif
       if (strcmp(ol, nl) || strcmp(oe, ne)) drawBattery(true);
     }
   }

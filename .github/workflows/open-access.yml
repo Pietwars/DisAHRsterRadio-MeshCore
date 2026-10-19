@@ -37,3 +37,9 @@ jobs:
         run: |
           g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -fsanitize=address,undefined tests/batt_trend.test.cpp -o /tmp/batt-trend-test
           /tmp/batt-trend-test
+      - name: T-Deck-Schnellmeldungen, Tastatur und frisches GPS
+        run: |
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -fsanitize=address,undefined tests/quick_model.test.cpp -o /tmp/quick-model
+          /tmp/quick-model
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -Wno-unused-parameter -fsanitize=address,undefined -DLILYGO_TDECK -DDISASTER_PORTAL -I tests/quick_fakes -I src tests/quick_page.test.cpp examples/companion_radio/ui-brand/TDeckQuickPage.cpp -o /tmp/quick-page
+          /tmp/quick-page

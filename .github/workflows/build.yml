@@ -30,6 +30,8 @@ jobs:
         run: python3 tests/maps.test.py && python3 tests/portal_routes.test.py
       - name: Flash- und Speicherpruefungen (Hosttests)
         run: python3 -m unittest discover -s tests -p 'test_memory_validation.py' -v
+      - name: T-Deck-Vorlagen und Orte identisch zur Weboberflaeche
+        run: python3 tools/gen_quick_messages.py --check
   build:
     runs-on: ubuntu-latest
     strategy:

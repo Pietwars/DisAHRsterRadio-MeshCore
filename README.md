@@ -10,9 +10,11 @@
 <img src="docs/images/vorschau-karte.jpg" width="250" alt="MeshAhrtal: Offlinekarte">
 </p>
 
-<sub>Aufnahmen der [Live-Demo](https://pietwars.github.io/DisAHRsterRadio-MeshCore/) in Handygröße, Stand 0.9.4; alle Daten simuliert.</sub>
+<sub>Aufnahmen der [Live-Demo](https://pietwars.github.io/DisAHRsterRadio-MeshCore/) in Handygröße, Stand 0.9.5-test; alle Daten simuliert.</sub>
 
-**Version 0.9.4** · MeshCore 1.18.0 · Weboberfläche MeshAhrtal · 868 MHz · Firmwarekennung `v1.18.0-dar0.9.4`
+**Version 0.9.5-test** · MeshCore 1.18.0 · Weboberfläche MeshAhrtal · 868 MHz · Firmwarekennung `v1.18.0-dar0.9.5-test`
+
+**Aktueller Testbranch:** zweite T-Deck-Seite mit Schnellmeldungen wie im Handy-Web, Tastatureingabe und frischem Geräte-GPS. [Bedienung und Hardwaretest 0.9.5-test](docs/TDECK-0.9.5-TEST.md). Release und Web-Flasher bleiben auf 0.9.4.
 
 **Neu in 0.9.4:** Akku-Zeile am Gerät und automatische Flash-/Speicherprüfungen für beide Release-Boards. Messwerte und offene Hardwaretests: [Flash- und RAM-Prüfung](docs/SPEICHER.md).
 
@@ -93,7 +95,7 @@ MeshCore-Preset **EU/UK (Narrow): 869,618 MHz**, 62,5 kHz, SF8, CR 4/8 (SRD-Teil
 
 | Repository | Inhalt | Funk | Version | Demo · Download · Flyer |
 |---|---|---|---|---|
-| [Pietwars/DisAHRsterRadio-MeshCore](https://github.com/Pietwars/DisAHRsterRadio-MeshCore) | MeshCore 1.18 mit kompakter MeshAhrtal-Oberfläche per WLAN plus Bluetooth für die MeshCore-App; Firmware für LILYGO T-Deck Plus und T-Watch S3 (Ahrtal) | MeshCore | 0.9.4 | [Live-Demo](https://pietwars.github.io/DisAHRsterRadio-MeshCore/) · [Releases](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases) · Flyer [Druck](https://pietwars.github.io/DisAHRsterRadio-MeshCore/flyer/DisAHRsterRadio-MeshCore-Flyer.pdf) / [digital](https://pietwars.github.io/DisAHRsterRadio-MeshCore/flyer/DisAHRsterRadio-MeshCore-Flyer-digital.pdf) |
+| [Pietwars/DisAHRsterRadio-MeshCore](https://github.com/Pietwars/DisAHRsterRadio-MeshCore) | MeshCore 1.18 mit kompakter MeshAhrtal-Oberfläche per WLAN plus Bluetooth für die MeshCore-App; Firmware für LILYGO T-Deck Plus und T-Watch S3 (Ahrtal) | MeshCore | 0.9.5-test | [Live-Demo](https://pietwars.github.io/DisAHRsterRadio-MeshCore/) · [Releases](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases) · Flyer [Druck](https://pietwars.github.io/DisAHRsterRadio-MeshCore/flyer/DisAHRsterRadio-MeshCore-Flyer.pdf) / [digital](https://pietwars.github.io/DisAHRsterRadio-MeshCore/flyer/DisAHRsterRadio-MeshCore-Flyer-digital.pdf) |
 | [Pietwars/DisAHRsterRadio](https://github.com/Pietwars/DisAHRsterRadio) | Ohne MeshCore: modernisiertes disaster-radio (LoRaLayer2, RadioLib) mit kompakter MeshAhrtal-Oberfläche (Ahrtal) | LoRaLayer2 | 0.9.1 | [Live-Demo](https://pietwars.github.io/DisAHRsterRadio/) · [Release v0.9.1](https://github.com/Pietwars/DisAHRsterRadio/releases/tag/v0.9.1) · Flyer [Druck](https://pietwars.github.io/DisAHRsterRadio/flyer/DisAHRsterRadio-Flyer.pdf) / [digital](https://pietwars.github.io/DisAHRsterRadio/flyer/DisAHRsterRadio-Flyer-digital.pdf) |
 | [Pietwars/HaldenFunk](https://github.com/Pietwars/HaldenFunk) | Regionalvariante von DisAHRsterRadio für Sangerhausen / Mansfelder Land, ohne MeshCore | LoRaLayer2 | 0.9.1 | [Live-Demo](https://pietwars.github.io/HaldenFunk/) · [Release v0.9.1](https://github.com/Pietwars/HaldenFunk/releases/tag/v0.9.1) · Flyer [Druck](https://pietwars.github.io/HaldenFunk/flyer/HaldenFunk-Flyer.pdf) / [digital](https://pietwars.github.io/HaldenFunk/flyer/HaldenFunk-Flyer-digital.pdf) |
 | [Pietwars/HaldenFunk-MeshCore](https://github.com/Pietwars/HaldenFunk-MeshCore) | Regionalvariante von DisAHRsterRadio-MeshCore für das Mansfelder Land: MeshCore 1.18, WLAN + Bluetooth, Gerätematrix | MeshCore | 0.9.1 | [Live-Demo](https://pietwars.github.io/HaldenFunk-MeshCore/) · [Release v0.9.1](https://github.com/Pietwars/HaldenFunk-MeshCore/releases/tag/v0.9.1) · Flyer [Druck](https://pietwars.github.io/HaldenFunk-MeshCore/flyer/HaldenFunk-MeshCore-Flyer.pdf) / [digital](https://pietwars.github.io/HaldenFunk-MeshCore/flyer/HaldenFunk-MeshCore-Flyer-digital.pdf) |
@@ -115,7 +117,7 @@ Alle Demos sind simuliert.
 
 ## Für 0.9.5 vorgemerkt
 
-[T-Deck: Schnellmeldungsansicht wie auf dem Handy, mit Position senden und Tastatur](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/issues/33). Als zweite Geräteseite mit denselben Vorlagen, Text-, Orts- und Zielauswahl wie in der Weboberfläche geplant. In 0.9.4 bleibt die Tastatur ohne Funktion.
+[T-Deck: Schnellmeldungsansicht wie auf dem Handy, mit Position senden und Tastatur](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/issues/33). In diesem Testbranch umgesetzt; [Testanleitung](docs/TDECK-0.9.5-TEST.md). In Release 0.9.4 bleibt die Tastatur ohne Funktion.
 
 ## Lizenz
 

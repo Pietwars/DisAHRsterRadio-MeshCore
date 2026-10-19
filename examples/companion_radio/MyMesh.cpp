@@ -246,6 +246,7 @@ void MyMesh::queueWebEchoForApp(const uint8_t *cmd, size_t len) {
   const char *text;
   size_t tlen;
   char mark[48];
+  const char* origin = _portal_origin_provider ? _portal_origin_provider() : "Web";
   if (cmd[0] == CMD_SEND_CHANNEL_TXT_MSG && len >= 7) {
     text = (const char *)&cmd[7]; tlen = len - 7;
     if (app_target_ver >= 3) { f[i++] = RESP_CODE_CHANNEL_MSG_RECV_V3; f[i++] = 0; f[i++] = 0; f[i++] = 0; }
@@ -254,7 +255,7 @@ void MyMesh::queueWebEchoForApp(const uint8_t *cmd, size_t len) {
     f[i++] = 0xFF;                   // kein Funkweg (lokal gesendet)
     f[i++] = TXT_TYPE_PLAIN;
     memcpy(&f[i], &cmd[3], 4); i += 4;
-    snprintf(mark, sizeof(mark), "%s (Web): ", _prefs.node_name);   // App zeigt "Name (Web)" als Absender
+    snprintf(mark, sizeof(mark), "%s (%s): ", _prefs.node_name, origin);
   } else if (cmd[0] == CMD_SEND_TXT_MSG && len >= 13) {
     text = (const char *)&cmd[13]; tlen = len - 13;
     if (app_target_ver >= 3) { f[i++] = RESP_CODE_CONTACT_MSG_RECV_V3; f[i++] = 0; f[i++] = 0; f[i++] = 0; }
@@ -263,7 +264,7 @@ void MyMesh::queueWebEchoForApp(const uint8_t *cmd, size_t len) {
     f[i++] = 0xFF;
     f[i++] = TXT_TYPE_PLAIN;
     memcpy(&f[i], &cmd[3], 4); i += 4;
-    snprintf(mark, sizeof(mark), "[von mir über Web] ");
+    snprintf(mark, sizeof(mark), "[von mir über %s] ", origin);
   } else {
     return;
   }

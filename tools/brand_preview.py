@@ -165,7 +165,7 @@ def render(d, mode, akku):
         d.fill(bx, by, bw, bh, GREEN); d.rect(bx, by, bw, bh, WHITE)
         gap = max(1, (bh - hb - hs) // 3)
         d.ctext(W // 2, by + gap, big, BG, "Advert senden")
-        d.ctext(W // 2, by + 2 * gap + hb, 1, BG, "antippen" if d.touch else "Trackball 2,5 s halten")
+        d.ctext(W // 2, by + 2 * gap + hb, 1, BG, "antippen" if d.touch else ("2,5 s: Advert | M: Meldung" if (ROOT / "VERSION").read_text().strip() == "0.9.5-test" else "Trackball 2,5 s halten"))
 
 out.mkdir(parents=True, exist_ok=True)
 A = AKKU[dev]

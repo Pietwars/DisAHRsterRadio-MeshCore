@@ -19,7 +19,7 @@ L=[f'# DisAHRsterRadio-MeshCore {ver} für {NAMES.get(dev,dev)}','','> Offenes W
 if e['chip'].startswith('esp32'):
     for r,(ch,b,fs,suf,teile) in off.items():
         L+=[f'## {"WLAN-Portal mit Web-Oberfläche" if r=="wifi" else r}','']
-        if dev in NAMES: L+=[f'Am einfachsten: Web-Flasher https://pietwars.github.io/DisAHRsterRadio-MeshCore/flasher/ (Chrome/Edge am Computer) – grüner Knopf „Update auf {ver} – {NAMES[dev]} (Einstellungen bleiben)“ (empfohlen, nur `firmware.bin` an 0x10000) oder orange umrandeter Knopf „Neuinstallation – {NAMES[dev]} (alles löschen)“ (`factory.bin` an 0x0). Ohne Web-Flasher:','']
+        if dev in NAMES and '-test' not in ver: L+=[f'Am einfachsten: Web-Flasher https://pietwars.github.io/DisAHRsterRadio-MeshCore/flasher/ (Chrome/Edge am Computer) – grüner Knopf „Update auf {ver} – {NAMES[dev]} (Einstellungen bleiben)“ (empfohlen, nur `firmware.bin` an 0x10000) oder orange umrandeter Knopf „Neuinstallation – {NAMES[dev]} (alles löschen)“ (`factory.bin` an 0x0). Ohne Web-Flasher:','']
         L+=[
             '1. Chrome/Edge, https://espressif.github.io/esptool-js/ öffnen, **Connect**, Port wählen ('+('Trackball gedrückt halten und einschalten' if dev=='LilyGo_TDeck' else 'USB-C neu einstecken' if dev=='LilyGo_TWatchS3' else 'ggf. BOOT gedrückt halten und RST drücken')+').',
             f'2. Flash Address **`0x0`**, Datei `{d.name}{suf}-factory.bin`, **Program**, danach neu starten (löscht Einstellungen, Identität, Kontakte, Verlauf).',
@@ -43,6 +43,17 @@ BRAND={
   'Das Display zeigt nur ein Bild des Ahrtals bei Nacht mit dem Schriftzug DisAHRsterRadio, darunter eine Akku-Zeile und den Knopf **„Advert senden“**. Keine weiteren Seiten, keine Nachrichten am Gerät (Nachrichten und Einstellungen über MeshCore-App und Weboberfläche).','',
   '| Bedienung | Wirkung |','|---|---|','| Seitentaste kurz | Display an/aus (bei ausgeschalteter Uhr: einschalten) |','| Seitentaste ca. **2 s** halten | Flood-Advert senden |','| Seitentaste ca. **6 s** halten | Uhr ausschalten (Power-Chip) |','| Knopf „Advert senden“ antippen | Flood-Advert senden |','| Antippen bei dunklem Display | nur aufwecken |',''],
 }
+if dev == 'LilyGo_TDeck' and ver == '0.9.5-test':
+    BRAND[dev] = ['## Anzeige und Tasten (T-Deck Plus, 0.9.5-test)', '',
+        'Die Startseite mit Akku und Flood-Advert bleibt erhalten. **M** öffnet die zweite Seite mit denselben acht Schnellmeldungen wie die Weboberfläche.', '',
+        '| Bedienung | Wirkung |', '|---|---|',
+        '| Alt+C | nächstes Feld |', '| Enter / Trackball kurz | gewählte Aktion ausführen |',
+        '| 1–8 im Vorlagenfeld | Vorlage wählen und Text bearbeiten |',
+        '| Leertaste bei Ort/Ziel | Auswahl wechseln |', '| SYM: ( / ) | vorherige/nächste Auswahl |',
+        '| Rücktaste im Text | Zeichen löschen |', '| Rücktaste außerhalb des Textes | Startseite |',
+        '| Trackball 2,5 s | Startseite und Flood-Advert |', '',
+        '**Mein Standort / Position senden:** nutzt das Geräte-GPS mit gültigem, höchstens 15 Sekunden altem Fix. Beim Öffnen wird erkanntes GPS aktiviert. Ohne Fix wird nicht gesendet; manuelle Orte sind ausdrücklich als solche gekennzeichnet. Senden erst durch ausdrückliche Auswahl der Sendeaktion. WLAN und BLE bleiben verfügbar.', '',
+        'Hardwaretest offen: Tastatur, GPS unter freiem Himmel, Funkempfang am zweiten Gerät sowie gleichzeitiges WLAN/BLE prüfen. Details: https://github.com/Pietwars/DisAHRsterRadio-MeshCore/blob/feat/tdeck-quick-messages/docs/TDECK-0.9.5-TEST.md', '']
 if dev in BRAND:
     AKKU={'LilyGo_TDeck':'**Akku-Zeile (T-Deck Plus):** Symbol, Ladestand „ca. NN %“ (aus der Spannung geschätzt) und Spannung. Das T-Deck misst nur die Akkuspannung – keinen Strom und nicht, ob es lädt. Rechts der **geschätzte Verbrauch**: Abfall des Ladestands in %/h und Restlaufzeit, berechnet aus dem Spannungsverlauf der letzten bis zu 60 min (erst nach 20 min, vorher „Verbrauch: Messung, noch N min“). Steigt die Spannung (Ladegerät), steht dort „Spannung steigt (Laden?)“.',
           'LilyGo_TWatchS3':'**Akku-Zeile (T-Watch S3):** Symbol, Ladestand in % (Ladestandsanzeige des Power-Chips AXP2101) und Spannung; darunter „USB: Laden“ bzw. „USB: kein Laden“ oder der **geschätzte Verbrauch**: Abfall des Ladestands in %/h und Restlaufzeit aus dem Spannungsverlauf der letzten bis zu 60 min (erst nach 20 min ohne USB). Der AXP2101 misst keinen Strom; ein gemessener Verbrauch in mA ist daher nicht verfügbar.'}

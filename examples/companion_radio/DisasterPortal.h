@@ -36,6 +36,9 @@
 #include "SlotFile.h"
 #include "DeliveryOutbox.h"
 #include "ArchiveSd.h"
+#if defined(LILYGO_TDECK)
+#include "ui-brand/QuickModel.h"
+#endif
 
 // A single local companion owns the protocol. HTTP clients share its history.
 // Raw, arbitrary companion commands and private keys are never exposed to HTTP.
@@ -78,6 +81,19 @@ class DisasterPortal : public BaseSerialInterface {
   }
   String outcome = "Bereit";
   uint32_t activeSince = 0;
+#if defined(LILYGO_TDECK)
+  bool deviceOutgoing = false, deviceOrigin = false;
+  char deviceOutcome[96] = "Bereit";
+  static void cachedName(const String& raw, unsigned byte, char* out, size_t size) {
+    size_t n = 0;
+    for (unsigned i = byte * 2; i + 1 < raw.length() && n + 1 < size && n < 32; i += 2) {
+      int a = nibble(raw[i]), b = nibble(raw[i + 1]);
+      if (a < 0 || b < 0 || !(a || b)) break;
+      out[n++] = char(a * 16 + b);
+    }
+    if (size) out[n] = 0;
+  }
+#endif
   using Record = disaster::HistoryRecord;
   static_assert(MAX_FRAME_SIZE == disaster::FRAME_BYTES, "Companion frame size changed");
   static String hex(const uint8_t *p, size_t n) {
@@ -161,6 +177,56 @@ class DisasterPortal : public BaseSerialInterface {
     return -1;
   }
 public:
+#if defined(LILYGO_TDECK)
+  // Use the same serialized Portal/Companion send path as the web UI. No second
+  // radio sender, history reader, HTTP bypass or arbitrary commands are exposed.
+  const char* sendOrigin() const { return deviceOrigin ? "T-Deck" : "Web"; }
+  const char* localSendStatus() const { return deviceOutcome; }
+  bool localTarget(unsigned index, char* id, size_t id_size, char* name, size_t name_size) const {
+    for (int i = 0; i < 8; ++i) if (channels[i].length()) {
+      if (index--) continue;
+      char label[33]; cachedName(channels[i], 2, label, sizeof(label));
+      snprintf(id, id_size, "c%d", i); snprintf(name, name_size, "# %s", label);
+      return true;
+    }
+    for (const auto& c : contacts) if (c.length() >= 264 && c.substring(66,68) == "01") {
+      if (index--) continue;
+      cachedName(c, 100, name, name_size);
+      snprintf(id, id_size, "d%s", c.substring(2,14).c_str());
+      return true;
+    }
+    return false;
+  }
+  bool localSend(const char* id, const char* text, uint32_t stamp, char* status, size_t size) {
+    auto fail = [&](const char* reason) { snprintf(status, size, "%s", reason); return false; };
+    if (!enabled || startup < 12 || pendingLen || active || loginLen)
+      return fail("Knoten beschaeftigt; erneut versuchen");
+    if (sentOnce && uint32_t(millis() - lastSend) < 5000)
+      return fail("Bitte 5 Sekunden Sendepause");
+    String target(id);
+    if (target.length() == 2 && target[0] == 'c' && target[1] >= '0' && target[1] <= '7') {
+      if (!channels[target[1] - '0'].length()) return fail("Kanal nicht eingerichtet");
+    } else {
+      unsigned matches = 0;
+      for (const auto& c : contacts) if (c.length() >= 264 && c.substring(2,14) == target.substring(1)) {
+        if (c.substring(66,68) != "01") return fail("Kein Chat-Kontakt");
+        ++matches;
+      }
+      if (matches != 1) return fail("Kontakt fehlt oder ist mehrdeutig");
+    }
+    if (stamp <= lastStamp) stamp = lastStamp + 1;
+    uint8_t p[MAX_FRAME_SIZE];
+    size_t n = quick::frame(id, text, stamp, p, sizeof(p));
+    if (!n) return fail("Ziel, Uhrzeit oder 100-Byte-Limit pruefen");
+    memcpy(pending, p, n); pendingLen = n;
+    memcpy(outgoing, p, n); outgoingLen = n;
+    lastStamp = stamp; sentOnce = true; lastSend = millis();
+    deviceOutgoing = true;
+    snprintf(deviceOutcome, sizeof(deviceOutcome), "Vorgemerkt; noch nicht gesendet");
+    snprintf(status, size, "%s", deviceOutcome);
+    return true;
+  }
+#endif
   // Snapshot existing MeshCore counters; does not issue Companion commands.
   void setGps(bool enabled,bool fix,double lat,double lon){gpsEnabled=enabled;gpsFix=fix&&(lat!=0||lon!=0);gpsLat=lat;gpsLon=lon;}
   void setRadioDiagnostics(uint32_t tf, uint32_t td, uint32_t rf, uint32_t rd,
@@ -394,17 +460,28 @@ public:
   size_t checkRecvFrame(uint8_t *dest) override {
     if(!enabled)return 0;
     if(active) {
-      if(millis()-activeSince>15000) {activeJob=-1;active=0;outgoingLen=0;outcome="Antwort unklar; nicht automatisch erneut senden";}
+      if(millis()-activeSince>15000) {
+#if defined(LILYGO_TDECK)
+        if(deviceOutgoing) {snprintf(deviceOutcome,sizeof(deviceOutcome),"Antwort unklar; nicht erneut senden");deviceOutgoing=false;}
+#endif
+        activeJob=-1;active=0;outgoingLen=0;outcome="Antwort unklar; nicht automatisch erneut senden";}
       else return 0;
     }
     size_t n=0;
+#if defined(LILYGO_TDECK)
+    deviceOrigin=false;
+#endif
     if(startup==0){dest[0]=22;dest[1]=3;n=2;startup++;}
     else if(startup==1){memset(dest,0,8);dest[0]=1;n=8;startup++;}
     else if(startup>=2 && startup<10){dest[0]=31;dest[1]=startup-2;n=2;startup++;}
     else if(startup==10){dest[0]=4;n=1;startup++;}
     else if(startup==11){dest[0]=20;n=1;startup++;}
     else if(loginLen&&!pendingLen){userCommand=true;n=loginLen;memcpy(dest,loginFrame,n);loginLen=0;memset(loginFrame,0,sizeof(loginFrame));}
-    else if(pendingLen){userCommand=true;n=pendingLen;memcpy(dest,pending,n);pendingLen=0;}
+    else if(pendingLen){userCommand=true;n=pendingLen;memcpy(dest,pending,n);pendingLen=0;
+#if defined(LILYGO_TDECK)
+      deviceOrigin=deviceOutgoing;
+#endif
+    }
     else if((!sentOnce||millis()-lastSend>=5000)&&delivery.ready()){
       int job=delivery.next();
       if(job>=0){const auto &j=delivery.get(job);bool known=false,ambiguous=false;
@@ -425,6 +502,9 @@ public:
     }
     else if((int32_t)(millis()-nextPoll)>=0){dest[0]=10;n=1;nextPoll=millis()+1000;}
     if(n){
+#if defined(LILYGO_TDECK)
+      if(dest[0]!=2&&dest[0]!=3)deviceOrigin=false;
+#endif
       if(dest[0]==4)for(auto &contact:contacts)contact="";
       active=dest[0];activeSince=millis();
     }
@@ -454,6 +534,9 @@ public:
     if(code<0x80 && active) {
       if(activeJob>=0&&code==6&&n>=10)delivery.tag(activeJob,p+2);
       if((active==2||active==3) && (code==0||code==6||code==1)) {
+#if defined(LILYGO_TDECK)
+        if(deviceOutgoing) {snprintf(deviceOutcome,sizeof(deviceOutcome),"%s",code==1?"Funkkern meldet Sendefehler":"Funkkern angenommen; Zustellung offen");deviceOutgoing=false;}
+#endif
         if(code!=1 && outgoingLen){uint8_t record[MAX_FRAME_SIZE];memcpy(record,outgoing,outgoingLen);record[0]=active==2?0xf2:0xf3;
           size_t recordLen=outgoingLen;
           // v0.2: preserve the core's ACK tag beside the accepted direct message.
