@@ -9,31 +9,58 @@ Die Web-Schicht wird im Standalone-Build **weggelassen, nicht per Flag unterdrü
 Sendepause, App-Echo und Brett-Anmeldung liegen in webfreien Bausteinen, die Web- und Standalone-Build gemeinsam
 nutzen.
 
-> **Status: Testbuild `0.9.5-standalone-test`** (Firmwarekennung `v1.18.0-dar0.9.5-standalone-test`).
+> **Status: Testbuild `0.9.5-standalone-test2`** (Firmwarekennung `v1.18.0-dar0.9.5-standalone-test2`; test2 =
+> Boot-Logo statt Startseite, Akku in der Reiterleiste, „Zurück“ auf der Karte, Touch).
 > Alle Punkte aus Issue #35 sind umgesetzt und ohne Hardware geprüft (Hosttests, Builds, Vorschaubilder).
 > Nicht im Release, nicht im Web-Flasher, nicht in `tools/devices.json` oder `tools/release_boards.json`.
 > **Noch nicht auf echter Hardware geprüft** (siehe [Hardwaretest](#hardwaretest-offen)).
 
 ## Bedienung
 
-Oben steht wie in der Weboberfläche die Reiterleiste **Start · Chat · Meldung · Brett · Karte · Standort · Gerät**
-(„Meldung“ = Reiter „Schnellmeldung“ der Weboberfläche). Ungelesene Nachrichten erscheinen als weinrote Zahl an
-„Chat“ und „Brett“ und auf den Start-Kacheln; eine neue eingehende Nachricht schaltet das dunkle Display ein.
+Beim Einschalten zeigt das Display **nur das DisAHRsterRadio-Logo** mit Firmwarekennung und 112-Hinweis, für 2,5 s
+oder bis zur ersten Taste, Trackball-Bewegung, zum ersten Klick oder Tipp (diese erste Eingabe öffnet nur Chat und
+wird sonst nicht ausgeführt). Danach öffnet sich der Reiter **Chat**. Eine Startseite gibt es nicht mehr.
+
+Oben steht wie in der Weboberfläche die Reiterleiste **Chat · Meldung · Brett · Karte · Standort · Gerät**
+(„Meldung“ = Reiter „Schnellmeldung“ der Weboberfläche), rechts daneben auf **jeder Seite der Akkustand** (Symbol
+und Prozent, grün ab 40 %, gelb ab 15 %, sonst rot). Ungelesene Nachrichten erscheinen als weinrote Zahl an
+„Chat“ und „Brett“; eine neue eingehende Nachricht schaltet das dunkle Display ein.
+
+Was früher auf der Startseite stand:
+
+| Früher (Start) | Jetzt |
+|---|---|
+| Akkuzeile (Ladestand, Spannung, Verbrauch/Restlaufzeit) | Prozent in der Reiterleiste auf jeder Seite; Ladestand, Spannung und Verbrauch als Zeilen „Akku“ und „Verbrauch“ im Reiter **Gerät** |
+| „Advert senden“ (Trackball 2,5 s) | Trackball **2,5 s halten** wie bisher, zusätzlich Knopf **„Advert senden (Bekanntgabe)“** in Gerät (und „Bekanntgabe senden“ in Standort) |
+| Klick = Display an/aus | Knopf **„Display aus“** in Gerät oder Taste **d** (außerhalb von Textfeldern und der Meldung-Seite); jede Taste, jeder Trackball-Schritt, Klick oder Tipp weckt; nach 30 s ohne Bedienung geht es wie bisher von selbst aus |
+| Kacheln zu den Reitern | Reiterleiste (Buchstaben, Trackball links/rechts, Tippen) |
 
 | Eingabe | Wirkung |
 |---|---|
-| Buchstaben **h c m b k s g** (außerhalb eines Textfelds) | Start, Chat, Meldung, Brett, Karte, Standort, Gerät |
+| Buchstaben **c m b k s g** (außerhalb eines Textfelds) | Chat, Meldung, Brett, Karte, Standort, Gerät (**h** entfällt) |
+| **Tippen** auf einen Reiter (Touch) | Reiter öffnen |
 | Trackball **hoch/runter** | Auswahl in Listen und Feldern; im Chat ältere/neuere Nachrichten |
-| Trackball **links/rechts** | vorheriger/nächster Reiter; im Chat/Brett links = zurück zur Liste; auf der Meldung-Seite Auswahl im Feld (Vorlage, Ort, Ziel) |
-| Trackball **Klick** oder **Enter** | öffnen bzw. ausführen; im Chat **senden** |
+| Trackball **links/rechts** | vorheriger/nächster Reiter (Gerät → Chat läuft im Kreis); im Chat/Brett links = zurück zur Liste; auf der Meldung-Seite Auswahl im Feld (Vorlage, Ort, Ziel); auf der Karte verschieben |
+| Trackball **Klick** oder **Enter** | öffnen bzw. ausführen; im Chat **senden**; auf der Karte **„Zurück“** |
 | Trackball **2,5 s halten** | Flood-Advert (wie Schritt 1) |
-| **Backspace** (Del) | löscht im Textfeld; bei leerem Feld bzw. außerhalb zurück (Liste → Start) |
-| Start: Trackball bewegen, dann Klick | Kachel wählen und öffnen; Klick ohne gewählte Kachel = Display an/aus (wie Schritt 1) |
+| **Backspace** (Del) / Esc | löscht im Textfeld; bei leerem Feld bzw. außerhalb zurück (Unterhaltung → Liste, sonst → Chat; Karte → vorige Seite) |
+| **d** (außerhalb von Textfeldern, nicht auf der Meldung-Seite) | Display aus |
 | Meldung: **1–8**, **ALT+C**, **Leertaste** | Vorlage, nächstes Feld, Auswahl wechseln (wie 0.9.5-test #34) |
-| Karte: **+**/**z**, **-**/**x**, **i**, **a**, **n**/Klick, Trackball | Zoom, „Ich“, „Alles“, nächste Karte, verschieben |
+| Karte: **+**/**z**, **-**/**x**, **i**, **a**, **n**/Enter/Leertaste, Trackball | Zoom, „Ich“, „Alles“, nächste Karte, verschieben |
+| Karte: Knopf **„← Zurück“** oben links | Tippen, Trackball-**Klick**, Del oder Esc: zurück zur Seite vor der Karte |
 
-Eine Taste oder ein Trackball-Schritt bei dunklem Display weckt nur und sendet nie. Während der Bluetooth-Kopplung
-zeigt das Display wie bisher nur die PIN-Anzeige.
+**Karte verlassen:** Auf der Karte verschiebt der Trackball nur die Karte, auch links/rechts (dort kein
+Reiterwechsel). Damit man nie festsitzt, ist der Knopf **„← Zurück“** oben links immer orange markiert: ein
+**Trackball-Klick** löst ihn aus (die nächste Karte wählt man mit **n**, Enter oder Leertaste), ebenso ein **Tipp**
+darauf, **Del** oder **Esc**; außerdem führt jeder Buchstabe eines Reiters oder ein Tipp auf die Reiterleiste weg.
+Die Fußzeile der Karte sagt „Trackball: verschieben · Klick/Del: Zurück“.
+
+Eine Taste, ein Trackball-Schritt oder ein Tipp bei dunklem Display weckt nur und sendet nie. Während der
+Bluetooth-Kopplung zeigt das Display wie bisher nur die PIN-Anzeige (Logo, Akkuzeile, PIN).
+
+**Touch** (T-Deck Plus, GT911 am I2C-Bus, `ui-brand/TDeckTouch.h`): Tippen auf Reiter und auf „Zurück“ der Karte.
+Der Touch wird alle 30 ms abgefragt; fehlt er, wird alle 5 s erneut gesucht. Die Ausrichtung (x = Roh-y,
+y = 240 − Roh-x, wie in den LilyGO-Beispielen) ist **auf Hardware zu prüfen**.
 
 ## Funktionen
 
@@ -82,6 +109,9 @@ zeigt das Display wie bisher nur die PIN-Anzeige.
 ### 6. GPS ins Mesh
 - Reiter **Standort**: GPS-Empfänger an/aus, **Standort teilen** an/aus (ab Werk **aus**, Wahl bleibt nach Neustart),
   „Position in Chat senden“ (`!DP1|lat,lon|Zeit` wie die Weboberfläche), „Bekanntgabe senden“.
+- Reiter **Gerät**: Name, Firmware, Bluetooth (ohne PIN-Ziffern), Netz, Verlauf, Uhr, Funk, Speicher, SD-Karte,
+  **Akku** und **Verbrauch**; Knöpfe „Kontakte neu lesen“, „Advert senden (Bekanntgabe)“, „Display aus“,
+  „Einstellungen auf SD speichern“; 112-Hinweis.
 - Nur bei eingeschaltetem Teilen **und** frischem Fix (15 s) tragen Bekanntgaben und Meldungen die GPS-Position.
   Sonst gilt der in der App gesetzte Standort (oder keiner). Ein GPS-Fix wird nie als Gerätestandort gespeichert
   (`GpsShare.h`, Speicher-Haken in `MyMesh::savePrefs`).
@@ -106,29 +136,31 @@ zeigt das Display wie bisher nur die PIN-Anzeige.
 | `examples/companion_radio/StandaloneFrontend.cpp` | Frontend: lokaler Companion-Client, `dev::Api`, SD, GPS-Teilen |
 | `examples/companion_radio/LocalCompanion.h`, `LocalSend.h` | gemeinsamer webfreier Kern (auch für `DisasterPortal.h`) |
 | `examples/companion_radio/GpsShare.h`, `DeviceConfig.h` | Standort teilen, SD-Einstellungen (reine Logik) |
-| `examples/companion_radio/ui-brand/StandaloneUI.*` | Seiten Start/Chat/Brett/Karte/Standort/Gerät |
+| `examples/companion_radio/ui-brand/StandaloneUI.*` | Boot-Logo, Seiten Chat/Meldung/Brett/Karte/Standort/Gerät |
 | `examples/companion_radio/ui-brand/TDeckQuickPage.*`, `QuickModel.h`, `QuickData.h` | Schnellmeldung |
 | `examples/companion_radio/ui-brand/Theme.h`, `Widgets.h` | Farben, Reiter, Texte des Design-Systems (CP437-Schrift) |
 | `examples/companion_radio/ui-brand/ChatLog.h`, `MapView.h`, `MapData.h`, `DeviceApi.h` | Verlauf, Karte, Schnittstelle |
-| `examples/companion_radio/ui-brand/UITask.*` | Tastatur, Trackball, Startseite (unter `DAR_STANDALONE_UI`) |
+| `examples/companion_radio/ui-brand/UITask.*` | Tastatur, Trackball, Touch, Akku, PIN-Anzeige (unter `DAR_STANDALONE_UI`) |
+| `examples/companion_radio/ui-brand/TDeckTouch.h` | Touch GT911 (nur Standalone) |
 | `tools/standalone_preview.py` | Vorschaubilder aller Seiten ohne Hardware |
 
 Hosttests (C++11, ASAN/UBSAN, in `open-access.yml`): `local_companion`, `quick_model`, `quick_page`, `chat_log`,
 `standalone_ui` (alle Seiten, Navigation, Bildschirmgrenzen), `gps_share`, `device_config`.
 
-## Messwerte (lokal, Linkerwerte, PlatformIO espressif32 6.11.0)
+## Messwerte (lokal, Linkerwerte, PlatformIO espressif32 6.11.0, Stand test2)
 
 | Messwert | normal `dar_LilyGo_TDeck_wifi` (main) | Standalone | Unterschied |
 |---|---:|---:|---:|
-| Flash laut Linker | 2.063.913 B | 1.622.481 B | **−441.432 B (−21,4 %)** |
-| `firmware.bin` | 2.064.336 B | 1.622.896 B | −441.440 B |
-| Statisches RAM (.data/.bss) | 160.988 B | 153.612 B | **−7.376 B (−4,6 %)** |
-| Frei in App-Partition (3 MiB) | 1.081.392 B | 1.522.832 B | |
+| Flash laut Linker | 2.063.913 B | 1.624.485 B | **−439.428 B (−21,3 %)** |
+| `firmware.bin` | 2.064.336 B | 1.624.896 B | −439.440 B |
+| Statisches RAM (.data/.bss) | 160.988 B | 153.740 B | **−7.248 B (−4,5 %)** |
+| Frei in App-Partition (3 MiB) | 1.081.392 B | 1.520.832 B | |
 
 Gegenüber Schritt 1 (1.365.005 B Flash, 135.564 B RAM) kommen die Seiten, die Karten (ca. 164 KB), SD und der
 Companion-Kern dazu. Der normale T-Deck-Build wird auf diesem Stand um 748 B Flash und 112 B RAM größer
 (gemeinsamer Kern, GPS-Frische-Abfrage), sein Verhalten bleibt gleich. Heap zur Laufzeit: auf Hardware messen
-(Reiter Gerät und serielle `[HEAP]`-Zeilen alle 30 s).
+(Reiter Gerät und serielle `[HEAP]`-Zeilen alle 30 s). test2 gegenüber test: +2.004 B Flash, +128 B RAM
+(Boot-Logo, Touch, Akku in der Reiterleiste); der normale T-Deck-Build bleibt dabei gleich groß (2.064.661 B / 161.100 B).
 
 ## Bauen und flashen
 
@@ -147,7 +179,9 @@ python3 tools/standalone_preview.py <Ordner>      # Vorschaubilder
 
 ## Hardwaretest (offen)
 
-1. Start und Anzeige (Startseite, alle Reiter, Lesbarkeit), Display an/aus, Aufwachen bei neuer Nachricht.
+1. Boot-Logo (2,5 s, erste Eingabe überspringt), danach Chat; alle Reiter, Lesbarkeit, Akku in der Reiterleiste
+   und in Gerät, „Display aus“ (Gerät, Taste d) und Wecken, Aufwachen bei neuer Nachricht.
+1a. Touch: Ausrichtung (Reiter treffen), „Zurück“ auf der Karte per Tipp und per Trackball-Klick.
 2. PIN-Kopplung mit der MeshCore-App; Senden/Empfangen parallel in App und Gerät.
 3. Update von 0.9.4 mit `firmware.bin`: Kontakte, Kanäle, Name, PIN und Verlauf bleiben.
 4. Tastatur (Zeichenmodus, Enter, Backspace, ALT+C) und Trackball-Richtungen (Pins 3/15/1/2, Schrittweite).
