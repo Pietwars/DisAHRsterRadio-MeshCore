@@ -1,211 +1,157 @@
 # T-Deck Plus Standalone (Issue #35)
 
 Umsetzung von [Issue #35](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/issues/35): eine zusätzliche
-Firmware-Variante für das **LILYGO T-Deck Plus** (mit SD-Karte und eingebautem GPS), die **ohne Weboberfläche,
-ohne WLAN und ohne Webserver** auskommt. MeshCore läuft über Bluetooth; bedient wird später direkt am Gerät
-über Tastatur und Trackball.
+Firmware-Variante für das **LILYGO T-Deck Plus** (Tastatur, Trackball, SD-Karte, eingebautes GPS), die **ohne
+Weboberfläche, ohne WLAN und ohne Webserver** auskommt. MeshCore läuft über Bluetooth mit PIN (MeshCore-App);
+bedient wird direkt am Gerät über Tastatur und Trackball, mit Optik und Bedienlogik der Weboberfläche.
 
-Der Ansatz aus dem Issue: ein eigenes, schlankes Target mit Kernlogik, Bluetooth sowie Display- und
-Tastatursteuerung. Die Web-Schicht wird im Standalone-Build **weggelassen, nicht per Flag unterdrückt**, damit
-nichts doppelt gepflegt werden muss.
+Die Web-Schicht wird im Standalone-Build **weggelassen, nicht per Flag unterdrückt**. Lokales Senden, Verlauf,
+Sendepause, App-Echo und Brett-Anmeldung liegen in webfreien Bausteinen, die Web- und Standalone-Build gemeinsam
+nutzen.
 
-> **Status: Schritt 1 von 6 (Testbuild `0.9.4-standalone-test`).** Nicht im Release, nicht im Web-Flasher,
-> nicht in `tools/devices.json` oder `tools/release_boards.json`. Noch nicht auf echter Hardware geprüft.
+> **Status: Testbuild `0.9.5-standalone-test`** (Firmwarekennung `v1.18.0-dar0.9.5-standalone-test`).
+> Alle Punkte aus Issue #35 sind umgesetzt und ohne Hardware geprüft (Hosttests, Builds, Vorschaubilder).
+> Nicht im Release, nicht im Web-Flasher, nicht in `tools/devices.json` oder `tools/release_boards.json`.
+> **Noch nicht auf echter Hardware geprüft** (siehe [Hardwaretest](#hardwaretest-offen)).
 
-## Schritt 1: schlankes Target `LilyGo_TDeck_standalone` (dieser Stand)
+## Bedienung
 
-Gleiche Funktion wie der normale T-Deck-Build `dar_LilyGo_TDeck_wifi` (0.9.4), nur ohne WLAN und Weboberfläche:
+Oben steht wie in der Weboberfläche die Reiterleiste **Start · Chat · Meldung · Brett · Karte · Standort · Gerät**
+(„Meldung“ = Reiter „Schnellmeldung“ der Weboberfläche). Ungelesene Nachrichten erscheinen als weinrote Zahl an
+„Chat“ und „Brett“ und auf den Start-Kacheln; eine neue eingehende Nachricht schaltet das dunkle Display ein.
 
-- MeshCore-Companion über **PIN-Bluetooth** wie in DAR-MC: gespeicherte PIN oder Standard-PIN, Kopplung nur
-  mit PIN, PIN-Anzeige während der Kopplung.
-- **Minimal-Anzeige** wie bisher: Bild, Akkuzeile, Knopf „Advert senden“. Trackball kurz = Display an/aus,
-  2,5 s halten = Flood-Advert.
-- **Gleiche Funkregeln** wie die DAR-MC-Builds mit Weboberfläche: höchstens 10 dBm, fester Sendezeitanteil
-  von 10 %, automatisch werden nur Repeater und Room-Server als Kontakt übernommen, ein ausdrücklich gesetzter
-  Standort wird in Bekanntgaben geteilt. Gleiche Kanalzahl (8) und Warteschlangengröße (64).
-- **Gleiche Partitionstabelle** (`huge_app.csv`): Ein T-Deck mit 0.9.4 behält beim Wechsel (nur
-  `firmware.bin` an 0x10000) Kontakte, Kanäle und Einstellungen. Die Webdateien im SPIFFS bleiben liegen,
-  werden aber nicht mehr benutzt. Auf einem neuen oder gelöschten Gerät wird das SPIFFS beim ersten Start
-  formatiert; ein Dateisystem-Abbild wird nicht gebraucht.
-- Firmwarekennung `v1.18.0-dar0.9.4-standalone-test` (folgt `VERSION`, geprüft von `tools/version.py`).
-
-### Aufbau: Weglassen statt Abschalten
-
-| Baustein | Aufgabe |
+| Eingabe | Wirkung |
 |---|---|
-| `platformio.standalone.ini` | Env `LilyGo_TDeck_standalone`, abgeleitet vom T-Deck-BLE-Profil |
-| `examples/companion_radio/Frontend.h` | Naht zwischen Companion-Kern (`main.cpp`) und optionaler Zusatzoberfläche: `mountFilesystem()`, `begin()`, `sensorsReady()`, `loop()` |
-| `examples/companion_radio/WebFrontend.cpp` | Die Web-Schicht (WLAN-Zugangspunkt, `DisasterPortal`), vorher direkt in `main.cpp` |
-| `examples/companion_radio/PlainFrontend.cpp` | Builds ohne Web-Schicht: nichts außer dem Companion-Kern (auch Standalone) |
-| `examples/companion_radio/DarBuild.h` | Build-Arten `DISASTER_PORTAL` / `DISASTER_STANDALONE`, gemeinsame Funkregeln `DAR_MESH_POLICY` |
-| `tools/check_standalone.py` | Prüft die gelinkte Firmware (siehe unten), läuft in CI |
+| Buchstaben **h c m b k s g** (außerhalb eines Textfelds) | Start, Chat, Meldung, Brett, Karte, Standort, Gerät |
+| Trackball **hoch/runter** | Auswahl in Listen und Feldern; im Chat ältere/neuere Nachrichten |
+| Trackball **links/rechts** | vorheriger/nächster Reiter; im Chat/Brett links = zurück zur Liste; auf der Meldung-Seite Auswahl im Feld (Vorlage, Ort, Ziel) |
+| Trackball **Klick** oder **Enter** | öffnen bzw. ausführen; im Chat **senden** |
+| Trackball **2,5 s halten** | Flood-Advert (wie Schritt 1) |
+| **Backspace** (Del) | löscht im Textfeld; bei leerem Feld bzw. außerhalb zurück (Liste → Start) |
+| Start: Trackball bewegen, dann Klick | Kachel wählen und öffnen; Klick ohne gewählte Kachel = Display an/aus (wie Schritt 1) |
+| Meldung: **1–8**, **ALT+C**, **Leertaste** | Vorlage, nächstes Feld, Auswahl wechseln (wie 0.9.5-test #34) |
+| Karte: **+**/**z**, **-**/**x**, **i**, **a**, **n**/Klick, Trackball | Zoom, „Ich“, „Alles“, nächste Karte, verschieben |
 
-- `main.cpp` enthält keinen WLAN- oder Portal-Code mehr. Die Web-Builds binden `WebFrontend.cpp` ein,
-  `DisasterPortal.h` wird nur noch von dort eingebunden.
-- Der Standalone-Build entfernt `WebFrontend.cpp` und `helpers/esp32/ESPNOWRadio.cpp` (ESP-NOW nutzt das
-  WLAN-Funkteil) per `build_src_filter`. Er schließt die WLAN- und Webserver-Bibliotheken per `lib_ignore`
-  aus. Bindet etwas `WiFi.h` oder `WebServer.h` ein, bricht der Build ab. So fiel `ESPNOWRadio.cpp` auf.
-- `DarBuild.h` bricht mit Fehler ab, wenn ein Build `DISASTER_STANDALONE` und `DISASTER_PORTAL` gleichzeitig setzt.
-- Die Funkregeln standen bisher unter `DISASTER_PORTAL`; sie stehen jetzt unter `DAR_MESH_POLICY`. Das gilt
-  für beide Build-Arten, das Verhalten der Web-Builds bleibt gleich. Nur webspezifische Teile von `MyMesh` bleiben
-  unter `DISASTER_PORTAL` und fehlen im Standalone-Build: Web-Echo in der App, zweiter Leser der Warteschlange.
+Eine Taste oder ein Trackball-Schritt bei dunklem Display weckt nur und sendet nie. Während der Bluetooth-Kopplung
+zeigt das Display wie bisher nur die PIN-Anzeige.
 
-### Nachweis: keine WLAN-/Web-Schicht in der Firmware
+## Funktionen
 
-`tools/check_standalone.py` prüft den fertigen Build, nicht die Quelltexte:
+### 1. Grundgerüst
+- Env `LilyGo_TDeck_standalone` (`platformio.standalone.ini`). `WebFrontend.cpp` und `ESPNOWRadio.cpp` fehlen per
+  `build_src_filter`, WLAN-/Webserver-/DNS-Bibliotheken per `lib_ignore`; Einbinden von `WiFi.h` bricht den Build ab.
+- `DarBuild.h`: Funkregeln `DAR_MESH_POLICY` (10 dBm, 10 % Sendezeit, nur Repeater/Room-Server automatisch,
+  ausdrücklich gesetzter Standort in Bekanntgaben), `DAR_LOCAL_COMPANION` (lokaler Client teilt die Warteschlange
+  mit der App und spiegelt eigene Sendungen in die App), `DAR_STANDALONE_UI` (Seiten am Display).
+  Standalone + Portal gleichzeitig ist ein Build-Fehler.
+- Gleiche Partitionstabelle wie der normale T-Deck-Build (`huge_app.csv`): ein Update von 0.9.4 mit `firmware.bin`
+  an 0x10000 behält Kontakte, Kanäle, Name, PIN und den Nachrichtenverlauf (`/dr-history.bin`).
+- `tools/check_standalone.py` prüft in CI die gelinkte Firmware: kein WLAN-Treiber, kein IP-Stack, kein Webserver;
+  einziger Rest ist der BT/WLAN-Koexistenz-Adapter aus `libesp_wifi.a`.
 
-1. **Linker-Map**: Aus `libWiFi`, `libWebServer`, `libDNSServer`, `libESPmDNS`, AsyncTCP/AsyncWebServer,
-   `libnet80211`, `libpp`, `libwpa_supplicant`, `liblwip`, `libesp_netif`, `libsmartconfig`, `libespnow`,
-   `WebFrontend.cpp` und `ESPNOWRadio.cpp` landet **kein Byte** in Flash, IRAM oder DRAM.
-2. **Symbole** (`nm`): keine `WiFiClass`/`WiFiGenericClass`/`WebServer`/`DNSServer`/`DisasterPortal`,
-   kein `esp_wifi_init`/`esp_wifi_start`/`esp_netif_init`/`esp_now_init`, keine `lwip_*`.
-3. **firmware.bin**: keine eingebettete HTML-Seite, keine Portal-Texte, Kennung enthält `-standalone`.
-4. ESP32-S3-Header, Flashgröße, Partitionstabelle und App-Partition wie beim normalen T-Deck-Build.
+### 2. Chat
+- **Kanalliste und Kontaktliste** (Kanäle, dann Chat-Kontakte wie in der Weboberfläche) mit letzter Nachricht und
+  Ungelesen-Zahl; Auswahl per Trackball.
+- **Chatfenster** mit Verlauf der Unterhaltung: eingehend links (Name · Zeit), eigene rechts („Du“, „gesendet“ bzw.
+  „zugestellt“ bei Direktnachrichten mit Bestätigung). Zeiten in deutscher Ortszeit (MEZ/MESZ).
+- **Tippen** über die Tastatur, **Enter** sendet (1–100 Byte, wie die Weboberfläche), 5 s Sendepause.
+- Am Gerät gesendete Nachrichten erscheinen in der **MeshCore-App** (Herkunft „T-Deck“); in der App gesendete
+  Nachrichten erscheinen im Gerät.
+- Bausteine: `LocalSend.h` (Frames, Sendepause, Zeitstempel), `LocalCompanion.h` (Companion-Sitzung, Verlauf,
+  Ausgangsspeicher, Brett-Anmeldung, App-Spiegel). `DisasterPortal.h` (Web) erbt davon und fügt nur HTTP/WLAN hinzu.
 
-Übrig bleiben 401 Byte aus `libesp_wifi.a`, nämlich der Koexistenz-Adapter (`esp_adapter.c`) und eine
-Log-Voreinstellung (`wifi_init.c`). Der Bluetooth-Controller des ESP32-S3 braucht diesen Adapter, weil WLAN
-und Bluetooth dasselbe 2,4-GHz-Funkteil nutzen. Daneben gibt es ROM-Adressen und Funktionen für Funkteil und
-Stromversorgung mit `wifi` im Namen (`libphy`, `libbtdm_app`), die Bluetooth ebenfalls benutzt. Ein
-WLAN-Treiber oder IP-Stack ist nicht enthalten. Gegenprobe: Auf den normalen T-Deck-Build angewandt, schlägt
-die Prüfung fehl, unter anderem wegen `libWiFi`, `libWebServer`, `libDNSServer`, `libnet80211`, `liblwip` und
-`libwpa_supplicant`.
+### 3. Schnellmeldung
+- Dieselben Vorlagen und Ahrtal-Orte wie die Weboberfläche (`QuickData.h`, erzeugt von
+  `tools/gen_quick_messages.py`, in CI gegen `web/index.html` geprüft), übernommen aus 0.9.5-test (#33/#34):
+  `QuickModel`, `TDeckQuickPage`, Tastaturabfrage (I2C 0x55, Zeichenmodus), GPS-Frische-Prüfung (`FixFreshness.h`).
+- Ziele: Kanäle und Chat-Kontakte. „Mein Standort (Geräte-GPS)“ nur mit frischem Fix **und** eingeschaltetem
+  „Standort teilen“; sonst ist „Ohne Standort“ vorgewählt.
 
-### Messwerte (lokal, Linkerwerte, PlatformIO espressif32 6.11.0)
+### 4. Brett (Room-Server)
+- Liste der Room-Server mit Anmeldestatus und neuen Beiträgen; Beitragsliste mit Autor (aus den Kontakten).
+- **Enter bei leerem Feld = Beitreten** (öffentliches Gast-Passwort wie in der Weboberfläche), mit Text =
+  **Aushängen** (erst nach Anmeldung mit Schreibrecht).
 
-| Messwert | normal `dar_LilyGo_TDeck_wifi` | Standalone | Ersparnis |
+### 5. Karte
+- Die fünf Webkarten (Ahrtal-Übersicht, Heimersheim, Dernau · Ahrweiler, Altenahr · Mayschoß · Rech, Sinzig)
+  vereinfacht für 320 × 240 im Flash (`ui-brand/MapData.h`, ca. 164 KB, erzeugt von `tools/gen_device_map.py` aus
+  `web/map/*.json.gz`, in CI geprüft): Wasser, Bäche/Ahr, Straßen, Bahn, Orte, Apotheken/Wasserstellen.
+- Gleiche Zoomstufen wie die Webkarte; Kontakte mit Standort, Positionen aus Nachrichten und der eigene GPS-Fix.
+- Kartendaten © OpenStreetMap-Mitwirkende, ODbL 1.0 (Hinweis unten rechts auf jeder Karte).
+
+### 6. GPS ins Mesh
+- Reiter **Standort**: GPS-Empfänger an/aus, **Standort teilen** an/aus (ab Werk **aus**, Wahl bleibt nach Neustart),
+  „Position in Chat senden“ (`!DP1|lat,lon|Zeit` wie die Weboberfläche), „Bekanntgabe senden“.
+- Nur bei eingeschaltetem Teilen **und** frischem Fix (15 s) tragen Bekanntgaben und Meldungen die GPS-Position.
+  Sonst gilt der in der App gesetzte Standort (oder keiner). Ein GPS-Fix wird nie als Gerätestandort gespeichert
+  (`GpsShare.h`, Speicher-Haken in `MyMesh::savePrefs`).
+- T-Deck-GPS: Baudraten-Erkennung über gültige NMEA-Sätze (9600/38400/115200) aus #34, nur im Standalone.
+
+### 7. SD-Karte
+- SD am **gemeinsamen SPI-Bus** von LoRa und Display (`ArchiveBusConfig.h`, T-Deck-Zweig, `tdeck_shared_spi`),
+  CS **GPIO 39** laut LilyGO-Belegung, **auf Hardware zu prüfen**. Ohne Karte läuft alles weiter.
+- `/disaster/config.txt`: nur `name`, `gps_teilen`, `karte`, `log` (`DeviceConfig.h`). Zeilen, deren Schlüssel
+  nach PIN, Schlüssel, Passwort o. Ä. aussieht, werden abgelehnt; es wird nie eine PIN oder ein Schlüssel
+  geschrieben. „Einstellungen auf SD speichern“ im Reiter Gerät.
+- `/disaster/log.txt`: Ereignisse (Start, Senden mit Ziel­art und Länge, GPS-Fix, Teilen an/aus, wenig Speicher),
+  **keine Nachrichtentexte**; ab 64 KB nach `log.old.txt` rotiert.
+- Wie bei den SD-Builds der Web-Familie wird der Nachrichtenverlauf zusätzlich nach `/disaster/current.bin`
+  archiviert.
+
+## Aufbau
+
+| Datei | Aufgabe |
+|---|---|
+| `platformio.standalone.ini` | Env, Pins (SD-CS, Trackball), Kennung |
+| `examples/companion_radio/StandaloneFrontend.cpp` | Frontend: lokaler Companion-Client, `dev::Api`, SD, GPS-Teilen |
+| `examples/companion_radio/LocalCompanion.h`, `LocalSend.h` | gemeinsamer webfreier Kern (auch für `DisasterPortal.h`) |
+| `examples/companion_radio/GpsShare.h`, `DeviceConfig.h` | Standort teilen, SD-Einstellungen (reine Logik) |
+| `examples/companion_radio/ui-brand/StandaloneUI.*` | Seiten Start/Chat/Brett/Karte/Standort/Gerät |
+| `examples/companion_radio/ui-brand/TDeckQuickPage.*`, `QuickModel.h`, `QuickData.h` | Schnellmeldung |
+| `examples/companion_radio/ui-brand/Theme.h`, `Widgets.h` | Farben, Reiter, Texte des Design-Systems (CP437-Schrift) |
+| `examples/companion_radio/ui-brand/ChatLog.h`, `MapView.h`, `MapData.h`, `DeviceApi.h` | Verlauf, Karte, Schnittstelle |
+| `examples/companion_radio/ui-brand/UITask.*` | Tastatur, Trackball, Startseite (unter `DAR_STANDALONE_UI`) |
+| `tools/standalone_preview.py` | Vorschaubilder aller Seiten ohne Hardware |
+
+Hosttests (C++11, ASAN/UBSAN, in `open-access.yml`): `local_companion`, `quick_model`, `quick_page`, `chat_log`,
+`standalone_ui` (alle Seiten, Navigation, Bildschirmgrenzen), `gps_share`, `device_config`.
+
+## Messwerte (lokal, Linkerwerte, PlatformIO espressif32 6.11.0)
+
+| Messwert | normal `dar_LilyGo_TDeck_wifi` (main) | Standalone | Unterschied |
 |---|---:|---:|---:|
-| Flash laut Linker | 2.063.913 B | 1.365.005 B | **698.908 B (−33,9 %)** |
-| `firmware.bin` | 2.064.336 B | 1.365.424 B | 698.912 B |
-| Statisches RAM (.data/.bss) | 160.988 B | 135.564 B | **25.424 B (−15,8 %)** |
-| Frei in App-Partition (3 MiB) | 1.081.392 B | 1.780.304 B | |
-| SPIFFS-Abbild nötig | ja (Weboberfläche, Karten) | nein | |
+| Flash laut Linker | 2.063.913 B | 1.621.705 B | **−442.208 B (−21,4 %)** |
+| `firmware.bin` | 2.064.336 B | 1.622.128 B | −442.208 B |
+| Statisches RAM (.data/.bss) | 160.988 B | 153.612 B | **−7.376 B (−4,6 %)** |
+| Frei in App-Partition (3 MiB) | 1.081.392 B | 1.523.600 B | |
 
-Der normale Build wurde von `main` (f75b35c5) gebaut. Durch die Naht wird er auf diesem Branch um
-180 Byte Flash größer, sein statisches RAM bleibt gleich. Der Laufzeit-Heap ist nicht gemessen. Ohne
-WLAN-Zugangspunkt, IP-Stack und Webserver sollte zur Laufzeit zusätzlich deutlich mehr Heap frei sein; das
-muss auf Hardware gemessen werden.
+Gegenüber Schritt 1 (1.365.005 B Flash, 135.564 B RAM) kommen die Seiten, die Karten (ca. 164 KB), SD und der
+Companion-Kern dazu. Der normale T-Deck-Build wird auf diesem Stand um 748 B Flash und 112 B RAM größer
+(gemeinsamer Kern, GPS-Frische-Abfrage), sein Verhalten bleibt gleich. Heap zur Laufzeit: auf Hardware messen
+(Reiter Gerät und serielle `[HEAP]`-Zeilen alle 30 s).
 
-### Bauen und flashen
+## Bauen und flashen
 
 ```bash
 pio run -e LilyGo_TDeck_standalone
 python3 tools/check_standalone.py --build-dir .pio/build/LilyGo_TDeck_standalone \
   --build-log <Buildlog> --output .pio/build/LilyGo_TDeck_standalone/standalone-report
+python3 tools/standalone_preview.py <Ordner>      # Vorschaubilder
 ```
 
 - Update eines T-Decks mit 0.9.4: nur `firmware.bin` an **0x10000**, ohne Löschen.
 - Neuinstallation: `factory.bin` an **0x0** (Bootloader, Partitionen, boot_app0, Firmware; kein SPIFFS-Abbild).
-  Das überschreibt den NVS-Bereich (u. a. Bluetooth-Kopplungen); ein vorhandenes SPIFFS bleibt unberührt,
-  ein leeres oder gelöschtes wird beim ersten Start formatiert.
-- Zurück zum normalen Build: die normale 0.9.4-`firmware.bin` an 0x10000 schreiben. Für die
-  Weboberfläche muss das SPIFFS-Abbild der 0.9.4 vorhanden sein. Wurde das SPIFFS inzwischen formatiert,
-  die Neuinstallation aus dem 0.9.4-Paket nehmen.
+  Das überschreibt den NVS-Bereich (u. a. Bluetooth-Kopplungen und „Standort teilen“).
+- Zurück zum normalen Build: die normale 0.9.4-`firmware.bin` an 0x10000; für die Weboberfläche muss das
+  SPIFFS-Abbild der 0.9.4 vorhanden sein, sonst die Neuinstallation aus dem 0.9.4-Paket nehmen.
 
-CI baut den Standalone in einem eigenen Job `standalone` in `build.yml` (nicht bei Versions-Tags) und
-führt `tools/check_standalone.py` aus. Die Dateien landen nur als Workflow-Artefakt.
+## Hardwaretest (offen)
 
-### Auf Hardware zu prüfen
-
-1. Start, Display mit Bild, Akkuzeile und Advert-Knopf; Trackball kurz/lang.
-2. Kopplung mit der MeshCore-App über PIN-Bluetooth, Senden und Empfangen, Advert.
-3. Update von 0.9.4 mit `firmware.bin`: Kontakte, Kanäle, Name und PIN bleiben erhalten.
-4. Neuinstallation mit `factory.bin` nach vollständigem Löschen: SPIFFS wird beim ersten Start formatiert.
-5. Freier und minimaler Heap im Vergleich zu 0.9.4, Akkulaufzeit ohne WLAN.
-
-## Nächste Schritte
-
-Jeder Schritt baut auf diesem Target auf und nutzt Kernlogik, die dafür aus der Web-Schicht in gemeinsame,
-webfreie Bausteine verschoben wird. Die Weboberfläche nutzt danach dieselben Bausteine, damit nichts doppelt
-gepflegt wird.
-Bisher steckt diese Logik in `DisasterPortal.h`: Sendewarteschlange mit Sendepause (`DeliveryOutbox.h`),
-Nachrichtenverlauf (`HistoryRecord.h`/`SlotFile.h`), Room-Server-Anmeldung und SD-Archiv (`ArchiveSd.h`).
-Die Hilfsdateien sind schon eigene Header. Die Steuerung selbst muss aus der Portal-Klasse herausgelöst werden.
-
-### Schritt 2: gemeinsamer Kern für lokales Senden und Verlauf
-
-Voraussetzung für Schritt 3 und 4.
-
-- **Lokaler Sender** als webfreier Baustein (`LocalSender` o. ä.). Er nutzt denselben seriellen
-  Companion-Weg wie die Weboberfläche, also die Sendepause von 5 s, die Funkwarteschlange und die ACK-Auswertung.
-  `WebFrontend.cpp` und ein künftiges `StandaloneFrontend.cpp` nutzen ihn beide.
-- **Echo in der App** für am Gerät gesendete Nachrichten. Heute erledigt das `MyMesh::queueWebEchoForApp` unter
-  `DISASTER_PORTAL`. Daraus wird ein allgemeiner „lokal gesendet“-Weg mit Herkunftsmarke, ohne Web-Bezug.
-- **Verlauf** (Kanäle, Direktnachrichten, Brett) im Gerät, dieselben Datensätze wie im Web
-  (`HistoryRecord`/`SlotFile`). Ohne zweiten Leser der Warteschlange: Das Standalone liest mit, statt zu entnehmen,
-  damit die App weiterhin alles bekommt (gleiche Regel wie `SharedQueue.h`).
-- Hosttests wie bisher (`tests/shared_queue.test.cpp` als Vorlage).
-
-### Schritt 3: Schnellauswahl / Schnellmeldung am Gerät
-
-Übernahme aus Draft-PR #34 (`feat/tdeck-quick-messages`, Issue #33). Der PR selbst bleibt unverändert.
-
-- **Direkt übernehmbar**, weil webfrei: `ui-brand/QuickModel.h` (Eingabe, UTF-8-Grenze 100 Byte, Orte, Fokus),
-  `ui-brand/QuickData.h` mit `tools/gen_quick_messages.py` (Vorlagen und Ahrtal-Orte aus `web/index.html`,
-  CI-Abgleich), `ui-brand/TDeckQuickPage.*` (Seite für 320 × 240), die Tastaturabfrage in `UITask`
-  (I2C 0x55, Zeichenmodus) und die GPS-Frische-Prüfung (`FixFreshness.h`, Baudraten-Erkennung im
-  `EnvironmentSensorManager`). Dazu die Hosttests `tests/quick_model.test.cpp` und `tests/quick_page.test.cpp`.
-- **Anzupassen**:
-  - Im PR gilt `DAR_TDECK_QUICK` nur für `LILYGO_TDECK && DISASTER_PORTAL` und muss um `DISASTER_STANDALONE` erweitert werden.
-  - `QuickBridge.h` (`deviceQuickTarget`, `deviceQuickSend`, `deviceQuickStatus`) ist im PR in `main.cpp` über
-    `disaster_portal` umgesetzt. Nach dieser Naht gehört die Web-Umsetzung nach `WebFrontend.cpp`. Für das
-    Standalone kommt eine zweite Umsetzung in `StandaloneFrontend.cpp` auf Basis des lokalen Senders aus Schritt 2.
-  - Die Herkunftsmarke „T-Deck“ (`setPortalOriginProvider`) läuft dann über den allgemeinen Echo-Weg.
-- **Hinweis zum Zusammenführen**: PR #34 ändert `main.cpp` an Stellen, die dieser Branch nach
-  `WebFrontend.cpp` verschiebt. Je nach Reihenfolge der Merges müssen diese Hunks dort neu eingesetzt werden.
-
-### Schritt 4: Brett (Room-Server)
-
-- **Kern**: Anmeldung am Room-Server mit dem öffentlichen Gast-Passwort (`RoomAccess.h`), Merker für
-  Raum, Rechte und laufende Anmeldung, Beiträge abrufen und schreiben. Heute steckt das in
-  `/api/room-login` und im Sendeweg von `DisasterPortal.h`. Es wird in einen webfreien Baustein
-  `RoomSession` verschoben, den Web und Standalone gemeinsam nutzen.
-- **Anzeige**: Seite „Brett“ mit Raumauswahl (bekannte Room-Server), Anmeldestatus (nicht angemeldet /
-  läuft / nur lesen / Schreibrecht) und Beitragsliste (neueste zuerst, wie im Web markiert). Blättern mit dem
-  Trackball, Schreiben über die Tastatur (gleiche Texteingabe wie Schnellmeldung).
-- **Braucht**: Verlauf aus Schritt 2, Seitenwechsel im `UITask` (Hauptseite / Schnellmeldung / Brett / Karte)
-  und die Richtungen des Trackballs (bisher wird nur der Klick ausgewertet).
-
-### Schritt 5: vereinfachte Karte
-
-- **Daten**: Die Weboberfläche nutzt fünf Vektorkarten als `web/map/*.json.gz` (zusammen etwa 190 KB,
-  © OpenStreetMap-Mitwirkende, ODbL). Ein Werkzeug erzeugt daraus aus derselben Quelle
-  (`tools/make_map.py`/`tools/shrink_maps.py`) ein kompaktes Binärformat mit Linien und Punkten in
-  ganzzahligen Koordinaten, vereinfacht für 320 × 240. Ablage im Flash (es sind etwa 1,7 MB frei) oder auf SD.
-  Die ODbL-Namensnennung wird auf der Kartenseite angezeigt.
-- **Inhalt** wie im Web, reduziert: eigener Standort (GPS), Knoten mit Standort in der Bekanntgabe, Positionen
-  aus Meldungen (`!DP1`), Brett-Standorte, Apotheke/Arzt und Wasser als Punkte. Keine Navigation.
-- **Bedienung**: Kartenwahl und Zoom über Tasten, Verschieben mit dem Trackball, „Ich“ und „Alles“ wie im Web.
-- **Braucht**: Zeichenroutinen für Linien/Punkte auf dem ST7789 (vorhanden über Adafruit GFX), Positions-
-  speicher aus dem Verlauf (Schritt 2), Trackball-Richtungen (Schritt 4). Zeichenzeit und SPI-Teilung mit
-  LoRa sind auf Hardware zu prüfen.
-
-### Schritt 6: GPS ins Mesh und SD-Karte für Konfiguration und Logs
-
-**GPS ins Mesh**
-
-- Das GPS ist im T-Deck-Profil schon eingebunden (`ENV_INCLUDE_GPS`). PR #34 bringt Baudraten-Erkennung und
-  Frische-Prüfung.
-- Daraus wird: Standort aus frischem Fix in die Bekanntgabe (MeshCore-Einstellung „GPS“ und
-  `advert_loc_policy`) und Positionsmeldung `!DP1` auf Tastendruck (Schnellmeldung).
-- Optional ein Intervall für automatisches Teilen, innerhalb des 10-%-Sendezeitbudgets.
-- Voreinstellung: Teilen nur nach ausdrücklicher Einschaltung am Gerät. Ohne frischen Fix wird nichts gesendet,
-  niemals `0,0`.
-
-**SD-Karte**
-
-- Die SD-Karte des T-Deck liegt nach Herstellerangaben am selben SPI-Bus wie LoRa und Display und hat einen
-  eigenen CS-Pin; das ist auf Hardware zu prüfen. `ArchiveBusConfig.h` kennt bisher nur Boards mit eigenem
-  SPI-Controller für SD (TTGO, T3-S3) und braucht eine T-Deck-Variante für den geteilten Bus, mit sauberer
-  Bus-Übergabe zwischen LoRa, Display und SD.
-- **Logs**: Nachrichtenarchiv über `ArchiveSd.h` (`DISASTER_SD`, rotierende Dateien), dazu ein schlankes
-  Ereignislog (Start, Kopplung, Sendefehler, Akkustand) mit Größenbegrenzung.
-- **Konfiguration**: eine Textdatei auf der Karte, beim Start gelesen (z. B. Gerätename, Kanalvorgaben, Karte,
-  GPS-Teilen). Inhalt wird als nicht vertrauenswürdige Eingabe streng geprüft. Keine Schlüssel und keine
-  Bluetooth-PIN im Klartext auf der Karte; die PIN bleibt in der App bzw. am Gerät einstellbar.
-- Ohne Karte läuft alles weiter wie bisher; der Speicher im Gerät bleibt die Hauptquelle.
-
-### Abschluss
-
-Wenn alle Schritte auf Hardware geprüft sind: eigenes Release-Paket für das Standalone. Erst dann wird
-entschieden, ob es in `tools/release_boards.json`, `release.yml` und den Web-Flasher aufgenommen wird.
-Bis dahin bleibt es ein Testbuild.
+1. Start und Anzeige (Startseite, alle Reiter, Lesbarkeit), Display an/aus, Aufwachen bei neuer Nachricht.
+2. PIN-Kopplung mit der MeshCore-App; Senden/Empfangen parallel in App und Gerät.
+3. Update von 0.9.4 mit `firmware.bin`: Kontakte, Kanäle, Name, PIN und Verlauf bleiben.
+4. Tastatur (Zeichenmodus, Enter, Backspace, ALT+C) und Trackball-Richtungen (Pins 3/15/1/2, Schrittweite).
+5. Chat und App-Spiegelung (Kanal und Direkt, „zugestellt“), Sendepause, Brett: Beitreten und Aushängen.
+6. GPS-Fix (Baudraten-Erkennung), „Standort teilen“: Bekanntgabe mit/ohne Position, `!DP1`-Meldung.
+7. SD-Karte: CS-Pin 39 am gemeinsamen Bus, Einhängen neben LoRa/Display, `config.txt`, `log.txt`, Archiv.
+8. Heap (frei/minimal) und Akkulaufzeit im Vergleich zu 0.9.4.

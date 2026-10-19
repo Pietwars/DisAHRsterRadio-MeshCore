@@ -1,5 +1,16 @@
 # Änderungen
 
+## Unveröffentlicht · T-Deck Plus Standalone (Issue #35) · Testbuild
+
+Testbuild `LilyGo_TDeck_standalone`, Firmwarekennung `v1.18.0-dar0.9.5-standalone-test` (eigene Zeile `STANDALONE` in `VERSION`; die Web-Builds bleiben bei 0.9.4). Nicht im Release, nicht im Web-Flasher. **Noch nicht auf echter Hardware geprüft.** Details: `docs/STANDALONE.md`.
+
+- **Ohne WLAN/Weboberfläche**, MeshCore über PIN-Bluetooth; Bedienung am Gerät mit Tastatur und Trackball im Design der Weboberfläche: Reiter Start, Chat, Meldung, Brett, Karte, Standort, Gerät.
+- **Chat:** Kanal- und Kontaktliste, Verlauf, Tippen + Enter, Ungelesen-Zahlen, Aufwachen bei neuer Nachricht, Spiegelung in die MeshCore-App (Herkunft „T-Deck“).
+- **Gemeinsamer Kern:** lokales Senden mit Sendepause, Verlauf, Ausgangsspeicher, Brett-Anmeldung und App-Echo aus `DisasterPortal.h` nach `LocalCompanion.h`/`LocalSend.h`; die Weboberfläche nutzt dieselben Bausteine (Verhalten unverändert).
+- **Schnellmeldung** mit denselben Vorlagen und Orten wie die Weboberfläche (aus 0.9.5-test #33/#34), **Brett** (Beitreten, Beiträge, Aushängen), **Karte** (fünf Webkarten vereinfacht im Flash, © OpenStreetMap-Mitwirkende, ODbL).
+- **GPS ins Mesh** nur nach Einschalten von „Standort teilen“ und nur mit frischem Fix; **SD-Karte** am gemeinsamen SPI-Bus für `config.txt` und `log.txt` (keine PINs/Schlüssel, keine Nachrichtentexte im Log).
+- Hosttests `local_companion`, `quick_model`, `quick_page`, `chat_log`, `standalone_ui`, `gps_share`, `device_config`; CI prüft `gen_quick_messages.py` und `gen_device_map.py` gegen die Weboberfläche. Vorschaubilder mit `tools/standalone_preview.py`.
+
 ## 0.9.4 · 19.10.2026 · Release
 
 - Akku-Anzeige (PR #31) und Flash-/Speicherprüfungen (PR #32) gemeinsam veröffentlicht: Board-Flashgröße, ESP32-Image-Header, Partitionen und Firmware-/RAM-Budgets werden vor dem Packen und im fertigen ZIP geprüft. Speicherbericht je Board in CI und Release-Paketen; Details und offene Hardwaretests in `docs/SPEICHER.md`.

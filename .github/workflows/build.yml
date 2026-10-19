@@ -28,6 +28,8 @@ jobs:
         run: python3 tools/pin_libs.py --check
       - name: Kartenprüfung
         run: python3 tests/maps.test.py && python3 tests/portal_routes.test.py
+      - name: T-Deck-Standalone-Daten passen zur Weboberfläche (Schnellmeldungen/Orte, Gerätekarten)
+        run: python3 tools/gen_quick_messages.py --check && python3 tools/gen_device_map.py --check
       - name: Flash- und Speicherpruefungen (Hosttests)
         run: python3 -m unittest discover -s tests -p 'test_memory_validation.py' -v
   build:

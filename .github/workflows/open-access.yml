@@ -37,3 +37,20 @@ jobs:
         run: |
           g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -fsanitize=address,undefined tests/batt_trend.test.cpp -o /tmp/batt-trend-test
           /tmp/batt-trend-test
+      - name: T-Deck Plus Standalone (Issue #35) – lokaler Companion-Client, Chat, Schnellmeldung, Brett, Karte, GPS, SD
+        run: |
+          C11="g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -fsanitize=address,undefined"
+          $C11 -Wno-misleading-indentation -DLORA_TX_POWER=10 -I tests/companion_fakes -I src tests/local_companion.test.cpp -o /tmp/local-companion
+          /tmp/local-companion
+          $C11 tests/quick_model.test.cpp -o /tmp/quick-model
+          /tmp/quick-model
+          $C11 -Wno-unused-parameter -DLILYGO_TDECK -DDISASTER_STANDALONE -I tests/ui_fakes -I src tests/quick_page.test.cpp examples/companion_radio/ui-brand/TDeckQuickPage.cpp -o /tmp/quick-page
+          /tmp/quick-page
+          $C11 -I tests/ui_fakes -I src tests/chat_log.test.cpp -o /tmp/chat-log
+          /tmp/chat-log
+          $C11 -Wno-unused-parameter -DLILYGO_TDECK -DDISASTER_STANDALONE -I tests/ui_fakes -I src tests/standalone_ui.test.cpp examples/companion_radio/ui-brand/StandaloneUI.cpp examples/companion_radio/ui-brand/TDeckQuickPage.cpp -o /tmp/standalone-ui
+          /tmp/standalone-ui
+          $C11 tests/gps_share.test.cpp -o /tmp/gps-share
+          /tmp/gps-share
+          $C11 tests/device_config.test.cpp -o /tmp/device-config
+          /tmp/device-config
