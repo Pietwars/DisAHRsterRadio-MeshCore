@@ -12,8 +12,9 @@ if (d/'.offsets').exists():
         off[f[0]]=(f[1],f[2],f[3],f[4],f[5])
 files=sorted(str(p.relative_to(d)) for p in d.rglob('*') if p.is_file() and not p.name.startswith('.'))
 NAMES={'LilyGo_TDeck':'LILYGO T-Deck Plus','LilyGo_TWatchS3':'LILYGO T-Watch S3'}
+hardware_status = ('Akku-Anzeige der Testversion 0.9.4-test vom Nutzer erfolgreich erprobt; eine vollständige Hardwareabnahme der finalen Release-Dateien ist nicht dokumentiert.' if ver == '0.9.4' else f'Version {ver} ist **noch nicht auf echter Hardware getestet** (getestet wurde 0.9.2).')
 L=[f'# DisAHRsterRadio-MeshCore {ver} für {NAMES.get(dev,dev)}','','> Offenes WLAN ohne Passwort, MeshCore-Bluetooth mit PIN-Kopplung (die PIN steht während der Kopplung auf dem Display). Komplett an **0x0** flashen. Alte Kopplungen vorher am Handy entfernen.','',f'Chip: **{e["chip"]}** · Web-Oberfläche: **{"ja" if e["webui"] else "nein – ohne Web-Oberfläche"}** · https://github.com/Pietwars/DisAHRsterRadio-MeshCore','',
-*(['> 🧪 **TEST-Version '+ver+' – kein Release.** Nur zum Ausprobieren; Rückmeldung an Peter.',''] if '-test' in ver else []),'> ⚠️ Kein zertifiziertes Notrufsystem. In Lebensgefahr immer **112** wählen. '+(('Version 0.9.2 wurde auf diesem Gerät auf echter Hardware getestet (18.10.2026).' if ver=='0.9.2' else f'Version {ver} ist **noch nicht auf echter Hardware getestet** (getestet wurde 0.9.2).') if dev in NAMES else 'Dieses Gerät ist **nicht auf echter Hardware getestet**.'),'',
+*(['> 🧪 **TEST-Version '+ver+' – kein Release.** Nur zum Ausprobieren; Rückmeldung an Peter.',''] if '-test' in ver else []),'> ⚠️ Kein zertifiziertes Notrufsystem. In Lebensgefahr immer **112** wählen. '+(('Version 0.9.2 wurde auf diesem Gerät auf echter Hardware getestet (18.10.2026).' if ver=='0.9.2' else hardware_status) if dev in NAMES else 'Dieses Gerät ist **nicht auf echter Hardware getestet**.'),'',
 '**Antenne anschrauben, bevor das Gerät Strom bekommt.** Funkprofil: MeshCore-Standard EU/UK 869,618 MHz, 62,5 kHz, SF8, CR 4/8 – auf allen Geräten gleich einstellen.','']
 if e['chip'].startswith('esp32'):
     for r,(ch,b,fs,suf,teile) in off.items():

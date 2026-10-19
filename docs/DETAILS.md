@@ -1,13 +1,15 @@
 # DisAHRsterRadio-MeshCore – Details
 
-> Ausführliche Doku zu Version 0.9.3 (Stand 18.10.2026). Die kurze Übersicht steht in der [README](../README.md).
+> Ausführliche Doku zu Version 0.9.4 (Stand 19.10.2026). Die kurze Übersicht steht in der [README](../README.md).
 
-> **Aktueller Stand (0.9.3):** offenes WLAN `DisAHRsterRadio-XXXXXX` → `http://192.168.4.1`, MeshCore-App per Bluetooth mit PIN-Kopplung (die PIN zeigt das Display nur während der Kopplung an; eigene PIN in der App setzbar), Brett (Room-Server) mit dem öffentlichen Gast-Passwort `hello` (sendet die Weboberfläche automatisch). Volle Einstellungen in der MeshCore-App über PIN-Bluetooth; in der Weboberfläche Knotenname, Funkprofil, Kanäle und Verlauf löschen ohne Anmeldung (jede Person im offenen WLAN kann das). Das Display am Gerät zeigt nur das Ahrtal-Bild mit Schriftzug und den Knopf „Advert senden“. [Zugang auf einen Blick](#zugang-auf-einen-blick) · [Zugang, Update und Abnahme](OFFENER_ZUGANG.md)
+> **Aktueller Stand (0.9.4):** offenes WLAN `DisAHRsterRadio-XXXXXX` → `http://192.168.4.1`, MeshCore-App per Bluetooth mit PIN-Kopplung (die PIN zeigt das Display nur während der Kopplung an; eigene PIN in der App setzbar), Brett (Room-Server) mit dem öffentlichen Gast-Passwort `hello` (sendet die Weboberfläche automatisch). Volle Einstellungen in der MeshCore-App über PIN-Bluetooth; in der Weboberfläche Knotenname, Funkprofil, Kanäle und Verlauf löschen ohne Anmeldung (jede Person im offenen WLAN kann das). Das Display am Gerät zeigt das Ahrtal-Bild mit Schriftzug, die Akku-Zeile und den Knopf „Advert senden“. [Zugang auf einen Blick](#zugang-auf-einen-blick) · [Zugang, Update und Abnahme](OFFENER_ZUGANG.md)
 
 **🔴 Live-Demo (simulierte Daten, kein Gerät nötig): https://pietwars.github.io/DisAHRsterRadio-MeshCore/**
 
-> **Version 0.9.3** – Firmware für **LILYGO T-Deck Plus** und **LILYGO T-Watch S3**, [Release v0.9.3](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.3) vom 18.10.2026, **noch nicht auf echter Hardware getestet** (getestet wurde 0.9.2 am 18.10.2026 von Peter auf beiden Geräten). Neu in 0.9.3:
-> - **Weboberfläche und MeshCore-App teilen die Nachrichten** (Kanal- und Direktnachrichten, beide Richtungen). Details und Grenzen: [WLAN-Portal und MeshCore-App gleichzeitig](#wlan-portal-und-meshcore-app-gleichzeitig-bluetooth).
+> **Version 0.9.4** – Firmware für **LILYGO T-Deck Plus** und **LILYGO T-Watch S3**, [Release v0.9.4](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.4) vom 19.10.2026. Die Akku-Anzeige der Testversion wurde vom Nutzer erfolgreich erprobt; eine vollständige Hardwareabnahme der finalen Release-Dateien ist nicht dokumentiert.
+> - **Akku-Zeile:** Ladestand, Spannung, bei T-Watch USB-/Ladestatus; Verbrauch und Restlaufzeit als Schätzung.
+> - **Flash-/RAM-Prüfung:** Header, Partitionen und Dateigrößen werden automatisch geprüft; Berichte liegen in jedem Release-ZIP. [Messwerte und Hardwaretests](SPEICHER.md).
+> - **Nachrichtenabgleich Web/App** aus 0.9.3 bleibt erhalten.
 >
 > Aus 0.9.2:
 > - **Minimal-Anzeige:** Das Display zeigt nur ein Bild des Ahrtals bei Nacht mit dem Schriftzug DisAHRsterRadio und einen Knopf **„Advert senden“** (Flood-Advert, höchstens einer je 10 s). Nachrichten und Einstellungen nur über MeshCore-App und Weboberfläche. Details: [Anzeige und Tasten](#anzeige-und-tasten).
@@ -57,7 +59,7 @@ Außer dem öffentlichen Standard `hello` stehen keine Passwörter in Code, Doku
 | Release | ✅ [v0.9.3](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.3) vom 18.10.2026 (Pakete, Prüfsummen, Flyer von 0.9.2 unverändert); Web-Flasher installiert 0.9.3. Vorversion [v0.9.2](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.2) bleibt verfügbar |
 | Basis | MeshCore `main` nach **v1.18.0** (meshcore-dev/MeshCore), Git-Historie erhalten |
 | Firmware baut | ✅ LILYGO T-Deck Plus und LILYGO T-Watch S3 per GitHub Actions. Weitere Geräte der MeshCore-Konfigurator-Liste bleiben im Code, werden aber weder im CI gebaut noch veröffentlicht |
-| Auf echter Hardware getestet | ⚠️ 0.9.3 noch nicht. ✅ 0.9.2 auf LILYGO T-Deck Plus und LILYGO T-Watch S3 (von Peter, 18.10.2026); der Nachrichtenabgleich Web/App aus 0.9.3 ist nur mit Hosttests geprüft |
+| Auf echter Hardware getestet | Akku-Anzeige der Testversion 0.9.4-test vom Nutzer erfolgreich erprobt; finale Release-Dateien nicht vollständig abgenommen. 0.9.2 auf beiden Geräten von Peter getestet (18.10.2026) |
 | Kompatibel mit anderen MeshCore-Geräten/Apps | ✅ normales MeshCore-Funkprotokoll (gleiches Funkprofil vorausgesetzt) |
 
 ## Kartenbedienung und Speicheroptimierung
@@ -84,8 +86,8 @@ Karte → Chat/Brett und auf dem Board mehrere WLAN-Clients sowie BLE parallel p
 
 | PlatformIO-Env | Board | Release-Paket | Flash |
 |---|---|---|---|
-| `dar_LilyGo_TDeck_wifi` | **LILYGO T-Deck Plus** (ESP32-S3, SX1262) | `DisAHRsterRadio-MeshCore-0.9.4-test-LilyGo_TDeck.zip` | `factory.bin` an **0x0**, Update `firmware.bin` an **0x10000** |
-| `dar_LilyGo_TWatchS3_wifi` | **LILYGO T-Watch S3** (ESP32-S3, SX1262, AXP2101) | `DisAHRsterRadio-MeshCore-0.9.4-test-LilyGo_TWatchS3.zip` | `factory.bin` an **0x0**, Update `firmware.bin` an **0x10000** |
+| `dar_LilyGo_TDeck_wifi` | **LILYGO T-Deck Plus** (ESP32-S3, SX1262) | `DisAHRsterRadio-MeshCore-0.9.4-LilyGo_TDeck.zip` | `factory.bin` an **0x0**, Update `firmware.bin` an **0x10000** |
+| `dar_LilyGo_TWatchS3_wifi` | **LILYGO T-Watch S3** (ESP32-S3, SX1262, AXP2101) | `DisAHRsterRadio-MeshCore-0.9.4-LilyGo_TWatchS3.zip` | `factory.bin` an **0x0**, Update `firmware.bin` an **0x10000** |
 
 Beide nutzen `huge_app.csv` (3 MB App, kein OTA, SPIFFS ab 0x310000). Die `factory.bin` enthält Bootloader, Partitionen, Firmware und Dateisystem und **löscht beim Flashen alle Einstellungen** (Knotenidentität, Kontakte, Verlauf, Bluetooth-PIN). Firmwarekennung `v1.18.0-dar<Version>-wifi` (z. B. `v1.18.0-dar0.9.3-wifi`).
 
@@ -101,7 +103,7 @@ Oberfläche: `examples/companion_radio/ui-brand/` (für beide Geräte).
 
 **Knopf** darunter (grün, weiß umrandet): „Advert senden“, darunter „Trackball 2,5 s halten“ (T-Deck) bzw. „antippen“ (T-Watch). Schrift: T-Watch S3 glatte Schriften (FreeSans 9 pt, FreeSansBold 12 pt) in voller Auflösung 240×240; T-Deck Plus die eingebaute Pixelschrift.
 
-- Angezeigt werden nur das Bild, die Akku-Zeile (ab 0.9.4-test, siehe unten) und der Knopf **„Advert senden“**. Keine weiteren Seiten, keine Nachrichtenvorschau, keine Nachrichten per Tastatur oder Touch.
+- Angezeigt werden nur das Bild, die Akku-Zeile (ab 0.9.4, siehe unten) und der Knopf **„Advert senden“**. Keine weiteren Seiten, keine Nachrichtenvorschau, keine Nachrichten per Tastatur oder Touch.
 - Jeder Advert ist ein **Flood-Advert** (wie „Advert senden → Flood“ in der App). Danach 2 s **„Advert gesendet“** (grün); höchstens ein Advert je **10 s**, sonst „Bitte N s warten“ (orange); bei einem Fehler „Advert-Fehler“ (rot).
 - Display geht nach **30 s** ohne Bedienung aus; neue Nachrichten wecken es nicht.
 - **Bluetooth-PIN:** nur während einer laufenden Kopplung (Passkey-Abfrage bis Kopplung fertig/abgebrochen, höchstens 60 s; bei einer Verbindung ohne Kopplung nach 2,5 s, ebenfalls höchstens 60 s). Das Display geht dafür an und bleibt so lange an; der Knopf zeigt dann die PIN statt „Advert senden“.
@@ -124,7 +126,7 @@ Oberfläche: `examples/companion_radio/ui-brand/` (für beide Geräte).
 
 Tastenereignisse der Uhr werden alle 20 ms abgefragt und mit 300 ms entprellt.
 
-### Akku-Zeile (Testversion 0.9.4-test, noch nicht auf Hardware getestet)
+### Akku-Zeile (ab 0.9.4)
 
 Zwischen Bild und Knopf steht eine Statuszeile: Akkusymbol (Füllung grün ab 40 %, orange ab 15 %, sonst rot), Ladestand, Spannung und der **geschätzte Verbrauch**. Code: `ui-brand/BattTrend.h` (Rechnung, Hosttest `tests/batt_trend.test.cpp`) und `UITask::drawBattery()`.
 
@@ -176,8 +178,8 @@ pip install platformio
 python tools/embed_web.py                         # nach Änderungen an web/
 pio run -e dar_LilyGo_TDeck_wifi -t upload        # bzw. dar_LilyGo_TWatchS3_wifi
 pio run -e dar_LilyGo_TDeck_wifi -t uploadfs      # nur einmal! (Dateisystem, löscht Identität)
-tools/build_device.sh LilyGo_TDeck dist           # dist/DisAHRsterRadio-MeshCore-0.9.4-test-LilyGo_TDeck.zip
-tools/build_device.sh LilyGo_TWatchS3 dist        # dist/DisAHRsterRadio-MeshCore-0.9.4-test-LilyGo_TWatchS3.zip
+tools/build_device.sh LilyGo_TDeck dist           # dist/DisAHRsterRadio-MeshCore-0.9.4-LilyGo_TDeck.zip
+tools/build_device.sh LilyGo_TWatchS3 dist        # dist/DisAHRsterRadio-MeshCore-0.9.4-LilyGo_TWatchS3.zip
 ```
 
 Version und MeshCore-Basis stehen nur in der Datei `VERSION`; `python3 tools/version.py` überträgt sie in Oberfläche, Demo, Firmwarekennung und README (`--check` läuft im CI). Bibliotheken sind auf feste Versionen gesetzt (`tools/pin_libs.py`, CI prüft mit `--check`).

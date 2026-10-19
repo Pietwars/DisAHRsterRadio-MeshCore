@@ -1,9 +1,10 @@
 # Flash- und RAM-Prüfung
 
-Der gemeinsame Teststand **0.9.4-test** enthält die Akku-Anzeige aus PR #31
-und die Flash-/Speicherprüfungen aus PR #32. Kein Release, kein Merge nach
-`main`; der Web-Flasher bleibt auf 0.9.3. Die Hardware-Rückmeldung zur bisherigen
-Akku-Testversion ersetzt noch keine Prüfung der hier gemeinsam gebauten Pakete.
+**Release 0.9.4** enthält die Akku-Anzeige aus PR #31 und die Flash-/Speicherprüfungen
+aus PR #32, gemeinsam nach `main` übernommen. Die Akku-Testversion 0.9.4-test wurde
+vom Nutzer erfolgreich erprobt. Die noch offenen Hardwaretests der finalen
+Release-Dateien sind unten aufgeführt; die Berichte im jeweiligen Release-ZIP
+enthalten die Messwerte der tatsächlich veröffentlichten Dateien.
 
 Release-Boards sind derzeit **LILYGO T-Deck Plus** (`dar_LilyGo_TDeck_wifi`)
 und **LILYGO T-Watch S3** (`dar_LilyGo_TWatchS3_wifi`). Die übrigen Profile im

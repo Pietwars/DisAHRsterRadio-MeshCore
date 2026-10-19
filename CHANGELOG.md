@@ -1,10 +1,10 @@
 # Änderungen
 
-## 0.9.4-test · 19.10.2026 · Testversion (kein Release)
+## 0.9.4 · 19.10.2026 · Release
 
-- Gemeinsamer Teststand aus Akku-Anzeige (PR #31) und Flash-/Speicherprüfungen (PR #32): Board-Flashgröße, ESP32-Image-Header, Partitionen und Firmware-/RAM-Budgets werden vor dem Packen und im fertigen ZIP geprüft. Speicherbericht je Board in CI und Testpaketen; Details und offene Hardwaretests in `docs/SPEICHER.md`.
+- Akku-Anzeige (PR #31) und Flash-/Speicherprüfungen (PR #32) gemeinsam veröffentlicht: Board-Flashgröße, ESP32-Image-Header, Partitionen und Firmware-/RAM-Budgets werden vor dem Packen und im fertigen ZIP geprüft. Speicherbericht je Board in CI und Release-Paketen; Details und offene Hardwaretests in `docs/SPEICHER.md`.
 
-Testpakete für **LILYGO T-Deck Plus** und **LILYGO T-Watch S3** zum Ausprobieren durch Peter; **nicht auf echter Hardware getestet**, kein Release, Web-Flasher unverändert (0.9.3). Firmwarekennung `v1.18.0-dar0.9.4-test-wifi`.
+[Release v0.9.4](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.4) für **LILYGO T-Deck Plus** und **LILYGO T-Watch S3**, Firmwarekennung `v1.18.0-dar0.9.4-wifi`. Die Akku-Anzeige der Testversion 0.9.4-test wurde vom Nutzer erfolgreich erprobt; eine vollständige Hardwareabnahme der finalen Release-Dateien ist nicht dokumentiert. Hosttests und beide Board-Builds einschließlich Paketprüfung sind automatisiert. Web-Flasher: Update an 0x10000, Neuinstallation an 0x0.
 
 - **Akku-Zeile im Display** zwischen Bild und Knopf „Advert senden“ (Bild, Knopf und Tasten unverändert): Akkusymbol, Ladestand, Spannung, Laden (nur T-Watch) und **geschätzter Verbrauch** in %/h mit Restlaufzeit (Trend über bis 60 min, erst nach 20 min, immer mit „ca.“). Keines der beiden Geräte misst den Akkustrom (T-Deck: nur Spannung am ADC; T-Watch: AXP2101 ohne Strommessung), daher kein mA-Wert. Details: `docs/DETAILS.md` → „Akku-Zeile“. Neu `ui-brand/BattTrend.h`, Hosttest `tests/batt_trend.test.cpp` (im Workflow open-access).
 - T-Watch S3: Akku-Erkennung und Ladestandsanzeige des AXP2101 beim Start ausdrücklich eingeschaltet; neue Funktion `TWatchS3Board::readPower()`.

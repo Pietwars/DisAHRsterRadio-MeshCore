@@ -1,6 +1,6 @@
 # Web-Flasher: Konfiguration fürs nächste Release vorbereiten
 
-Hier wird die Web-Flasher-Konfiguration für ein neues Release vorbereitet; live ist immer `docs/flasher/` (nach dem Release 0.9.3, identisch mit diesem Ordner).
+Hier wird die Web-Flasher-Konfiguration für ein neues Release vorbereitet; live ist immer `docs/flasher/` (nach dem Release 0.9.4, identisch mit diesem Ordner).
 LILYGO T-Deck Plus und LILYGO T-Watch S3, je zwei Wege:
 
 | Knopf | Manifest | schreibt | Löschen |
@@ -20,6 +20,6 @@ Neu schreiben nach einem Neubau (Werte aus den getesteten Paketen):
     python3 tools/flasher-next/aktualisieren.py <…-LilyGo_TDeck.zip> <…-LilyGo_TWatchS3.zip>
     python3 tools/flasher_fetch.py --cfg tools/flasher-next --check
 
-Aktivieren (im Release-PR): `cp tools/flasher-next/flasher.json tools/flasher-next/index.html docs/flasher/`.
-Wichtig: Das neue Release muss existieren, **bevor** der PR gemergt wird – sonst findet der Pages-Lauf die ZIPs nicht
+Aktivieren (nach Veröffentlichung und Prüfung der Release-Pakete): `cp tools/flasher-next/flasher.json tools/flasher-next/index.html docs/flasher/`.
+Wichtig: Das neue Release muss existieren, **bevor** die Konfiguration nach main übernommen wird – sonst findet der Pages-Lauf die ZIPs nicht
 (dann nach dem Release `gh workflow run pages.yml` erneut starten).
