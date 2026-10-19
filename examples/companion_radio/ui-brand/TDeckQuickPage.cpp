@@ -180,7 +180,7 @@ void TDeckQuickPage::displayText(DisplayDriver* d, int x, int y, uint16_t color,
 
 void TDeckQuickPage::render(DisplayDriver* d) {
   d->startFrame(BG);
-  ui::navStrip(d, theme::TAB_QUICK, unreadChat, unreadBoard, model.focus == quick::Home);
+  ui::navStrip(d, theme::TAB_QUICK, unreadChat, unreadBoard, model.focus == quick::Home ? theme::TAB_CHAT : -1);   // Home = back to Chat
   char line[128];
   dev::Gps g = api ? api->gps() : dev::Gps();
   const char* gpsState = !g.detected ? "GPS nicht erkannt" : !g.receiverOn ? "GPS ausgeschaltet" :

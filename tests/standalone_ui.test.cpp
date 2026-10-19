@@ -1,5 +1,6 @@
-// Host test of the T-Deck Plus standalone pages (Issue #35): navigation, chat, unread, Schnellmeldung, Brett,
-// map, Standort, Gerät; every page stays inside 320 x 240.
+// Host test of the T-Deck Plus standalone pages (Issue #35): boot logo -> Chat, navigation (keys, trackball,
+// touch), chat, unread, Schnellmeldung, Brett, map with "Zurück", Standort, Gerät (battery, advert, display off);
+// every page stays inside 320 x 240.
 // g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -fsanitize=address,undefined -DLILYGO_TDECK -DDISASTER_STANDALONE
 //     -I src -I tests/ui_fakes tests/standalone_ui.test.cpp examples/companion_radio/ui-brand/StandaloneUI.cpp
 //     examples/companion_radio/ui-brand/TDeckQuickPage.cpp
@@ -29,6 +30,12 @@ static void testTheme() {
   theme::stampText(5, t, sizeof(t)); assert(!strcmp(t, "--.--. --:--"));
   int lines = theme::countLines("eins zwei drei vier fuenf sechs", 10); assert(lines == 4);
   assert(theme::tabForKey('C') == theme::TAB_CHAT && theme::tabForKey('q') == -1);
+  assert(theme::tabForKey('h') == -1 && theme::TAB_COUNT == 6);   // no Start tab any more
+  // tab hit test matches the strip; the battery field is no tab
+  assert(ui::navTabAt(2) == theme::TAB_CHAT && ui::navTabAt(theme::W - 10) == -1);
+  int xs[theme::TAB_COUNT], ws[theme::TAB_COUNT]; ui::navLayout(xs, ws);
+  assert(xs[theme::TAB_INFO] + ws[theme::TAB_INFO] == theme::W - theme::BATT_W);
+  for (int i = 0; i < theme::TAB_COUNT; ++i) assert(ui::navTabAt(xs[i] + ws[i] / 2) == i);
 }
 
 static void testMap() {
@@ -52,18 +59,32 @@ int main() {
   testMap();
   fake.demo();
   sui::UI u; FakeDisplay d;
+  static const uint16_t logo[40 * 20] = {0};
+  u.setLogo(logo, 40, 20);
   assert(u.begin(&fake));
   u.tick(ms);
   assert(u.history().size() == 8);              // 0x82 is no line; it marks the f4 delivered
   assert(u.unreadChat() == 0 && u.unreadBoard() == 0);   // everything before start counts as read
   assert(!u.takeIncoming());
 
-  // Start: click without a tile toggles the display (caller), trackball selects a tile, click opens it
-  assert(u.onStart() && !u.click());
-  assert(u.move(1, 0) && u.startSelection() == 0);
-  ms += sui::UI::START_SELECT_MS + 1; u.tick(ms); assert(u.startSelection() == -1);
-  u.move(1, 0); assert(u.click() && u.current() == sui::CHAT_LIST);
+  // Boot logo: brand image + version + 112 line, then Chat after BOOT_MS; no Start page
+  assert(u.onBoot());
   u.render(&d); assert(d.outOfBounds == 0);
+  assert(d.allText.find("standalone-test") != std::string::npos && d.allText.find("112") != std::string::npos);
+  ms += sui::UI::BOOT_MS - 100; u.tick(ms); assert(u.onBoot());
+  ms += 200; u.tick(ms); assert(u.current() == sui::CHAT_LIST);
+  u.render(&d); assert(d.outOfBounds == 0);
+  {   // the first key / trackball step / click / tap only leaves the logo (nothing typed, nothing opened)
+    sui::UI b; b.begin(&fake); b.tick(ms);
+    assert(b.onBoot() && b.key('x') && b.current() == sui::CHAT_LIST && !b.draft()[0]);
+    sui::UI c; c.begin(&fake); c.tick(ms); assert(c.move(0, 1) && c.current() == sui::CHAT_LIST);
+    sui::UI e; e.begin(&fake); e.tick(ms); assert(e.click() && e.current() == sui::CHAT_LIST);
+    sui::UI f; f.begin(&fake); f.tick(ms); assert(f.tap(200, 120) && f.current() == sui::CHAT_LIST);
+  }
+  // battery in the tab strip (replaces the Start battery line)
+  u.setBattery(87, "~87 % \xc2\xb7 4,05 V", "ca. 18 h Restlaufzeit");
+  assert(u.pending() == sui::UI::FULL && ui::navBattery() == 87);
+  u.render(&d); assert(d.allText.find("87%") != std::string::npos && d.outOfBounds == 0);
   assert(d.allText.find("Ahrtal-Hilfe") != std::string::npos);
 
   // chat list -> conversation; letters are text there, Enter sends, own line appears
@@ -117,9 +138,20 @@ int main() {
   u.key(sui::K_ESC); step(u, d);
   assert(u.unreadBoard() == 1);
 
-  // map
-  u.key('k'); assert(u.current() == sui::MAP);
+  // map: "Zurück" button top left (tap, trackball click, Del/Esc) back to the page before the map
+  u.key('k'); assert(u.current() == sui::MAP && u.mapReturnPage() == sui::BOARD_LIST);
   u.render(&d); assert(d.outOfBounds == 0);
+  assert(d.allText.find("\x1b Zur\x81" "ck") != std::string::npos);
+  assert(d.fb[sui::UI::BACK_Y * 320 + sui::UI::BACK_X] == ui::FOCUS);      // drawn focused: the click target
+  for (int i = 0; i < 6; ++i) assert(u.move(-1, 0) && u.current() == sui::MAP);   // trackball pans, never leaves
+  u.move(0, -3); assert(u.current() == sui::MAP);
+  assert(u.click() && u.current() == sui::BOARD_LIST);               // trackball click = Zurück
+  u.key('k'); assert(!u.tap(200, 120) && u.current() == sui::MAP);    // a tap on the map itself does nothing
+  assert(u.tap(sui::UI::BACK_X + 10, sui::UI::BACK_Y + 5) && u.current() == sui::BOARD_LIST);   // touch
+  u.key('k'); u.key(sui::K_BACKSPACE); assert(u.current() == sui::BOARD_LIST);           // Del
+  u.key('s'); u.key('k'); u.key(sui::K_ESC); assert(u.current() == sui::LOCATION);       // returns where it came from
+  u.key('k'); assert(u.tap(ui::navTabAt(0) == theme::TAB_CHAT ? 5 : 0, 5) && u.current() == sui::CHAT_LIST);   // tab tap
+  u.key('k');
   u.key('+'); assert(u.mapView().zoomFactor() > 1.9);
   u.move(1, 1); u.key('a'); assert(u.mapView().zoomFactor() < 1.01);
   u.key('n'); assert(fake.map == 1 && u.mapView().index() == 1);
@@ -148,8 +180,14 @@ int main() {
   u.render(&d); assert(d.outOfBounds == 0);
   assert(d.allText.find("112") != std::string::npos && d.allText.find("Standard-PIN") != std::string::npos);
   assert(d.allText.find("123456") == std::string::npos);       // never PIN digits
+  assert(d.allText.find("~87 %") != std::string::npos && d.allText.find("18 h") != std::string::npos);   // battery
+  assert(d.allText.find("Advert senden") != std::string::npos && d.allText.find("Display aus") != std::string::npos);
   u.click(); assert(fake.refreshes == 1);
-  u.move(0, 1); u.move(0, 1); u.click(); assert(fake.saves == 1);
+  int adv = fake.adverts;
+  u.move(0, 1); u.click(); assert(fake.adverts == adv + 1);            // Advert senden
+  u.move(0, 1); assert(!u.takeDisplayOff()); u.click(); assert(u.takeDisplayOff() && !u.takeDisplayOff());   // Display aus
+  u.move(0, 1); u.click(); assert(fake.saves == 1);
+  u.key('d'); assert(u.takeDisplayOff() && u.current() == sui::DEVICE);   // key 'd' outside text fields
 
   // Schnellmeldung: preset, letters into the text, Enter path to "Meldung senden"
   fake.g.fresh = true;                        // receiver was switched off/on above: wait for a new fix
@@ -163,17 +201,23 @@ int main() {
 assert(fake.sends == 4 && fake.lastId == "c0");
   assert(fake.lastText.find("bitte") != std::string::npos && fake.lastText.find("50.5432") != std::string::npos);
   u.render(&d); assert(d.outOfBounds == 0);
-  u.key(sui::K_ESC); assert(u.onStart());
+  u.key(sui::K_ESC); assert(u.current() == sui::CHAT_LIST);   // former Start target: Chat
 
-  // left/right walks the tabs from list pages
+  // left/right walks the tabs from list pages and wraps (Gerät -> Chat)
   u.key('c'); u.move(1, 0); assert(u.current() == sui::QUICK);
-  u.key(sui::K_ESC); u.key('g'); u.move(1, 0); assert(u.onStart());
+  u.key(sui::K_ESC); u.key('g'); u.move(1, 0); assert(u.current() == sui::CHAT_LIST);
+  u.move(-1, 0); assert(u.current() == sui::DEVICE);
+  // Del outside text: back to Chat; on the chat list nothing to do
+  u.key(sui::K_BACKSPACE); assert(u.current() == sui::CHAT_LIST); assert(!u.key(sui::K_BACKSPACE));
+  // 'd' in a text field is text, not "display off"
+  u.click(); u.key('d'); assert(!strcmp(u.draft(), "d") && !u.takeDisplayOff()); u.key(sui::K_BACKSPACE); u.key(sui::K_ESC);
 
   // not ready: lists say so
   fake.isReady = false; u.key('c'); u.render(&d); assert(d.allText.find("Funkkern startet") != std::string::npos);
-  // Start tiles with badges
-  d.startFrame(0); u.renderStartTiles(&d, 196, 30); assert(d.outOfBounds == 0);
-  ui::navStrip(&d, theme::TAB_INFO, 120, 3, true); assert(d.outOfBounds == 0);
+  // strip with badges, focus frame and an unknown / low battery
+  ui::navBattery() = -1; d.startFrame(0); ui::navStrip(&d, theme::TAB_INFO, 120, 3, theme::TAB_CHAT); assert(d.outOfBounds == 0);
+  assert(d.allText.find("--%") != std::string::npos);
+  ui::navBattery() = 7; d.startFrame(0); ui::navStrip(&d, theme::TAB_MAP, 0, 0); assert(d.allText.find("7%") != std::string::npos);
   puts("standalone_ui: ok");
   return 0;
 }

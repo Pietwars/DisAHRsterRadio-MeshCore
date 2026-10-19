@@ -23,6 +23,8 @@
   static void IRAM_ATTR tb_left() { tb_count[2]++; }
   static void IRAM_ATTR tb_right() { tb_count[3]++; }
   #define TDECK_KEYBOARD_ADDR 0x55   // keyboard MCU on SDA 18 / SCL 8, character mode
+  #include "TDeckTouch.h"
+  static tdeck::Touch tdeck_touch;
 #endif
 
 // Farben (RGB565)
@@ -43,6 +45,9 @@ void UITask::begin(DisplayDriver* display, SensorManager* sensors, NodePrefs* no
   sampleBattery(millis());
 #ifdef DAR_STANDALONE_UI
   _sui.begin(&dev::api());
+  _sui.setLogo(BRAND_LOGO, BRAND_LOGO_W, BRAND_LOGO_H);   // boot logo, then Chat
+  pushBattery();
+  tdeck_touch.probe();
   const uint8_t pins[4] = {PIN_TB_UP, PIN_TB_DOWN, PIN_TB_LEFT, PIN_TB_RIGHT};
   void (*isr[4])() = {tb_up, tb_down, tb_left, tb_right};
   for (int i = 0; i < 4; i++) { pinMode(pins[i], INPUT_PULLUP); attachInterrupt(digitalPinToInterrupt(pins[i]), isr[i], FALLING); }
@@ -121,9 +126,22 @@ void UITask::drawBattery(bool push) {
   if (push) d->endFrame();
 }
 
+#ifdef DAR_STANDALONE_UI
+// Battery level/consumption for the tab strip (every page) and the Gerät page (replaces the Start battery line).
+void UITask::pushBattery() {
+  char l[48], e[48]; batt::texts(_batt, _trend, l, sizeof(l), e, sizeof(e), 0);
+  _sui.setBattery(_batt.pct, l, e);
+}
+#endif
+
 void UITask::wake() {
   if (!_display) return;
-  if (!_display->isOn()) { _display->turnOn(); readBattery(); _next_batt_draw = millis() + BRAND_BATT_REFRESH_MILLIS; }
+  if (!_display->isOn()) {
+    _display->turnOn(); readBattery(); _next_batt_draw = millis() + BRAND_BATT_REFRESH_MILLIS;
+#ifdef DAR_STANDALONE_UI
+    pushBattery();
+#endif
+  }
   _auto_off = millis() + BRAND_AUTO_OFF_MILLIS;
   _dirty = true;
 }
@@ -169,7 +187,7 @@ void UITask::render() {
   int W = d->nativeWidth();
   bool small = W <= 240;
 #ifdef DAR_STANDALONE_UI
-  if (!_pairing && !_sui.onStart()) { _sui.render(d); return; }
+  if (!_pairing) { _sui.render(d); return; }      // boot logo or page; the PIN screen below stays as before
 #endif
   d->startFrame(C_BG);
   d->nativeImage((W - BRAND_LOGO_W) / 2, BRAND_LOGO_Y, BRAND_LOGO_W, BRAND_LOGO_H, BRAND_LOGO);
@@ -193,13 +211,6 @@ void UITask::render() {
     d->nativeFill(bx, by, bw, bh, c);
     centerText(d, W / 2, by + (bh - hb) / 2, big, C_BG, s);
   } else {
-#ifdef DAR_STANDALONE_UI
-    // Start page: tiles like the web tabs instead of the advert button (advert: hold the trackball 2.5 s)
-    _sui.renderStartTiles(d, by, bh - 10);
-    centerText(d, W / 2, by + bh - 8, 1, C_GREY, "Trackball: w\x84hlen, Klick: \x94" "ffnen, 2,5 s: Advert");
-    d->endFrame();
-    return;
-#endif
     d->nativeFill(bx, by, bw, bh, C_GREEN);
     d->nativeRect(bx, by, bw, bh, C_WHITE);
     int gap = (bh - hb - hs) / 3; if (gap < 1) gap = 1;
@@ -220,7 +231,7 @@ void UITask::loop() {
 #ifdef PIN_USER_BTN
   int ev = brand_btn.check();
 #ifdef DAR_STANDALONE_UI
-  // click = Enter on the pages; on Start without a chosen tile: display on/off (step 1)
+  // click = Enter on the pages (map: "Zurück"); dark display: the click only wakes it
   if (ev == BUTTON_EVENT_CLICK) {
     if (_display->isOn() && !_pairing && _sui.click()) input();
     else toggleDisplay();
@@ -268,6 +279,8 @@ void UITask::loop() {
 #ifdef DAR_STANDALONE_UI
   pollKeyboard(now);
   pollTrackball(now);
+  pollTouch(now);
+  if (_sui.takeDisplayOff() && !_pairing) _display->turnOff();   // Gerät "Display aus" or key 'd'
   if (_sui.tick(now)) _dirty = true;
   if (_sui.takeIncoming()) wake();                // incoming message: display on (unread badge)
 #endif
@@ -279,22 +292,24 @@ void UITask::loop() {
     } else if (_dirty) {
       _dirty = false;
 #ifdef DAR_STANDALONE_UI
-      if (!_pairing && !_sui.onStart() && _sui.pending() == sui::UI::PART) _sui.renderPart(_display);
+      if (!_pairing && _sui.pending() == sui::UI::PART) _sui.renderPart(_display);
       else
 #endif
       render();
       _next_batt_draw = now + BRAND_BATT_REFRESH_MILLIS;
-    } else if ((long)(now - _next_batt_draw) >= 0
-#ifdef DAR_STANDALONE_UI
-               && _sui.onStart() && !_pairing
-#endif
-               ) {
+    } else if ((long)(now - _next_batt_draw) >= 0) {
       // nur bei hellem Display: Akkuwerte neu lesen, Statuszeile nur bei geaendertem Text neu zeichnen
       _next_batt_draw = now + BRAND_BATT_REFRESH_MILLIS;
+#ifdef DAR_STANDALONE_UI
+      // standalone: battery in the tab strip and on Gerät; the UI asks for a redraw only if a shown value changed
+      readBattery(); pushBattery();
+      if (_sui.pending() != sui::UI::NONE) _dirty = true;
+#else
       char ol[40], oe[48]; strcpy(ol, _bl); strcpy(oe, _be);
       readBattery();
       char nl[40], ne[48]; batt::texts(_batt, _trend, nl, sizeof(nl), ne, sizeof(ne), 0);
       if (strcmp(ol, nl) || strcmp(oe, ne)) drawBattery(true);
+#endif
     }
   }
 }
@@ -329,6 +344,22 @@ void UITask::pollKeyboard(unsigned long now) {
   if (!_display->isOn()) { wake(); return; }      // a key only wakes the display, never sends
   _sui.key(key);
   input();
+}
+
+// T-Deck Plus touch panel (GT911): a tap acts on release at the press position; dark display: wake only.
+void UITask::pollTouch(unsigned long now) {
+  if ((long)(now - _next_touch) < 0) return;
+  _next_touch = now + 30;
+  if (!tdeck_touch.present()) { if ((long)(now - _next_touch_probe) >= 0) { _next_touch_probe = now + 5000; tdeck_touch.probe(); } return; }
+  int x, y;
+  bool down = tdeck_touch.read(x, y);
+  if (down) { if (!_touch_down) { _touch_x = x; _touch_y = y; } _touch_down = true; return; }
+  if (!_touch_down) return;
+  _touch_down = false;
+  if (_pairing) return;
+  if (!_display->isOn()) { wake(); return; }
+  if (_sui.tap(_touch_x, _touch_y)) input();
+  else _auto_off = now + BRAND_AUTO_OFF_MILLIS;
 }
 
 void UITask::pollTrackball(unsigned long now) {
