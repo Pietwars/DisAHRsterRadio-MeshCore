@@ -47,9 +47,9 @@ Jedes Paket enthält `…-factory.bin` (komplett an **0x0**), `…-firmware.bin`
 
 ## Anzeige am Gerät
 
-<img src="docs/images/anzeige-tdeck.png" width="320" alt="T-Deck Plus: Ahrtal-Bild, Akku-Zeile und Knopf Advert senden"> <img src="docs/images/anzeige-twatch.png" width="240" alt="T-Watch S3: Ahrtal-Bild, Akku-Zeile und Knopf Advert senden">
+<img src="docs/images/anzeige-tdeck-0.9.4.png" width="320" alt="T-Deck Plus: Ahrtal-Bild, Akku-Zeile und Knopf Advert senden"> <img src="docs/images/anzeige-twatch-0.9.4.png" width="240" alt="T-Watch S3: Ahrtal-Bild, Akku-Zeile und Knopf Advert senden">
 
-<sub>Simulation der Anzeige (links T-Deck Plus, rechts T-Watch S3).</sub>
+<sub>Gerätedisplays in 0.9.4 mit Akku-Zeile: links T-Deck Plus, rechts T-Watch S3. Simulation mit Beispielwerten. Die Handy-Bilder oben zeigen die Weboberfläche.</sub>
 
 Das Display zeigt:
 
@@ -112,6 +112,10 @@ Alle Demos sind simuliert.
 ## Mehr Doku
 
 [Details (ausführlich)](docs/DETAILS.md) · [Anleitung Flashen](docs/FLASHEN.md) · [Flash- und RAM-Prüfung](docs/SPEICHER.md) · [Offener Zugang](docs/OFFENER_ZUGANG.md) · [Änderungen](CHANGELOG.md) · [Original-README MeshCore](README.meshcore.md)
+
+## Für 0.9.5 vorgemerkt
+
+[T-Deck: Schnellmeldungsansicht wie auf dem Handy, mit Position senden und Tastatur](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/issues/33). Als zweite Geräteseite mit denselben Vorlagen, Text-, Orts- und Zielauswahl wie in der Weboberfläche geplant. In 0.9.4 bleibt die Tastatur ohne Funktion.
 
 ## Lizenz
 

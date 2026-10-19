@@ -15,37 +15,26 @@ Die tatsächlich eingelötete Flashgröße lässt sich erst am Gerät bestätige
 
 ## Verbrauch je Board
 
-Referenz: `main` bei Commit `0e1c28ac90d7aac3e987b78f19e2c51e5492bfde`,
-Version 0.9.3, PlatformIO 6.2.0, espressif32 6.11.0 / Arduino-ESP32 2.0.17.
-Quelle sind die erfolgreichen [CI-Builds vom 18.10.2026](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/actions/runs/39154424227).
-Dies sind Messungen der vollständigen WLAN/BLE-Firmware, keine geschätzten Werte.
+Gemessen an den tatsächlich veröffentlichten **Release-0.9.4-ZIPs** aus
+[Release-Workflow 39206175790](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/actions/runs/39206175790),
+Tag `v0.9.4`, Commit `77f9538591ec27009e90b28066764b5783211d8b`.
+PlatformIO 6.2.0, espressif32 6.11.0 / Arduino-ESP32 2.0.17; vollständige
+WLAN/BLE-Firmware mit Akku-Anzeige. Die veröffentlichten ZIPs wurden nochmals
+heruntergeladen und einschließlich äußerer und innerer Prüfsummen geprüft.
 
 | Messwert (Bytes) | T-Deck Plus | T-Watch S3 |
 |---|---:|---:|
-| Physischer Flash laut Boardkonfiguration | 16.777.216 | 16.777.216 |
-| App-Partition (`huge_app.csv`) | 3.145.728 | 3.145.728 |
-| Flash laut Linker | 2.058.269 (65,4 %) | 2.092.705 (66,5 %) |
-| Frei im Linker-Flashbudget | 1.087.459 | 1.053.023 |
-| Statisches RAM laut Linker | 160.252 (48,9 %) | 160.752 (49,1 %) |
-| Linker-RAM-Budget | 327.680 | 327.680 |
-| RAM nach statischer Belegung | 167.428 | 166.928 |
-
-Lokale Neubauten des gemeinsamen Teststands **0.9.4-test mit Akku-Anzeige**
-am 19.10.2026 (Akku-Branch `9f906f2c`, vollständige WLAN/BLE-Profile) ergaben:
-
-| Messwert (Bytes) | T-Deck Plus | T-Watch S3 |
-|---|---:|---:|
-| Flash laut lokalem Linker | 2.063.825 | 2.095.965 |
-| Tatsächliche `firmware.bin` | 2.064.240 | 2.096.384 |
-| Frei in App-Partition nach Binärdatei | 1.081.488 | 1.049.344 |
-| Statisches RAM laut Linker | 160.988 | 161.496 |
-| RAM nach statischer Belegung | 166.692 | 166.184 |
+| Physischer Flash laut Boardvertrag | 16.777.216 | 16.777.216 |
+| App-Partition | 3.145.728 | 3.145.728 |
+| Flash laut Linker | 2.064.017 | 2.096.149 |
+| Tatsächliche firmware.bin | 2.064.432 | 2.096.560 |
+| Frei in App-Partition nach Binärdatei | 1.081.296 | 1.049.168 |
 | SPIFFS-Abbild | 917.504 | 917.504 |
 | Factory-Abbild | 4.128.768 | 4.128.768 |
-
-Die erste Tabelle bleibt die CI-Referenz für 0.9.3. Die zweite Tabelle gilt
-für die gemeinsam gebaute Testversion einschließlich Akku-Anzeige; ihre
-JSON-/Markdown-Berichte sind in den beiden Testpaketen enthalten.
+| Statisches RAM laut Linker | 160.988 | 161.496 |
+| Linker-RAM-Budget | 327.680 | 327.680 |
+| RAM nach statischer Belegung | 166.692 | 166.184 |
+| Nicht partitionierter Flash | 12.582.912 | 12.582.912 |
 
 **Linker-Flashverbrauch und Dateigröße von `firmware.bin` unterscheiden sich**:
 Header, Segmentausrichtung, Prüfsumme und Digest kommen zur Binärdatei hinzu.
@@ -104,7 +93,7 @@ Für T-Watch S3 das Environment entsprechend ersetzen. Die reguläre Paketierung
 `tools/build_device.sh LilyGo_TDeck dist/devices` bzw. `LilyGo_TWatchS3`
 führt dieselben Prüfungen einschließlich Factory-Abbild automatisch aus.
 
-## Validierung dieses Pull Requests
+## Automatisierte Validierung
 
 - 15 neue Python-Hosttests: gültige Abbilder für beide Boards, beschädigte Header,
   falsche Flashgröße/Chip-ID, abgeschnittene Segmente, falsche Digests, defekte
