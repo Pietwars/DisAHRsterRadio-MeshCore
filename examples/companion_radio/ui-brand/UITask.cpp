@@ -14,6 +14,17 @@
 
 #define BRAND_LOGO_Y 2   // Bild oben, volle Breite
 
+#ifdef DAR_STANDALONE_UI
+  #include <Wire.h>
+  // Trackball directions of the T-Deck (Hall sensors, one pulse per step), counted in interrupts.
+  static volatile uint16_t tb_count[4] = {0, 0, 0, 0};   // up, down, left, right
+  static void IRAM_ATTR tb_up() { tb_count[0]++; }
+  static void IRAM_ATTR tb_down() { tb_count[1]++; }
+  static void IRAM_ATTR tb_left() { tb_count[2]++; }
+  static void IRAM_ATTR tb_right() { tb_count[3]++; }
+  #define TDECK_KEYBOARD_ADDR 0x55   // keyboard MCU on SDA 18 / SCL 8, character mode
+#endif
+
 // Farben (RGB565)
 #define C_BG     0x08A3   // Hintergrund wie das Titelbild (#0b141c)
 #define C_GREEN  0x4EF0   // Markengruen
@@ -30,6 +41,12 @@ void UITask::begin(DisplayDriver* display, SensorManager* sensors, NodePrefs* no
 #endif
   readBattery();
   sampleBattery(millis());
+#ifdef DAR_STANDALONE_UI
+  _sui.begin(&dev::api());
+  const uint8_t pins[4] = {PIN_TB_UP, PIN_TB_DOWN, PIN_TB_LEFT, PIN_TB_RIGHT};
+  void (*isr[4])() = {tb_up, tb_down, tb_left, tb_right};
+  for (int i = 0; i < 4; i++) { pinMode(pins[i], INPUT_PULLUP); attachInterrupt(digitalPinToInterrupt(pins[i]), isr[i], FALLING); }
+#endif
   if (_display) _display->turnOn();
   _auto_off = millis() + BRAND_AUTO_OFF_MILLIS;
   _dirty = true;
@@ -130,6 +147,11 @@ void UITask::requestAdvert() {
   }
   _status_until = now + BRAND_STATUS_MILLIS;
   _dirty = true;
+#ifdef DAR_STANDALONE_UI
+  char t[40];
+  if (_status == 2) snprintf(t, sizeof(t), "Advert: bitte %d s warten", _wait_secs);
+  _sui.notify(_status == 1 ? "Advert gesendet" : _status == 2 ? t : "Advert-Fehler");
+#endif
 }
 
 void UITask::buttonRect(int& x, int& y, int& w, int& h) const {
@@ -146,6 +168,9 @@ void UITask::render() {
   DisplayDriver* d = _display;
   int W = d->nativeWidth();
   bool small = W <= 240;
+#ifdef DAR_STANDALONE_UI
+  if (!_pairing && !_sui.onStart()) { _sui.render(d); return; }
+#endif
   d->startFrame(C_BG);
   d->nativeImage((W - BRAND_LOGO_W) / 2, BRAND_LOGO_Y, BRAND_LOGO_W, BRAND_LOGO_H, BRAND_LOGO);
   drawBattery(false);
@@ -168,6 +193,13 @@ void UITask::render() {
     d->nativeFill(bx, by, bw, bh, c);
     centerText(d, W / 2, by + (bh - hb) / 2, big, C_BG, s);
   } else {
+#ifdef DAR_STANDALONE_UI
+    // Start page: tiles like the web tabs instead of the advert button (advert: hold the trackball 2.5 s)
+    _sui.renderStartTiles(d, by, bh - 10);
+    centerText(d, W / 2, by + bh - 8, 1, C_GREY, "Trackball: w\x84hlen, Klick: \x94" "ffnen, 2,5 s: Advert");
+    d->endFrame();
+    return;
+#endif
     d->nativeFill(bx, by, bw, bh, C_GREEN);
     d->nativeRect(bx, by, bw, bh, C_WHITE);
     int gap = (bh - hb - hs) / 3; if (gap < 1) gap = 1;
@@ -187,7 +219,15 @@ void UITask::loop() {
 
 #ifdef PIN_USER_BTN
   int ev = brand_btn.check();
+#ifdef DAR_STANDALONE_UI
+  // click = Enter on the pages; on Start without a chosen tile: display on/off (step 1)
+  if (ev == BUTTON_EVENT_CLICK) {
+    if (_display->isOn() && !_pairing && _sui.click()) input();
+    else toggleDisplay();
+  }
+#else
   if (ev == BUTTON_EVENT_CLICK) toggleDisplay();
+#endif
   else if (ev == BUTTON_EVENT_LONG_PRESS) requestAdvert();
 #endif
 
@@ -225,6 +265,12 @@ void UITask::loop() {
   }
   if (_status && now >= _status_until) { _status = 0; _dirty = true; }
   sampleBattery(now);
+#ifdef DAR_STANDALONE_UI
+  pollKeyboard(now);
+  pollTrackball(now);
+  if (_sui.tick(now)) _dirty = true;
+  if (_sui.takeIncoming()) wake();                // incoming message: display on (unread badge)
+#endif
 
   if (_display->isOn()) {
     if (_pairing) _auto_off = now + BRAND_AUTO_OFF_MILLIS;
@@ -232,9 +278,17 @@ void UITask::loop() {
       _display->turnOff();
     } else if (_dirty) {
       _dirty = false;
+#ifdef DAR_STANDALONE_UI
+      if (!_pairing && !_sui.onStart() && _sui.pending() == sui::UI::PART) _sui.renderPart(_display);
+      else
+#endif
       render();
       _next_batt_draw = now + BRAND_BATT_REFRESH_MILLIS;
-    } else if ((long)(now - _next_batt_draw) >= 0) {
+    } else if ((long)(now - _next_batt_draw) >= 0
+#ifdef DAR_STANDALONE_UI
+               && _sui.onStart() && !_pairing
+#endif
+               ) {
       // nur bei hellem Display: Akkuwerte neu lesen, Statuszeile nur bei geaendertem Text neu zeichnen
       _next_batt_draw = now + BRAND_BATT_REFRESH_MILLIS;
       char ol[40], oe[48]; strcpy(ol, _bl); strcpy(oe, _be);
@@ -244,3 +298,55 @@ void UITask::loop() {
     }
   }
 }
+
+#ifdef DAR_STANDALONE_UI
+void UITask::input() {
+  _auto_off = millis() + BRAND_AUTO_OFF_MILLIS;
+  _dirty = true;
+}
+
+void UITask::pollKeyboard(unsigned long now) {
+  if ((long)(now - _next_keyboard) < 0) return;
+  if (!_keyboard_present) {
+    _next_keyboard = now + 5000;
+    Wire.beginTransmission(TDECK_KEYBOARD_ADDR);
+    _keyboard_present = Wire.endTransmission() == 0;
+    if (_keyboard_present) {
+      // character mode, in case an earlier firmware left the keyboard in raw matrix mode
+      Wire.beginTransmission(TDECK_KEYBOARD_ADDR); Wire.write(uint8_t(0x04)); Wire.endTransmission();
+      Serial.println("[TDECK] Tastatur erkannt (I2C 0x55, Zeichenmodus)");
+    }
+    return;
+  }
+  _next_keyboard = now + 30;
+  if (Wire.requestFrom(uint8_t(TDECK_KEYBOARD_ADDR), uint8_t(1)) != 1) {
+    _keyboard_present = false; _next_keyboard = now + 5000;
+    Serial.println("[TDECK] Tastatur nicht erreichbar; erneuter Versuch in 5 s");
+    return;
+  }
+  uint8_t key = Wire.read();
+  if (!key || _pairing) return;
+  if (!_display->isOn()) { wake(); return; }      // a key only wakes the display, never sends
+  _sui.key(key);
+  input();
+}
+
+void UITask::pollTrackball(unsigned long now) {
+  if ((long)(now - _next_ball) < 0) return;
+  _next_ball = now + 60;
+  uint16_t c[4];
+  noInterrupts(); for (int i = 0; i < 4; i++) { c[i] = tb_count[i]; tb_count[i] = 0; } interrupts();
+  int dy = int(c[1]) - int(c[0]), dx = int(c[3]) - int(c[2]);
+  if (!dx && !dy) return;
+  if (_pairing) return;
+  if (!_display->isOn()) { wake(); return; }
+  if (dx > 3) dx = 3;
+  if (dx < -3) dx = -3;
+  if (dy > 3) dy = 3;
+  if (dy < -3) dy = -3;
+  // the dominant axis only: a diagonal roll must not switch tabs while scrolling
+  if (abs(dx) >= abs(dy)) dy = 0; else dx = 0;
+  if (_sui.move(dx, dy)) input();
+  else _auto_off = now + BRAND_AUTO_OFF_MILLIS;
+}
+#endif

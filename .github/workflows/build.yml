@@ -28,6 +28,8 @@ jobs:
         run: python3 tools/pin_libs.py --check
       - name: Kartenprüfung
         run: python3 tests/maps.test.py && python3 tests/portal_routes.test.py
+      - name: T-Deck-Standalone-Daten passen zur Weboberfläche (Schnellmeldungen/Orte, Gerätekarten)
+        run: python3 tools/gen_quick_messages.py --check && python3 tools/gen_device_map.py --check
       - name: Flash- und Speicherpruefungen (Hosttests)
         run: python3 -m unittest discover -s tests -p 'test_memory_validation.py' -v
   build:
@@ -72,3 +74,38 @@ jobs:
             .pio/build/${{ matrix.env }}/memory-report.json
             .pio/build/${{ matrix.env }}/memory-report.md
             .pio-${{ matrix.env }}.log
+  standalone:
+    # Issue #35: LILYGO T-Deck Plus Standalone ohne WLAN/Web (platformio.standalone.ini). Nur Testbuild:
+    # nicht in release.yml, nicht im Web-Flasher, nicht in tools/devices.json; bei Versions-Tags übersprungen.
+    if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/cache@v4
+        with:
+          path: ~/.platformio
+          key: pio-mc-LilyGo_TDeck_standalone-${{ hashFiles('platformio.ini', 'platformio.local.ini', 'platformio.standalone.ini', 'variants/**/platformio.ini') }}
+      - run: pip install platformio==6.2.0
+      - name: Firmware bauen (ohne WLAN/Web)
+        shell: bash
+        run: pio run -e LilyGo_TDeck_standalone | tee .pio-LilyGo_TDeck_standalone.log
+      - name: Keine WLAN-/Web-Schicht gelinkt, Abbild und Partitionen pruefen
+        run: >-
+          python3 tools/check_standalone.py --build-dir .pio/build/LilyGo_TDeck_standalone
+          --build-log .pio-LilyGo_TDeck_standalone.log
+          --output .pio/build/LilyGo_TDeck_standalone/standalone-report
+      - name: Bericht
+        run: cat .pio/build/LilyGo_TDeck_standalone/standalone-report.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LilyGo_TDeck_standalone-test
+          path: |
+            .pio/build/LilyGo_TDeck_standalone/firmware.bin
+            .pio/build/LilyGo_TDeck_standalone/bootloader.bin
+            .pio/build/LilyGo_TDeck_standalone/partitions.bin
+            .pio/build/LilyGo_TDeck_standalone/standalone-report.json
+            .pio/build/LilyGo_TDeck_standalone/standalone-report.md
+            .pio-LilyGo_TDeck_standalone.log

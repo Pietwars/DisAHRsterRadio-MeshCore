@@ -2,6 +2,7 @@
 #include <Arduino.h>   // needed for PlatformIO
 #include <Mesh.h>
 #include "MyMesh.h"
+#include "Frontend.h"   // optional extra frontend (web layer or none), see Frontend.h
 
 // Believe it or not, this std C function is busted on some platforms!
 static uint32_t _atoi(const char* sp) {
@@ -12,11 +13,6 @@ static uint32_t _atoi(const char* sp) {
   }
   return n;
 }
-
-#ifdef DISASTER_PORTAL
-#include "DisasterPortal.h"
-DisasterPortal disaster_portal;
-#endif
 
 // interface manager
 #include <helpers/MultiSerialInterface.h>
@@ -141,9 +137,6 @@ void halt() {
 #ifdef DISASTER_DIAG
 #include "soc/soc.h"
 #include "soc/rtc_cntl_reg.h"
-#define DIAG(m) do { Serial.printf("[DIAG %lu] %s heap=%u\n", millis(), m, (unsigned)ESP.getFreeHeap()); Serial.flush(); } while (0)
-#else
-#define DIAG(m) do {} while (0)
 #endif
 
 void setup() {
@@ -204,15 +197,7 @@ void setup() {
   store.begin();
   the_mesh.begin();
 #elif defined(ESP32)
-#ifdef DISASTER_PORTAL
-  DIAG("SPIFFS.begin");
-  if (!SPIFFS.begin(false)) {
-    Serial.println("SPIFFS mount failed. Initialize the filesystem with uploadfs (after backup).");
-    halt();
-  }
-#else
-  SPIFFS.begin(true);
-#endif
+  if (!frontend::mountFilesystem()) halt();
   store.begin();
   the_mesh.begin();
 #else
@@ -305,21 +290,7 @@ void setup() {
   interface_manager.addInterface(InterfaceType::HardwareSerial, &hardware_serial_interface);
 #endif
 
-#ifdef DISASTER_PORTAL
-  board.setInhibitSleep(true);
-  DIAG("mesh ok, wait before WiFi");
-#ifdef DISASTER_WIFI_DELAY_MS
-  delay(DISASTER_WIFI_DELAY_MS);  // WLAN zuletzt und verzoegert (Brownout-Schutz)
-#elif defined(DISASTER_DIAG)
-  delay(1500);
-#endif
-  DIAG("portal.begin (softAP)");
-  disaster_portal.begin();
-  DIAG("portal ok");
-  interface_manager.addInterface(InterfaceType::Portal, &disaster_portal);
-  // 0.9.3: von der App gesendete Nachrichten auch im Web-Verlauf zeigen
-  the_mesh.setAppSentObserver([](const uint8_t *cmd, size_t len, const uint8_t *tag) { disaster_portal.recordAppSend(cmd, len, tag); });
-#endif
+  frontend::begin(interface_manager);
 
   the_mesh.startInterface(interface_manager);
   sensors.begin();
@@ -327,9 +298,7 @@ void setup() {
 #if ENV_INCLUDE_GPS == 1
   the_mesh.applyGpsPrefs();
 #endif
-#if defined(DISASTER_PORTAL) && defined(DISASTER_GPS)
-  sensors.setSettingValue("gps", "1");  // GPS profile: module on by default
-#endif
+  frontend::sensorsReady();
 
 #ifdef DISPLAY_CLASS
   ui_task.begin(disp, &sensors, the_mesh.getNodePrefs());  // still want to pass this in as dependency, as prefs might be moved
@@ -341,28 +310,7 @@ void setup() {
 
 void loop() {
   the_mesh.loop();
-#ifdef DISASTER_PORTAL
-  disaster_portal.serviceAP();
-#ifdef DISPLAY_CLASS
-  {
-    static unsigned long lastOled = 0; static bool showPw = false;
-    if (millis() - lastOled > 15000) {  // abwechselnd WLAN-Name und offener Zugang auf dem OLED
-      lastOled = millis(); showPw = !showPw;
-      String t = showPw ? (the_mesh.getBLEPin() == DISASTER_BLE_PIN ? String("WLAN offen / BLE-PIN 123456") : String("WLAN offen / BLE eigene PIN"))
-                        : (disaster_portal.apRunning() ? String("WLAN ") : String("WLAN FEHLER ")) + disaster_portal.ssid().substring(16);
-      ui_task.showAlert(t.c_str(), 6000);
-    }
-  }
-#endif
-  disaster_portal.setRadioDiagnostics(the_mesh.getNumSentFlood(), the_mesh.getNumSentDirect(),
-    the_mesh.getNumRecvFlood(), the_mesh.getNumRecvDirect(), the_mesh.getTotalAirTime(),
-    the_mesh.getReceiveAirTime(), the_mesh.getRemainingTxBudget(),
-    the_mesh.isTxBudgetWaiting(), the_mesh.getTxBudgetWaitEvents(),
-    the_mesh.getTxBudgetWaitSeconds(), the_mesh.getTxQueuePackets());
-#if defined(DISASTER_GPS) && ENV_INCLUDE_GPS
-  disaster_portal.setGps(true, nmea.isValid(), sensors.node_lat, sensors.node_lon);
-#endif
-#endif
+  frontend::loop();
   interface_manager.loop();
   sensors.loop();
 #ifdef DISPLAY_CLASS
