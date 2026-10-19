@@ -71,7 +71,7 @@ void TDeckQuickPage::submit(bool position, uint32_t stamp) {
   switch (result) {
     case quick::Result::NoFix:
       snprintf(status, sizeof(status), "%s", api && !api->gps().share && model.place == 0
-               ? "Standort teilen ist aus (Reiter Standort) / Ort waehlen" : "Kein frischer GPS-Fix. Warten / Ort waehlen."); return;
+               ? "Standort teilen ist aus (Menue Standort) / Ort waehlen" : "Kein frischer GPS-Fix. Warten / Ort waehlen."); return;
     case quick::Result::InvalidTime:
       snprintf(status, sizeof(status), "Uhr fehlt: GPS-Fix abwarten / App verbinden"); return;
     case quick::Result::Empty:
@@ -138,6 +138,20 @@ bool TDeckQuickPage::move(int dx, int dy) {
   return false;
 }
 
+// Touch: the fixed layout of render() below. The status line (back) is handled by the caller.
+bool TDeckQuickPage::tap(int x, int y, uint32_t stamp) {
+  auto in = [&](int rx, int ry, int rw, int rh) { return x >= rx && x < rx + rw && y >= ry && y < ry + rh; };
+  for (int i = 0; i < quick::PRESET_COUNT; ++i)
+    if (in(4 + (i % 2) * 158, 30 + (i / 2) * 23, 154, 21)) { model.focus = quick::Presets; model.preset = i; return activate(stamp); }
+  if (in(268, 121, 49, 13)) { model.focus = quick::Clear; return activate(stamp); }
+  if (in(3, 121, 264, 41)) { model.focus = quick::Text; return false; }
+  if (in(0, 163, 320, 13)) { model.focus = quick::PlaceSelect; return activate(stamp); }
+  if (in(0, 176, 320, 13)) { model.focus = quick::Target; return activate(stamp); }
+  if (in(4, 192, 153, 21)) { model.focus = quick::Send; return activate(stamp); }
+  if (in(163, 192, 153, 21)) { model.focus = quick::Position; return activate(stamp); }
+  return false;
+}
+
 bool TDeckQuickPage::tick(uint32_t now) {
   bool changed = false;
   if (int32_t(now - nextGps) >= 0) {
@@ -180,7 +194,7 @@ void TDeckQuickPage::displayText(DisplayDriver* d, int x, int y, uint16_t color,
 
 void TDeckQuickPage::render(DisplayDriver* d) {
   d->startFrame(BG);
-  ui::navStrip(d, theme::TAB_QUICK, unreadChat, unreadBoard, model.focus == quick::Home ? theme::TAB_CHAT : -1);   // Home = back to Chat
+  ui::statusLine(d, "Meldung", true, unreadChat + unreadBoard, model.focus == quick::Home);   // Home = back to the menu
   char line[128];
   dev::Gps g = api ? api->gps() : dev::Gps();
   const char* gpsState = !g.detected ? "GPS nicht erkannt" : !g.receiverOn ? "GPS ausgeschaltet" :
@@ -226,7 +240,7 @@ void TDeckQuickPage::render(DisplayDriver* d) {
   displayText(d, 171, 199, WHITE, "Position senden");
   displayText(d, 4, 215, FOCUS, status);
   if (strlen(status) > 52) displayText(d, 4, 223, FOCUS, status + 52);
-  displayText(d, 4, 232, GREY, "Trackball/ALT+C: Feld  SPACE: Auswahl  ENTER: Aktion");
+  displayText(d, 4, 232, GREY, "Trackball/ALT+C: Feld  ENTER: Aktion  ALT+Del: zurueck");
   d->endFrame();
 }
 #endif

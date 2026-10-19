@@ -20,18 +20,10 @@ constexpr uint16_t PIN_BG = rgb(0x2a2618), MAP_BG = rgb(0x0d1a22), PHARMACY = rg
 constexpr uint16_t NAV_BG = rgb(0x0b141c), INK = rgb(0x102010);   // dark text on mesh-green buttons (#102)
 constexpr int W = 320, H = 240, CW = 6, CH = 8;                    // display and character cell (size 1)
 
-// Navigation like the web <nav>: the six web tabs (no Start page: the boot logo leads to Chat). Keyboard
-// shortcuts outside text input.
-enum Tab { TAB_CHAT = 0, TAB_QUICK, TAB_BOARD, TAB_MAP, TAB_LOC, TAB_INFO, TAB_COUNT };
-static const char *const TAB_LABEL[TAB_COUNT] = {"Chat", "Meldung", "Brett", "Karte", "Standort", "Ger\x84t"};
-static const char TAB_KEY[TAB_COUNT] = {'c', 'm', 'b', 'k', 's', 'g'};
-inline int tabForKey(uint8_t k) {
-  if (k >= 'A' && k <= 'Z') k = uint8_t(k - 'A' + 'a');
-  for (int i = 0; i < TAB_COUNT; ++i) if (TAB_KEY[i] == k) return i;
-  return -1;
-}
-constexpr int NAV_H = 16;   // tab strip height on every page except the boot logo
-constexpr int BATT_W = 42;  // battery level at the right end of the tab strip
+// Navigation: boot logo -> main menu (Chat, Meldung, Brett, Karte, Standort, Gerät) -> pages; no tab bar and no
+// letter shortcuts. Every page has a slim status line on top (back arrow, page title, unread, battery).
+constexpr int NAV_H = 16;   // status line height on every page except the boot logo
+constexpr int BATT_W = 42;  // battery level at the right end of the status line
 
 // UTF-8 -> CP437 for the GFX font. German umlauts and sharp s map to their CP437 glyphs, other non-ASCII
 // characters become '?'. Never splits a multi-byte character. Returns output length.

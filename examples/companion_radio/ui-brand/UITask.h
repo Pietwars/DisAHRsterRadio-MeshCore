@@ -42,13 +42,14 @@ class UITask : public AbstractUITask {
   int _last_usb = -1;
   char _bl[40] = "", _be[48] = "";   // zuletzt gezeichnete Akkutexte
 #ifdef DAR_STANDALONE_UI
-  // T-Deck Plus standalone (Issue #35): boot logo, then pages for Chat, Meldung, Brett, Karte, Standort, Gerät
+  // T-Deck Plus standalone (Issue #35): boot logo, main menu, pages Chat, Meldung, Brett, Karte, Standort, Gerät
   sui::UI _sui;
   bool _keyboard_present = false;
   unsigned long _next_keyboard = 0, _next_ball = 0;
   void pollKeyboard(unsigned long now);
   void pollTrackball(unsigned long now);
   void pollTouch(unsigned long now);
+  bool altHeld();                // ALT+Backspace detection (keyboard raw matrix)
   void pushBattery();
   unsigned long _next_touch = 0, _next_touch_probe = 0;
 #if !defined(UI_HAS_TOUCH)

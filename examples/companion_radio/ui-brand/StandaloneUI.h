@@ -1,7 +1,8 @@
 #pragma once
 // Native operation of the LilyGO T-Deck Plus standalone build (Issue #35): the pages of the web UI
 // (web/index.html: Chat, Schnellmeldung, Brett, Karte, Standort, Gerät) on 320 x 240 with keyboard, trackball and
-// touch. At boot the brand logo shows for BOOT_MS (or until the first input), then Chat opens; there is no Start page.
+// touch. At boot the brand logo shows for BOOT_MS (or until the first input), then the main menu opens (no tab bar,
+// no letter shortcuts). Trackball/touch select inside a page; ALT+Backspace (K_BACK) goes one level back.
 // Hardware-free: everything goes through dev::Api (DeviceApi.h), so host tests and the preview harness
 // (tools/standalone_preview.py) run the same code as the firmware.
 #include "DeviceApi.h"
@@ -17,9 +18,12 @@
 namespace sui {
 // Key codes of the T-Deck keyboard (character mode, I2C 0x55) used here.
 constexpr uint8_t K_ENTER = 0x0D, K_BACKSPACE = 0x08, K_ALT_C = 0x0C, K_ESC = 0x1B;
-enum Page : uint8_t { BOOT, CHAT_LIST, CHAT_VIEW, QUICK, BOARD_LIST, BOARD_VIEW, MAP, LOCATION, DEVICE, PAGE_COUNT };
+// "One level back": UITask turns ALT+Backspace into this code (the keyboard itself sends 0x08 for both); Esc too.
+constexpr uint8_t K_BACK = K_ESC;
+enum Page : uint8_t { BOOT, MENU, CHAT_LIST, CHAT_VIEW, QUICK, BOARD_LIST, BOARD_VIEW, MAP, LOCATION, DEVICE, PAGE_COUNT };
 constexpr size_t COMPOSE_BYTES = 100;   // disaster::LOCAL_TEXT_LIMIT
 constexpr unsigned MAX_LIST = 72;       // 8 channels + 64 contacts
+constexpr int MENU_COUNT = 6;           // Chat, Meldung, Brett, Karte, Standort, Gerät
 
 // Map keys of MapData.h ("ahrtal", ...) for the SD settings file; -1 / nullptr if unknown.
 int mapIndexForKey(const char *key);
@@ -33,7 +37,14 @@ private:
   chat::Log log;
   devmap::View map;
   Page page = BOOT;
-  Page mapReturn = CHAT_LIST;        // page that the map's "Zurück" button returns to
+  Page mapReturn = MENU;             // page that the map's "Zurück" button returns to
+  int menuSel = 0;
+  // touch targets of the drawn page (index = list row / menu entry / button)
+  struct Hit { int16_t x, y, w, h, idx; };
+  static constexpr int MAX_HITS = 16;
+  Hit hits[MAX_HITS];
+  int nhits = 0;
+  void addHit(int x, int y, int w, int h, int idx);
   uint32_t bootUntil = 0, nowMs = 0;
   const uint16_t *logo = nullptr; int logoW = 0, logoH = 0;
   int battPct = -1; char battLine[48] = "", battEst[48] = "";
@@ -57,8 +68,7 @@ private:
   bool quickText() const;
   void sendCompose();
   void sendPosition();
-  void tabStep(int dir);
-  void leaveBoot() { open(CHAT_LIST); }
+  void leaveBoot() { open(MENU); }
   void leaveMap() { open(mapReturn); }
   void requestDisplayOff() { displayOffReq = true; }
   bool listMove(Page p, int dy, unsigned n);
@@ -71,9 +81,10 @@ private:
   void drawDevice(DisplayDriver *d);
   void drawHint(DisplayDriver *d);
   void drawBoot(DisplayDriver *d);
+  void drawMenu(DisplayDriver *d);
   const char *authorName(const chat::Entry &e, char *buf, size_t cap, const char **body) const;
 public:
-  static constexpr uint32_t BOOT_MS = 2500;                // boot logo, then Chat
+  static constexpr uint32_t BOOT_MS = 2500;                // boot logo, then the main menu
   // "Zurück" button of the map (top left, below the tab strip): touch target and trackball-click action.
   static constexpr int BACK_X = 2, BACK_Y = theme::NAV_H + 1, BACK_W = 62, BACK_H = 14;
   bool begin(dev::Api *a);
@@ -86,10 +97,13 @@ public:
   // Input. Each returns true if the page must be redrawn.
   bool key(uint8_t k);
   bool move(int dx, int dy);
-  // Trackball click: Enter on every page; on the map it is the "Zurück" button; on the boot logo it opens Chat.
+  // Trackball click: Enter on every page; on the map it is the "Zurück" button; on the boot logo it opens the menu.
   bool click();
-  // Touch tap at screen coordinates: tabs of the strip, the map's "Zurück" button; leaves the boot logo.
+  // Touch tap at screen coordinates: status line = back; menu entries, list rows, buttons, compose box, the map's
+  // "Zurück" (targets of the last render); leaves the boot logo.
   bool tap(int x, int y);
+  // One level back (ALT+Backspace, Esc, status line tap): conversation -> list -> menu, map -> where it was opened.
+  bool back();
   // true once after "Display aus" (Gerät button or key 'd'): the caller switches the display off.
   bool takeDisplayOff() { bool r = displayOffReq; displayOffReq = false; return r; }
   // Poll the history / status; returns true if something visible changed.
@@ -108,6 +122,7 @@ public:
   const char *draft() const { return compose; }
   const char *statusText() const { return status; }
   Page mapReturnPage() const { return mapReturn; }
+  int menuSelection() const { return menuSel; }
   int battery() const { return battPct; }
   const devmap::View &mapView() const { return map; }
   const chat::Log &history() const { return log; }

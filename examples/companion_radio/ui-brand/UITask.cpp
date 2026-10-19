@@ -127,7 +127,7 @@ void UITask::drawBattery(bool push) {
 }
 
 #ifdef DAR_STANDALONE_UI
-// Battery level/consumption for the tab strip (every page) and the Gerät page (replaces the Start battery line).
+// Battery level/consumption for the status line (every page) and the Gerät page (replaces the Start battery line).
 void UITask::pushBattery() {
   char l[48], e[48]; batt::texts(_batt, _trend, l, sizeof(l), e, sizeof(e), 0);
   _sui.setBattery(_batt.pct, l, e);
@@ -301,7 +301,7 @@ void UITask::loop() {
       // nur bei hellem Display: Akkuwerte neu lesen, Statuszeile nur bei geaendertem Text neu zeichnen
       _next_batt_draw = now + BRAND_BATT_REFRESH_MILLIS;
 #ifdef DAR_STANDALONE_UI
-      // standalone: battery in the tab strip and on Gerät; the UI asks for a redraw only if a shown value changed
+      // standalone: battery in the status line and on Gerät; the UI asks for a redraw only if a shown value changed
       readBattery(); pushBattery();
       if (_sui.pending() != sui::UI::NONE) _dirty = true;
 #else
@@ -342,6 +342,9 @@ void UITask::pollKeyboard(unsigned long now) {
   uint8_t key = Wire.read();
   if (!key || _pairing) return;
   if (!_display->isOn()) { wake(); return; }      // a key only wakes the display, never sends
+  // The keyboard sends 0x08 for Backspace with and without ALT. ALT+Backspace = "back": ask the keyboard for its
+  // key matrix (raw mode 0x03, LilyGO keyboard firmware from 2025-06) while the keys are still held.
+  if (key == sui::K_BACKSPACE && altHeld()) key = sui::K_BACK;
   _sui.key(key);
   input();
 }
@@ -362,6 +365,24 @@ void UITask::pollTouch(unsigned long now) {
   else _auto_off = now + BRAND_AUTO_OFF_MILLIS;
 }
 
+// Raw matrix of the T-Deck keyboard: 5 bytes (one per column, bit = row). ALT = column 0 row 4, Backspace =
+// column 4 row 3. Both must be down and every byte must look like a matrix (7 rows), else plain Backspace.
+// Old keyboard firmware without raw mode answers with its one-byte character mode: then ALT is never seen and
+// Backspace on an empty field / outside text fields still goes back. Character mode is restored in any case.
+bool UITask::altHeld() {
+  uint8_t m[5] = {0, 0, 0, 0, 0}; uint8_t n = 0;
+  Wire.beginTransmission(TDECK_KEYBOARD_ADDR); Wire.write(uint8_t(0x03));
+  if (Wire.endTransmission() == 0 && Wire.requestFrom(uint8_t(TDECK_KEYBOARD_ADDR), uint8_t(5)) == 5)
+    for (; n < 5 && Wire.available(); ++n) m[n] = uint8_t(Wire.read());
+  while (Wire.available()) Wire.read();
+  Wire.beginTransmission(TDECK_KEYBOARD_ADDR); Wire.write(uint8_t(0x04)); Wire.endTransmission();
+  if (n != 5) return false;
+  for (int i = 0; i < 5; ++i) if (m[i] & 0x80) return false;
+  bool alt = m[0] & (1 << 4), bksp = m[4] & (1 << 3);
+  if (alt && bksp) Serial.println("[TDECK] ALT+Backspace: zurueck");
+  return alt && bksp;
+}
+
 void UITask::pollTrackball(unsigned long now) {
   if ((long)(now - _next_ball) < 0) return;
   _next_ball = now + 60;
@@ -375,7 +396,7 @@ void UITask::pollTrackball(unsigned long now) {
   if (dx < -3) dx = -3;
   if (dy > 3) dy = 3;
   if (dy < -3) dy = -3;
-  // the dominant axis only: a diagonal roll must not switch tabs while scrolling
+  // the dominant axis only: a diagonal roll must not move the selection sideways while scrolling
   if (abs(dx) >= abs(dy)) dy = 0; else dx = 0;
   if (_sui.move(dx, dy)) input();
   else _auto_off = now + BRAND_AUTO_OFF_MILLIS;

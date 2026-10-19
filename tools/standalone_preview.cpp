@@ -22,6 +22,13 @@ static void shot(FakeDisplay &d, const char *name) {
 }
 static void page(sui::UI &u, FakeDisplay &d, const char *name) { ms += 300; u.tick(ms); u.render(&d); shot(d, name); }
 static void type(sui::UI &u, const char *s) { while (*s) u.key(uint8_t(*s++)); }
+// ALT+Backspace up to the main menu, trackball to entry i, click
+static void entry(sui::UI &u, int i) {
+  while (u.key(sui::K_BACK)) {}
+  for (int k = 0; k < 6; ++k) u.move(0, -1);
+  for (int k = 0; k < i; ++k) u.move(0, 1);
+  u.click();
+}
 
 int main(int argc, char **argv) {
   if (argc < 2) { fprintf(stderr, "usage: preview <dir>\n"); return 2; }
@@ -40,18 +47,17 @@ int main(int argc, char **argv) {
   fake.channelIn(1, "Lea: Pumpe kommt um 15 Uhr zum Marktplatz", fake.clock - 120);
   fake.roomIn("dcafe0012ab34", "11223344", "Heute 18 Uhr: Treffen am Gemeindehaus", fake.clock - 60);
   ms += 300; u.tick(ms);
-  ms += sui::UI::BOOT_MS; page(u, d, "chat-liste");   // default page after the logo
+  ms += sui::UI::BOOT_MS; page(u, d, "hauptmenue");   // main menu after the logo
+  u.click(); page(u, d, "chat-liste");
   u.click(); type(u, "Bin in 10 Min. mit Kanistern da"); page(u, d, "chat");
-  u.key(sui::K_ESC); u.move(0, 1); u.move(0, 1); u.click(); page(u, d, "chat-direkt");
-  u.key(sui::K_ESC); u.key('m');
-  u.key('3'); type(u, "Ibuprofen");
-  page(u, d, "meldung");
-  u.key(sui::K_ESC); u.key('b'); page(u, d, "brett-liste");
+  u.key(sui::K_BACK); u.move(0, 1); u.move(0, 1); u.click(); page(u, d, "chat-direkt");
+  entry(u, 1); u.key('3'); type(u, "Ibuprofen"); page(u, d, "meldung");
+  entry(u, 2); page(u, d, "brett-liste");
   u.click(); fake.rm.rights = 2; snprintf(fake.rm.id, sizeof(fake.rm.id), "dcafe0012ab34"); type(u, "Biete 2 Bautrockner");
   page(u, d, "brett");
-  u.key(sui::K_ESC); u.key('k'); page(u, d, "karte");
+  entry(u, 3); page(u, d, "karte");
   u.key('n'); u.key('n'); u.key('i'); page(u, d, "karte-detail");
-  u.key('s'); page(u, d, "standort");
-  u.key('g'); page(u, d, "geraet");
+  entry(u, 4); page(u, d, "standort");
+  entry(u, 5); page(u, d, "geraet");
   return 0;
 }

@@ -39,25 +39,9 @@ inline void badge(DisplayDriver *d, int xr, int y, unsigned n, uint16_t bg = the
   int w = int(strlen(t)) * theme::CW + 4;
   d->nativeFill(xr - w, y, w, 9, bg); d->nativeText(xr - w + 2, y + 1, 1, theme::TEXT, t);
 }
-// Battery level shown at the right end of every tab strip (set by the UI from UITask's battery reading;
-// -1 = unknown). One value for all pages, including the Schnellmeldung page that draws its own strip.
+// Battery level shown at the right end of every status line (set by the UI from UITask's battery reading;
+// -1 = unknown). One value for all pages, including the Schnellmeldung page that draws its own status line.
 inline int &navBattery() { static int pct = -1; return pct; }
-// Tab layout of the strip: tabs share W - BATT_W; returns the tab under x (or -1 on the battery field).
-inline void navLayout(int *xs, int *ws) {
-  int chars = 0; for (int i = 0; i < theme::TAB_COUNT; ++i) chars += int(strlen(theme::TAB_LABEL[i]));
-  const int tabs_w = theme::W - theme::BATT_W;
-  int pad = (tabs_w - chars * theme::CW) / (2 * theme::TAB_COUNT), x = 0;
-  for (int i = 0; i < theme::TAB_COUNT; ++i) {
-    int w = int(strlen(theme::TAB_LABEL[i])) * theme::CW + 2 * pad;
-    if (i == theme::TAB_COUNT - 1) w = tabs_w - x;
-    xs[i] = x; ws[i] = w; x += w;
-  }
-}
-inline int navTabAt(int x) {
-  int xs[theme::TAB_COUNT], ws[theme::TAB_COUNT]; navLayout(xs, ws);
-  for (int i = 0; i < theme::TAB_COUNT; ++i) if (x >= xs[i] && x < xs[i] + ws[i]) return i;
-  return -1;
-}
 // Battery field: outline icon filled by level (green from 40 %, amber from 15 %, else red) and "87%".
 inline void navBatteryField(DisplayDriver *d) {
   const int x0 = theme::W - theme::BATT_W, pct = navBattery();
@@ -71,27 +55,21 @@ inline void navBatteryField(DisplayDriver *d) {
   char t[8]; if (pct >= 0) snprintf(t, sizeof(t), "%d%%", pct > 100 ? 100 : pct); else snprintf(t, sizeof(t), "--%%");
   d->nativeText(theme::W - 2 - int(strlen(t)) * theme::CW, 4, 1, pct >= 0 && pct < 15 ? theme::BAD : theme::TEXT, t);
 }
-// Tab strip like the web <nav>: active tab in mesh green with a 2 px underline; unread badges on Chat/Brett;
-// focus_tab draws the orange focus frame on one tab (Schnellmeldung: "back to Chat" action); battery at the right.
-inline void navStrip(DisplayDriver *d, int active, unsigned unread_chat, unsigned unread_board, int focus_tab = -1) {
+// Slim status line on top of every page (replaces the tab bar): "← Title" left (tap = one level back; orange
+// frame when the back action has the focus), unread total as a wine badge, battery right.
+constexpr int BACK_ZONE_W = theme::W - theme::BATT_W;   // tapping the status line left of the battery = back
+inline void statusLine(DisplayDriver *d, const char *title_utf8, bool back, unsigned unread, bool back_focus = false) {
   d->nativeFill(0, 0, theme::W, theme::NAV_H, theme::NAV_BG);
   d->nativeFill(0, theme::NAV_H - 1, theme::W, 1, theme::LINE);
-  int xs[theme::TAB_COUNT], ws[theme::TAB_COUNT]; navLayout(xs, ws);
-  for (int i = 0; i < theme::TAB_COUNT; ++i) {
-    int x = xs[i], w = ws[i], lw = int(strlen(theme::TAB_LABEL[i])) * theme::CW;
-    bool on = i == active;
-    unsigned n = i == theme::TAB_CHAT ? unread_chat : i == theme::TAB_BOARD ? unread_board : 0;
-    // with an unread badge the label moves left so that label + badge fit into the tab
-    int lx = n ? x + 2 : x + (w - lw) / 2;
-    d->nativeText(lx, 3, 1, on ? theme::MESH : theme::rgb(0xccffee), theme::TAB_LABEL[i]);
-    if (on) d->nativeFill(x + 1, theme::NAV_H - 3, w - 2, 2, theme::MESH);
-    if (i == focus_tab) d->nativeRect(x, 0, w, theme::NAV_H - 1, FOCUS);
-    if (n) {
-      char t[4]; snprintf(t, sizeof(t), n > 9 ? "9+" : "%u", n);
-      int bw = int(strlen(t)) * theme::CW + 2;
-      d->nativeFill(lx + lw + 1, 2, bw, 10, theme::WINE);
-      d->nativeText(lx + lw + 2, 3, 1, theme::TEXT, t);
-    }
+  int x = 4;
+  if (back) { d->nativeText(x, 4, 1, theme::MESH, "\x1b"); x += 2 * theme::CW; }
+  text(d, x, 4, back ? theme::TEXT : theme::MESH, title_utf8, 30);
+  if (back_focus) d->nativeRect(0, 0, x + textWidth(title_utf8) + 4, theme::NAV_H - 1, FOCUS);
+  if (unread) {
+    char t[12]; snprintf(t, sizeof(t), "%u neu", unread > 99 ? 99 : unread);
+    int bw = int(strlen(t)) * theme::CW + 4, bx = theme::W - theme::BATT_W - 4 - bw;
+    d->nativeFill(bx, 3, bw, 10, theme::WINE);
+    d->nativeText(bx + 2, 4, 1, theme::TEXT, t);
   }
   navBatteryField(d);
 }
