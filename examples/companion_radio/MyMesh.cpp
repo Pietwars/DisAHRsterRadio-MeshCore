@@ -1,4 +1,5 @@
 #include "MyMesh.h"
+#include "DarBuild.h"   // DAR_MESH_POLICY
 #include "AutoAddPolicy.h"
 #include "OpenAccess.h"
 #include "SharedQueue.h"
@@ -318,7 +319,7 @@ int MyMesh::getFromOfflineQueue(uint8_t frame[]) {
 #endif
 
 float MyMesh::getAirtimeBudgetFactor() const {
-#ifdef DISASTER_PORTAL
+#ifdef DAR_MESH_POLICY
   return 9.0f; // fixed internal 10% budget, including existing saved preferences
 #else
   return _prefs.airtime_factor;
@@ -965,7 +966,7 @@ MyMesh::MyMesh(mesh::Radio &radio, mesh::RNG &rng, mesh::RTCClock &rtc, SimpleMe
   _prefs.tx_power_dbm = LORA_TX_POWER;
   _prefs.gps_enabled = 0;       // GPS disabled by default
   _prefs.gps_interval = 0;      // No automatic GPS updates by default
-#ifdef DISASTER_PORTAL
+#ifdef DAR_MESH_POLICY
   // DisAHRsterRadio: only repeaters and room servers are added automatically, chat users stay
   // manual. Applies to fresh prefs only; a saved /prefs.json (man_add, auto_add) overrides it.
   _prefs.manual_add_contacts = autoadd::DISASTER_DEFAULT_MANUAL;
@@ -1024,7 +1025,7 @@ void MyMesh::begin() {
 
   // load persisted prefs
   _store->loadPrefs(_prefs);
-#ifdef DISASTER_PORTAL
+#ifdef DAR_MESH_POLICY
   _prefs.tx_power_dbm = constrain(_prefs.tx_power_dbm, -9, 10);
 #endif
   sensors.node_lat = _prefs.node_lat;
@@ -1352,8 +1353,8 @@ void MyMesh::handleCmdFrame(size_t len) {
     if (lat <= 90 * 1E6 && lat >= -90 * 1E6 && lon <= 180 * 1E6 && lon >= -180 * 1E6) {
       sensors.node_lat = ((double)lat) / 1000000.0;
       sensors.node_lon = ((double)lon) / 1000000.0;
-#ifdef DISASTER_PORTAL
-      // Weboberflaeche: ausdruecklich gesetzter Standort wird in Bekanntgaben geteilt, (0,0) = nicht teilen
+#ifdef DAR_MESH_POLICY
+      // DAR-MC (Web, App, Standalone): ausdruecklich gesetzter Standort wird in Bekanntgaben geteilt, (0,0) = nicht teilen
       _prefs.advert_loc_policy = (lat == 0 && lon == 0) ? ADVERT_LOC_NONE : ADVERT_LOC_SHARE;
 #endif
       savePrefs();
@@ -1528,7 +1529,7 @@ void MyMesh::handleCmdFrame(size_t len) {
       _prefs.freq = (float)freq / 1000.0;
       _prefs.bw = (float)bw / 1000.0;
       _prefs.setRepeatEn(repeat != 0);
-#ifdef DISASTER_PORTAL
+#ifdef DAR_MESH_POLICY
       _prefs.tx_power_dbm = 10;
       _prefs.airtime_factor = 9.0f;
       radio_driver.setTxPower(10);
