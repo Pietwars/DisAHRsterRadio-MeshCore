@@ -1,6 +1,6 @@
 #pragma once
-// Marken-Anzeige (DisAHRsterRadio-MeshCore 0.9.2): Das Display zeigt NUR Schriftzug + Logo
-// und einen Knopf "Advert senden" (Flood-Advert). Nachrichten, Einstellungen usw. laufen
+// Marken-Anzeige (DisAHRsterRadio-MeshCore): Das Display zeigt NUR Schriftzug + Logo, eine Akku-Statuszeile
+// (Ladestand, Spannung, geschaetzter Verbrauch, siehe BattTrend.h) und einen Knopf "Advert senden" (Flood-Advert). Nachrichten, Einstellungen usw. laufen
 // ausschliesslich ueber die MeshCore-App (Bluetooth mit PIN) und die Weboberflaeche.
 // Waehrend einer Bluetooth-Kopplung wird kurz die PIN eingeblendet.
 
@@ -11,12 +11,14 @@
 #include <Arduino.h>
 #include "../AbstractUITask.h"
 #include "../NodePrefs.h"
+#include "BattTrend.h"
 
 #ifndef BRAND_AUTO_OFF_MILLIS
   #define BRAND_AUTO_OFF_MILLIS   30000   // Display geht nach 30 s ohne Bedienung aus
 #endif
 #define BRAND_ADVERT_GAP_MILLIS   10000   // hoechstens ein Advert je 10 s
 #define BRAND_STATUS_MILLIS        2000   // "Advert gesendet" so lange zeigen
+#define BRAND_BATT_REFRESH_MILLIS 15000   // Akkuzeile bei hellem Display hoechstens so oft neu lesen/zeichnen
 
 class UITask : public AbstractUITask {
   DisplayDriver* _display = NULL;
@@ -30,6 +32,11 @@ class UITask : public AbstractUITask {
   bool _pairing = false;
   bool _dirty = true;
   int _msgcount = 0;
+  batt::Now _batt;
+  batt::Trend _trend;
+  unsigned long _next_sample = 0, _next_batt_draw = 0;
+  int _last_usb = -1;
+  char _bl[40] = "", _be[48] = "";   // zuletzt gezeichnete Akkutexte
 #if defined(UI_HAS_TOUCH)
   bool _touch_down = false;
   int _touch_x = 0, _touch_y = 0;
@@ -40,6 +47,10 @@ class UITask : public AbstractUITask {
   void requestAdvert();
   void render();
   void buttonRect(int& x, int& y, int& w, int& h) const;
+  int  stripHeight() const;
+  void readBattery();
+  void sampleBattery(unsigned long now);
+  void drawBattery(bool push);
 
 public:
   UITask(mesh::MainBoard* board, MultiSerialInterface* serial) : AbstractUITask(board, serial) { }

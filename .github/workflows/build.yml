@@ -28,6 +28,8 @@ jobs:
         run: python3 tools/pin_libs.py --check
       - name: Kartenprüfung
         run: python3 tests/maps.test.py && python3 tests/portal_routes.test.py
+      - name: Flash- und Speicherpruefungen (Hosttests)
+        run: python3 -m unittest discover -s tests -p 'test_memory_validation.py' -v
   build:
     runs-on: ubuntu-latest
     strategy:
@@ -48,9 +50,17 @@ jobs:
       - name: Weboberfläche einbetten (Prüfung)
         run: python tools/embed_web.py && git diff --exit-code -- examples/companion_radio/PortalPage.h examples/companion_radio/PortalAssets.h
       - name: Firmware bauen
-        run: pio run -e ${{ matrix.env }}
+        shell: bash
+        run: pio run -e ${{ matrix.env }} | tee .pio-${{ matrix.env }}.log
       - name: Dateisystem bauen
         run: pio run -e ${{ matrix.env }} -t buildfs
+      - name: Flash/Header/Partitionen/Firmware und RAM pruefen
+        run: >-
+          python3 tools/validate_memory.py --env ${{ matrix.env }}
+          --build-dir .pio/build/${{ matrix.env }} --build-log .pio-${{ matrix.env }}.log
+          --output .pio/build/${{ matrix.env }}/memory-report
+      - name: Speicherbericht
+        run: cat .pio/build/${{ matrix.env }}/memory-report.md >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.env }}
@@ -59,3 +69,6 @@ jobs:
             .pio/build/${{ matrix.env }}/bootloader.bin
             .pio/build/${{ matrix.env }}/partitions.bin
             .pio/build/${{ matrix.env }}/spiffs.bin
+            .pio/build/${{ matrix.env }}/memory-report.json
+            .pio/build/${{ matrix.env }}/memory-report.md
+            .pio-${{ matrix.env }}.log

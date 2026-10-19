@@ -58,6 +58,8 @@ bool TWatchS3Board::power_init() {
   PMU->enableSystemVoltageMeasure();
   PMU->enableVbusVoltageMeasure();
   PMU->enableBattVoltageMeasure();
+  ((XPowersAXP2101*)PMU)->enableBattDetection();   // Akku erkennen (fuer isBatteryConnect)
+  ((XPowersAXP2101*)PMU)->enableGauge();           // Ladestandsanzeige (%) des AXP2101
 
   // Seitentaste (PEKEY des AXP2101):
   //   kurz (< 2 s)  -> Kurzdruck-IRQ  (Display an/aus)

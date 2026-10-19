@@ -9,7 +9,7 @@ on:
     tags: ['v*']
   pull_request:
     # Probelauf (beide Geräte, ohne Veröffentlichung), wenn sich Paketierung oder dieser Workflow ändern
-    paths: ['tools/build_device.sh', 'tools/write_liesmich.py', 'tools/verify_release.py', 'tools/verify_devices.py', 'tools/release_notes.py', 'tools/ANLEITUNG.template.md', '.github/workflows/release.yml']
+    paths: ['tools/build_device.sh', 'tools/write_liesmich.py', 'tools/verify_release.py', 'tools/verify_devices.py', 'tools/release_notes.py', 'tools/ANLEITUNG.template.md', 'tools/validate_memory.py', 'tools/release_boards.json', 'tests/test_memory_validation.py', 'platformio*.ini', 'boards/**', 'variants/**/platformio.ini', '.github/workflows/release.yml']
   workflow_dispatch:
     inputs:
       tag:
@@ -61,6 +61,8 @@ jobs:
         run: python tools/embed_web.py && git diff --exit-code -- examples/companion_radio/PortalPage.h examples/companion_radio/PortalAssets.h
       - name: Bauen und packen
         run: tools/build_device.sh "${{ matrix.device }}" dist/devices
+      - name: Speicherbericht
+        run: cat dist/devices/*/memory-report.md >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         with:
           name: dev-${{ matrix.device }}

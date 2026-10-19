@@ -2,7 +2,8 @@
 """Vorschau-PNGs der Marken-Anzeige (examples/companion_radio/ui-brand), am PC nachgestellt.
 
 Bildet UITask::render() mit denselben Maßen nach (glcd-5x7-Schrift aus Adafruit GFX, Logo wie
-tools/gen_brand_logo.py). Die PIN wird nie gezeigt (XXXXXX).
+tools/gen_brand_logo.py), inklusive Akku-Zeile (UITask::drawBattery) mit Beispielwerten im Format von
+ui-brand/BattTrend.h (keine echten Messwerte). Die PIN wird nie gezeigt (XXXXXX).
 Aufruf:  brand_preview.py <Gerät> <Ausgabeordner> [<PlatformIO-Env>]   (braucht Pillow)
          brand_preview.py --has <Gerät>   -> Exit 0, wenn das Gerät die Marken-Anzeige hat
 """
@@ -109,11 +110,46 @@ class D:
         im = Image.frombytes('RGB', im.size, px)
         s.im.paste(im, ((s.W - s.lw) // 2, 2))
 
-def render(d, mode):
+# Beispiel-Akkuwerte (Texte wie batt::texts in ui-brand/BattTrend.h, Varianten lang/mittel/kurz):
+# (Prozent, links, [Verbrauch lang, mittel, kurz]) - keine echten Messwerte
+EST = {'normal': ["Verbr. ca. 5,0 %/h, Rest ca. 13 h", "Verbr. ca. 5,0 %/h, Rest 13 h", "ca. 5,0 %/h, Rest 13 h"],
+       'messung': ["Verbrauch: Messung, noch 12 min", "Verbrauch: noch 12 min", "Verbrauch: noch 12 min"],
+       'leer': ["Verbr. ca. 6,3 %/h, Rest ca. 1,9 h", "Verbr. ca. 6,3 %/h, Rest 1,9 h", "ca. 6,3 %/h, Rest 1,9 h"]}
+AKKU = {
+  'LilyGo_TDeck': {'normal': (67, "ca. 67 % 3,93 V", EST['normal']), 'messung': (81, "ca. 81 % 4,03 V", EST['messung']),
+                   'laden': (98, "ca. 98 % 4,18 V", ["Spannung steigt (Laden?)"] * 3), 'leer': (12, "ca. 12 % 3,70 V", EST['leer'])},
+  'LilyGo_TWatchS3': {'normal': (71, "71 % 3,93 V", EST['normal']), 'messung': (84, "84 % 4,03 V", EST['messung']),
+                      'laden': (88, "88 % 4,11 V", ["USB: Laden"] * 3), 'leer': (12, "12 % 3,70 V", EST['leer'])}}
+
+def strip_h(d):
+    lines = 2 if d.W <= 240 else 1
+    return lines * d.th(1) + (lines - 1) + 2
+
+def battery(d, akku):
+    """wie UITask::drawBattery()"""
+    pct, left, ests = akku
+    W = d.W; small = W <= 240; m = 4
+    y, h, th = 2 + d.lh + 2, strip_h(d), d.th(1)
+    d.fill(0, y, W, h, BG)
+    iw, ih = (22, 12) if small else (18, 8); iy = y + 1 + (th - ih) // 2
+    d.rect(m, iy, iw, ih, WHITE); d.fill(m + iw, iy + ih // 4, 2, ih - 2 * (ih // 4), WHITE)
+    c = GREEN if pct >= 40 else (ORANGE if pct >= 15 else RED)
+    fw = max(1, (iw - 4) * pct // 100); d.fill(m + 2, iy + 2, fw, ih - 4, c)
+    tx = m + iw + 2 + (6 if small else 4)
+    d.text(tx, y + 1, 1, WHITE, left)
+    avail = W - 2 * m if small else W - m - (tx + d.tw(left, 1) + 8)
+    est = next((e for e in ests if d.tw(e, 1) <= avail), '')
+    if est:
+        ew = d.tw(est, 1)
+        if small: d.text((W - ew) // 2, y + 1 + th + 1, 1, GREY, est)
+        else: d.text(W - m - ew, y + 1, 1, GREY, est)
+
+def render(d, mode, akku):
     """wie UITask::render() in examples/companion_radio/ui-brand/UITask.cpp"""
     W, H = d.W, d.H; small = W <= 240
     d.logo()
-    bx = W // 20; bw = W - 2 * bx; by = 2 + d.lh + 4; bh = H - by - 5
+    battery(d, akku)
+    bx = W // 20; bw = W - 2 * bx; by = 2 + d.lh + 2 + strip_h(d) + 2; bh = H - by - 5
     big = 2 if small else 3
     hs, hb = d.th(1), d.th(big)
     if mode == 'kopplung':
@@ -132,7 +168,11 @@ def render(d, mode):
         d.ctext(W // 2, by + 2 * gap + hb, 1, BG, "antippen" if d.touch else "Trackball 2,5 s halten")
 
 out.mkdir(parents=True, exist_ok=True)
-for i, m in enumerate(['start', 'gesendet', 'warten', 'kopplung'], 1):
-    d = D(*DEVICES[dev]); render(d, m)
-    d.im.resize((d.W * 2, d.H * 2), Image.NEAREST).save(out / f'{i}-{m}.png')
+A = AKKU[dev]
+SHOTS = [('start', 'normal'), ('gesendet', 'normal'), ('warten', 'normal'), ('kopplung', 'normal'),
+         ('akku-messung', 'messung'), ('akku-laden', 'laden'), ('akku-fast-leer', 'leer')]
+for i, (name, a) in enumerate(SHOTS, 1):
+    m = name if not name.startswith('akku') else 'start'
+    d = D(*DEVICES[dev]); render(d, m, A[a])
+    d.im.resize((d.W * 2, d.H * 2), Image.NEAREST).save(out / f'{i}-{name}.png')
 print('Vorschau:', out)
