@@ -12,6 +12,8 @@
   static MomentaryButton brand_btn(PIN_USER_BTN, BRAND_ADVERT_HOLD_MILLIS, true, false, false);
 #endif
 
+#define BRAND_LOGO_Y 2   // Bild oben, volle Breite
+
 // Farben (RGB565)
 #define C_BG     0x08A3   // Hintergrund wie das Titelbild (#0b141c)
 #define C_GREEN  0x4EF0   // Markengruen
@@ -129,8 +131,6 @@ void UITask::requestAdvert() {
   _status_until = now + BRAND_STATUS_MILLIS;
   _dirty = true;
 }
-
-#define BRAND_LOGO_Y 2
 
 void UITask::buttonRect(int& x, int& y, int& w, int& h) const {
   // Bild moeglichst gross (volle Breite), darunter der Knopf bis kurz vor den unteren Rand
