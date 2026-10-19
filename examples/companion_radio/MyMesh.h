@@ -199,9 +199,26 @@ public:
   void savePrefs() {
     _prefs.node_lat = sensors.node_lat;
     _prefs.node_lon = sensors.node_lon;
+#ifdef DISASTER_STANDALONE
+    // "Standort teilen" (GpsShare.h): a shared GPS fix is never persisted as the node location.
+    uint8_t policy = _prefs.advert_loc_policy;
+    if (_prefs_location) _prefs_location(_prefs.node_lat, _prefs.node_lon, _prefs.advert_loc_policy);
     _store->savePrefs(_prefs);
+    _prefs.node_lat = sensors.node_lat; _prefs.node_lon = sensors.node_lon; _prefs.advert_loc_policy = policy;
+#else
+    _store->savePrefs(_prefs);
+#endif
     _prefs.clearDirty();
   }
+#ifdef DISASTER_STANDALONE
+  // Standalone GPS sharing: replaces the location values that savePrefs() writes (lat, lon, advert policy).
+  void setPrefsLocationHook(void (*fn)(double &lat, double &lon, uint8_t &policy)) { _prefs_location = fn; }
+  uint8_t advertLocPolicy() const { return _prefs.advert_loc_policy; }
+  void setAdvertLocPolicy(uint8_t p) { _prefs.advert_loc_policy = p; }   // RAM only (not persisted here)
+private:
+  void (*_prefs_location)(double &lat, double &lon, uint8_t &policy) = nullptr;
+public:
+#endif
 
 #if ENV_INCLUDE_GPS == 1
   void applyGpsPrefs() {

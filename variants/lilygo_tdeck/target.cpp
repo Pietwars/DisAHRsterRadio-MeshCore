@@ -24,6 +24,10 @@ TDeckBoard board;
     pinMode(PIN_TFT_CS, OUTPUT);
     digitalWrite(PIN_TFT_CS, HIGH);
   #endif
+  #ifdef PIN_SD_CS
+    pinMode(PIN_SD_CS, OUTPUT);       // standalone: SD card on the same bus stays deselected
+    digitalWrite(PIN_SD_CS, HIGH);
+  #endif
     tdeck_shared_spi.begin(P_LORA_SCLK, P_LORA_MISO, P_LORA_MOSI); // SCK 40, MISO 38, MOSI 41, no HW CS
   }
 
