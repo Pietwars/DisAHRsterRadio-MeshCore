@@ -11,6 +11,14 @@
 #endif
 #if defined(DISASTER_PORTAL) || defined(DISASTER_STANDALONE)
 #define DAR_MESH_POLICY 1
+// Both also own a local companion client (LocalCompanion.h: web portal or T-Deck display) which shares the
+// offline queue with the MeshCore app (SharedQueue.h) and mirrors its own sends into the app.
+#define DAR_LOCAL_COMPANION 1
+#endif
+
+// T-Deck Plus standalone: native pages on the display (ui-brand/StandaloneUI, keyboard + trackball).
+#if defined(DISASTER_STANDALONE) && defined(LILYGO_TDECK)
+#define DAR_STANDALONE_UI 1
 #endif
 
 // Boot diagnostics (DISASTER_DIAG builds only): serial marker with free heap.

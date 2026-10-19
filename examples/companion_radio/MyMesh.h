@@ -22,6 +22,7 @@
 #include <SPIFFS.h>
 #endif
 
+#include "DarBuild.h"   // DAR_LOCAL_COMPANION (must be identical in every unit including this class)
 #include "DataStore.h"
 #include "NodePrefs.h"
 
@@ -224,13 +225,17 @@ private:
   void updateContactFromFrame(ContactInfo &contact, uint32_t& last_mod, const uint8_t *frame, int len);
   void addToOfflineQueue(const uint8_t frame[], int len);
   int getFromOfflineQueue(uint8_t frame[]);
-#ifdef DISASTER_PORTAL
-  // 0.9.3: Nachrichten zwischen Weboberflaeche und MeshCore-App teilen.
-  void queueWebEchoForApp(const uint8_t *cmd, size_t len);     // vom Portal gesendet -> App sieht sie
+#ifdef DAR_LOCAL_COMPANION
+  // 0.9.3: Nachrichten zwischen lokalem Client (Weboberflaeche bzw. T-Deck-Anzeige im Standalone) und
+  // MeshCore-App teilen.
+  void queueWebEchoForApp(const uint8_t *cmd, size_t len);     // vom lokalen Client gesendet -> App sieht sie
   void (*_app_sent_observer)(const uint8_t *cmd, size_t len, const uint8_t *ack_tag) = nullptr;
+  const char *_local_origin = "Web";                            // Herkunftsmarke im App-Echo
 public:
   // Wird aufgerufen, wenn die App (Bluetooth) eine Text-/Kanalnachricht erfolgreich abgeschickt hat.
   void setAppSentObserver(void (*fn)(const uint8_t *cmd, size_t len, const uint8_t *ack_tag)) { _app_sent_observer = fn; }
+  // Herkunft der lokal gesendeten Nachrichten im App-Echo ("Web" in den Web-Builds, "T-Deck" im Standalone).
+  void setLocalOrigin(const char *origin) { _local_origin = origin; }
 private:
 #endif
   int getBlobByKey(const uint8_t key[], int key_len, uint8_t dest_buf[]) override { 

@@ -225,7 +225,7 @@ bool MyMesh::Frame::isChannelMsg() const {
          buf[0] == RESP_CODE_CHANNEL_DATA_RECV;
 }
 
-#ifdef DISASTER_PORTAL
+#ifdef DAR_LOCAL_COMPANION
 // 0.9.3: gemeinsame Warteschlange fuer Weboberflaeche und App (SharedQueue.h).
 void MyMesh::addToOfflineQueue(const uint8_t frame[], int len) {
   if (!disaster::sqAdd(offline_queue, offline_queue_len, OFFLINE_QUEUE_SIZE, frame, len, 0, true)) {
@@ -238,7 +238,7 @@ int MyMesh::getFromOfflineQueue(uint8_t frame[]) {
   return disaster::sqTake(offline_queue, offline_queue_len, who, frame);
 }
 
-// Vom Portal gesendete Nachricht (Kommando 2 bzw. 3) als Eintrag nur fuer die App einreihen, damit die
+// Vom lokalen Client (Portal bzw. T-Deck-Anzeige) gesendete Nachricht (Kommando 2 bzw. 3) als Eintrag nur fuer die App einreihen, damit die
 // MeshCore-App sie anzeigt. Das Companion-Protokoll kennt keinen Rahmen "von einem anderen Client gesendet";
 // deshalb erscheint sie in der App als empfangene Nachricht und ist im Text markiert.
 void MyMesh::queueWebEchoForApp(const uint8_t *cmd, size_t len) {
@@ -255,7 +255,7 @@ void MyMesh::queueWebEchoForApp(const uint8_t *cmd, size_t len) {
     f[i++] = 0xFF;                   // kein Funkweg (lokal gesendet)
     f[i++] = TXT_TYPE_PLAIN;
     memcpy(&f[i], &cmd[3], 4); i += 4;
-    snprintf(mark, sizeof(mark), "%s (Web): ", _prefs.node_name);   // App zeigt "Name (Web)" als Absender
+    snprintf(mark, sizeof(mark), "%s (%s): ", _prefs.node_name, _local_origin);   // App zeigt "Name (Web)" bzw. "Name (T-Deck)"
   } else if (cmd[0] == CMD_SEND_TXT_MSG && len >= 13) {
     text = (const char *)&cmd[13]; tlen = len - 13;
     if (app_target_ver >= 3) { f[i++] = RESP_CODE_CONTACT_MSG_RECV_V3; f[i++] = 0; f[i++] = 0; f[i++] = 0; }
@@ -264,7 +264,7 @@ void MyMesh::queueWebEchoForApp(const uint8_t *cmd, size_t len) {
     f[i++] = 0xFF;
     f[i++] = TXT_TYPE_PLAIN;
     memcpy(&f[i], &cmd[3], 4); i += 4;
-    snprintf(mark, sizeof(mark), "[von mir über Web] ");
+    snprintf(mark, sizeof(mark), "[von mir über %s] ", _local_origin);
   } else {
     return;
   }
@@ -1236,7 +1236,7 @@ void MyMesh::handleCmdFrame(size_t len) {
         memcpy(&out_frame[2], &expected_ack, 4);
         memcpy(&out_frame[6], &est_timeout, 4);
         _serial->writeFrame(out_frame, 10);
-#ifdef DISASTER_PORTAL
+#ifdef DAR_LOCAL_COMPANION
         // 0.9.3: nur der erste Versuch einer normalen Textnachricht (Wiederholungen nicht doppelt zeigen)
         if (txt_type == TXT_TYPE_PLAIN && attempt == 0) {
           if (_serial->isPortalTransport()) queueWebEchoForApp(cmd_frame, len);
@@ -1265,7 +1265,7 @@ void MyMesh::handleCmdFrame(size_t len) {
       bool success = getChannel(channel_idx, channel);
       if (success && sendGroupMessage(msg_timestamp, channel.channel, _prefs.node_name, text, len - i)) {
         writeOKFrame();
-#ifdef DISASTER_PORTAL
+#ifdef DAR_LOCAL_COMPANION
         if (_serial->isPortalTransport()) queueWebEchoForApp(cmd_frame, len);
         else if (_app_sent_observer) _app_sent_observer(cmd_frame, len, nullptr);
 #endif

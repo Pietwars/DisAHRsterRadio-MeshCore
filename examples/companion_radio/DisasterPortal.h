@@ -1,22 +1,16 @@
 // SPDX-License-Identifier: MIT
 #pragma once
-#include "../simple_room_server/RoomAccess.h"  // DISASTER_ROOM_GUEST_PASSWORD ("hello")
-// BLE (MeshCore-App) darf parallel laufen: MultiSerialInterface verteilt alle Antworten an Portal und BLE.
-#if defined(ENABLE_USB_INTERFACE) || defined(WIFI_SSID)
-#error "The local portal must own the Companion interface in this profile"
-#endif
-#if LORA_TX_POWER != 10
-#error "Unexpected portal default TX power"
-#endif
+// Web layer on top of the web-free local companion client (LocalCompanion.h, Issue #35): HTTP routes, open WLAN,
+// captive DNS and per-phone send budgets. Companion session, history, local send rules and room login are shared
+// with the T-Deck Plus standalone build.
+#include "LocalCompanion.h"
 // 0.9.1 (Peter): private key export/import is compiled in. The portal never sends these commands;
 // OpenAccess.h allows them only over USB and PIN-paired Bluetooth, and MultiSerialInterface returns
 // the export reply only to the requesting USB/Bluetooth link (never WiFi, Ethernet or the portal).
-#include <helpers/BaseSerialInterface.h>
 #include <WebServer.h>
 #include <DNSServer.h>
 #include <WiFi.h>
 #include <Preferences.h>
-#include <SPIFFS.h>
 #include <esp_system.h>
 #include <esp_timer.h>
 #include "PortalPage.h"
@@ -32,14 +26,10 @@
 #else
 #define DAR_SHA256 mbedtls_sha256_ret
 #endif
-#include "HistoryRecord.h"
-#include "SlotFile.h"
-#include "DeliveryOutbox.h"
-#include "ArchiveSd.h"
 
 // A single local companion owns the protocol. HTTP clients share its history.
 // Raw, arbitrary companion commands and private keys are never exposed to HTTP.
-class DisasterPortal : public BaseSerialInterface {
+class DisasterPortal : public LocalCompanion {
   uint32_t txFlood=0, txDirect=0, rxFlood=0, rxDirect=0;
   bool txBudgetWaiting=false;
   bool gpsEnabled=false,gpsFix=false;double gpsLat=0,gpsLon=0;
@@ -48,54 +38,11 @@ class DisasterPortal : public BaseSerialInterface {
   struct ClientBudget { char id[16]; uint32_t lastMs=0, windowStart=0; uint8_t count=0; bool used=false; };
   ClientBudget clientBudgets[8]{};
   unsigned long txAirMs=0, rxAirMs=0, txBudgetMs=0;
-  DeliveryOutbox delivery;
-  ArchiveSd archive;
-  int activeJob=-1;
-  uint32_t routeJob=0;uint8_t routeAttempt=255;
   WebServer http{80};
   unsigned long heapLog=0;
   bool apOk=false; unsigned long apRetry=0, apPrint=0;
   DNSServer dns;
-  bool enabled = false, storageOK = true;
-  uint8_t startup = 0, active = 0;
-  uint32_t nextPoll = 0, seq = 0, lastSend = 0, lastStamp = 0;
-  bool sentOnce = false, userCommand = false;
-  uint8_t pending[MAX_FRAME_SIZE] = {}, pendingLen = 0;
-  uint8_t outgoing[MAX_FRAME_SIZE] = {}, outgoingLen = 0;
-  String info, contacts[64], channels[8], apName;
-  String roomTarget;
-  uint8_t roomRights=0, loginLen=0, loginFrame[49]={};
-  bool roomPending=false;
-  uint32_t roomSince=0;
-  // Reject ambiguous short identifiers instead of choosing an arbitrary contact.
-  const String *roomContact(const String &target) const {
-    if(target.length()!=13||target[0]!='d')return nullptr;
-    const String *found=nullptr;
-    for(const auto &c:contacts)if(c.length()>=264&&c.substring(2,14)==target.substring(1)&&c.substring(66,68)=="03"){
-      if(found)return nullptr;found=&c;
-    }
-    return found;
-  }
-  String outcome = "Bereit";
-  uint32_t activeSince = 0;
-  using Record = disaster::HistoryRecord;
-  static_assert(MAX_FRAME_SIZE == disaster::FRAME_BYTES, "Companion frame size changed");
-  static String hex(const uint8_t *p, size_t n) {
-    static const char digits[]="0123456789abcdef";
-    String out; out.reserve(n*2);
-    for(size_t i=0;i<n;++i){out+=digits[p[i]>>4];out+=digits[p[i]&15];}
-    return out;
-  }
-  void append(const uint8_t *p, size_t n) {
-    if (!n || n>MAX_FRAME_SIZE) return;
-    Record r{}; r.seq=++seq; r.len=n; memcpy(r.data,p,n); r.crc=disaster::checksum(r);
-    File f=disaster::openSlotFile(SPIFFS,"/dr-history.bin");
-    bool ok=f && disaster::seekSlot(f,disaster::offset(r.seq)) && f.write((uint8_t*)&r,sizeof(r))==sizeof(r);
-    if(f)f.close();
-    if(!ok)storageOK=false;
-    if(!ok)Serial.printf("[VERLAUF] Schreiben fehlgeschlagen (seq %u)\n",(unsigned)r.seq);
-    archive.append(r);
-  }
+  String apName;
   bool permitted() {
     // Custom header prevents cross-origin form submissions; no CORS is enabled.
     String host=http.hostHeader();
@@ -130,13 +77,13 @@ class DisasterPortal : public BaseSerialInterface {
   }
   bool room() {
     if (!permitted()) return false;
-    if(startup<12 || pendingLen || active || loginLen) {
+    if(busy()) {
       http.send(409,"text/plain","Knoten beschaeftigt. Bitte erneut versuchen."); return false;
     }
     return true;
   }
   void accept(const uint8_t *p,size_t n) {
-    memcpy(pending,p,n); pendingLen=n;
+    queueCommand(p,n);
     http.send(202,"text/plain","In Warteschlange; noch keine Zustellbestaetigung.");
   }
   void history() {
@@ -150,16 +97,6 @@ class DisasterPortal : public BaseSerialInterface {
     }
     f.close(); http.sendContent("");
   }
-  static bool hasNull(const String &s) {
-    for(size_t i=0;i<s.length();++i)if(s[i]==0)return true;
-    return false;
-  }
-  static int nibble(char c) {
-    if(c>='0'&&c<='9')return c-'0';
-    if(c>='a'&&c<='f')return c-'a'+10;
-    if(c>='A'&&c<='F')return c-'A'+10;
-    return -1;
-  }
 public:
   // Snapshot existing MeshCore counters; does not issue Companion commands.
   void setGps(bool enabled,bool fix,double lat,double lon){gpsEnabled=enabled;gpsFix=fix&&(lat!=0||lon!=0);gpsLat=lat;gpsLon=lon;}
@@ -171,13 +108,7 @@ public:
     txBudgetWaiting=waiting;txBudgetWaitEvents=events;txBudgetWaitSeconds=seconds;txQueuePackets=queued;
   }
   void begin() {
-    delivery.begin();lastStamp=delivery.latestStamp();archive.begin();
-    File f=disaster::openSlotFileRead(SPIFFS,"/dr-history.bin"); Record r;
-    uint32_t records=0;
-    while(f && f.read((uint8_t*)&r,sizeof(r))==sizeof(r))
-      if(disaster::valid(r)){records++;if(r.seq>seq) seq=r.seq;}
-    if(f)f.close();
-    Serial.printf("[VERLAUF] %u Eintraege, letzte Nummer %u\n",(unsigned)records,(unsigned)seq);
+    beginHistory();
     Preferences prefs; prefs.begin("disaster",false);
     // Remove old AP credentials and the former web-admin password (removed in 0.9.1) on upgrade.
     prefs.remove("ap-pass");prefs.remove("admin-salt");prefs.remove("admin-hash");
@@ -284,24 +215,18 @@ public:
       const String *contact=roomContact(target);
       uint32_t stamp=strtoul(http.arg("time").c_str(),nullptr,10);
       if(!contact||stamp<1700000000u||stamp>4102444800u){http.send(400,"text/plain","Raum und Uhrzeit pruefen");return;}
-      memset(loginFrame,0,sizeof(loginFrame));loginFrame[0]=26;
-      for(int i=0;i<32;++i)loginFrame[1+i]=(nibble((*contact)[2+i*2])<<4)|nibble((*contact)[3+i*2]);
-      // Automatisch mit dem oeffentlichen Gast-Passwort "hello" anmelden (Lesen und Schreiben).
-      static const char guest[]=DISASTER_ROOM_GUEST_PASSWORD;
-      memcpy(loginFrame+33,guest,sizeof(guest)-1);loginLen=33+sizeof(guest)-1;
-      delivery.syncClock(stamp);roomTarget=target;roomRights=0;roomPending=true;roomSince=millis();
-      // First synchronize the companion clock; the next serialized command logs in.
-      uint8_t clock[5]={6};memcpy(clock+1,&stamp,4);accept(clock,5);
+      // First synchronize the companion clock; the next serialized command logs in (shared with the device).
+      uint8_t clock[5];prepareRoomLogin(*contact,target,stamp,clock);accept(clock,5);
     });
     http.on("/api/send",HTTP_POST,[this](){
       if(!room())return;
       String text=http.arg("text"), target=http.arg("target");
       if(text.length()<1 || text.length()>100 || hasNull(text)) {http.send(400,"text/plain","1 bis 100 UTF-8-Bytes erforderlich");return;}
-      if(sentOnce && millis()-lastSend<5000) {http.send(429,"text/plain","Bitte fuenf Sekunden Sendepause einhalten");return;}
+      if(sendPaused()) {http.send(429,"text/plain","Bitte fuenf Sekunden Sendepause einhalten");return;}
       uint8_t p[MAX_FRAME_SIZE]={}; size_t n;
       uint32_t stamp=(uint32_t)strtoul(http.arg("time").c_str(),nullptr,10);
-      if(stamp<1700000000u || stamp>4102444800u) {http.send(400,"text/plain","Handy-Uhr pruefen");return;}
-      if(stamp<=lastStamp)stamp=lastStamp+1;
+      if(!disaster::validStamp(stamp)) {http.send(400,"text/plain","Handy-Uhr pruefen");return;}
+      stamp=disaster::nextStamp(stamp,lastStamp);
       if(target.length()==2 && target[0]=='c' && target[1]>='0' && target[1]<='7') {
         if(!channels[target[1]-'0'].length()){http.send(400,"text/plain","Kanal nicht eingerichtet");return;}
         p[0]=3;p[2]=target[1]-'0';memcpy(p+3,&stamp,4);n=7;
@@ -312,7 +237,7 @@ public:
       } else {http.send(400,"text/plain","Ungueltiges Ziel");return;}
       memcpy(p+n,text.c_str(),text.length());n+=text.length();
       if(!allowClientSend())return;
-      memcpy(outgoing,p,n);outgoingLen=n;lastStamp=stamp;sentOnce=true;lastSend=millis();
+      commitOutgoing(p,n,stamp);
       outcome="Warteschlange";accept(p,n);
     });
     // Knotenname ohne Adminanmeldung (Peter, 0.9.1); gleiche Pruefung wie bisher.
@@ -342,7 +267,7 @@ public:
       if(!disaster::dePreset(http.arg("preset").c_str(),preset)){http.send(400,"text/plain","Unbekanntes Deutschland-Funkprofil");return;}
       uint8_t p[12]={11};memcpy(p+1,&preset.freq,4);memcpy(p+5,&preset.bw,4);p[9]=preset.sf;p[10]=preset.cr;p[11]=0;accept(p,12);
     });
-    http.on("/api/advert",HTTP_POST,[this](){if(!room())return;if(sentOnce&&millis()-lastSend<5000){http.send(429,"text/plain","Bitte fuenf Sekunden Sendepause einhalten");return;}if(!allowClientSend())return;const uint8_t p[]={7,1};accept(p,2);});
+    http.on("/api/advert",HTTP_POST,[this](){if(!room())return;if(sendPaused()){http.send(429,"text/plain","Bitte fuenf Sekunden Sendepause einhalten");return;}if(!allowClientSend())return;const uint8_t p[]={7,1};accept(p,2);});
     http.on("/api/refresh",HTTP_POST,[this](){if(!room())return;const uint8_t p[]={4};accept(p,1);});
     http.onNotFound([this](){
       // Diagnose: which client asks for unknown paths (e.g. iOS captive-portal probes)?
@@ -368,115 +293,11 @@ public:
       Serial.printf("[WLAN] %s | SSID: %s | offen, ohne Passwort | http://192.168.4.1 | Clients: %d\n",apOk?"AP aktiv":"AP FEHLER",apName.c_str(),WiFi.softAPgetStationNum());
       }
   }
-  // 0.9.3: Von der MeshCore-App (Bluetooth) gesendete Text-/Kanalnachricht in den Web-Verlauf schreiben
-  // (gleiches Format wie eigene Nachrichten: f3 Kanal, f4 Direkt mit ACK-Kennung, f2 ohne Kennung).
-  void recordAppSend(const uint8_t *c,size_t n,const uint8_t *tag) {
-    if(n<7||n>MAX_FRAME_SIZE)return;
-    uint8_t r[MAX_FRAME_SIZE];memcpy(r,c,n);size_t rl=n;
-    if(c[0]==3)r[0]=0xf3;
-    else if(c[0]==2&&n>=13){
-      if(tag&&n+4<=MAX_FRAME_SIZE){memmove(r+17,r+13,n-13);memcpy(r+13,tag,4);r[0]=0xf4;rl+=4;}
-      else r[0]=0xf2;
-    } else return;
-    append(r,rl);
-  }
-  void enable() override {enabled=true;}
-  void disable() override {enabled=false;}
-  bool isEnabled() const override {return enabled;}
-  bool isConnected() const override {return enabled;}
-  bool isWriteBusy() const override {return false;}
   void loop() override {
     dns.processNextRequest();http.handleClient();
     if(millis()-heapLog>=30000){heapLog=millis();uint32_t f=ESP.getFreeHeap();
       Serial.printf("[HEAP] frei %u | Minimum %u | groesster Block %u%s\n",(unsigned)f,(unsigned)ESP.getMinFreeHeap(),(unsigned)ESP.getMaxAllocHeap(),f<HEAP_WARN_BYTES?" | WARNUNG: wenig freier Speicher":"");}
-    if(roomPending&&millis()-roomSince>45000){roomPending=false;roomRights=0;outcome="Raumanmeldung ohne Antwort; Funk und Uhrzeit pruefen";}
-  }
-  size_t checkRecvFrame(uint8_t *dest) override {
-    if(!enabled)return 0;
-    if(active) {
-      if(millis()-activeSince>15000) {activeJob=-1;active=0;outgoingLen=0;outcome="Antwort unklar; nicht automatisch erneut senden";}
-      else return 0;
-    }
-    size_t n=0;
-    if(startup==0){dest[0]=22;dest[1]=3;n=2;startup++;}
-    else if(startup==1){memset(dest,0,8);dest[0]=1;n=8;startup++;}
-    else if(startup>=2 && startup<10){dest[0]=31;dest[1]=startup-2;n=2;startup++;}
-    else if(startup==10){dest[0]=4;n=1;startup++;}
-    else if(startup==11){dest[0]=20;n=1;startup++;}
-    else if(loginLen&&!pendingLen){userCommand=true;n=loginLen;memcpy(dest,loginFrame,n);loginLen=0;memset(loginFrame,0,sizeof(loginFrame));}
-    else if(pendingLen){userCommand=true;n=pendingLen;memcpy(dest,pending,n);pendingLen=0;}
-    else if((!sentOnce||millis()-lastSend>=5000)&&delivery.ready()){
-      int job=delivery.next();
-      if(job>=0){const auto &j=delivery.get(job);bool known=false,ambiguous=false;
-        for(const auto &c:contacts)if(c.length()>=264&&c.substring(2,14)==hex(j.recipient,6)){
-          if(known||c.substring(2,66)!=hex(j.recipient,32)||c.substring(66,68)!="01")ambiguous=true;known=true;
-        }
-        if(!known||ambiguous)delivery.defer(job);
-        else if(j.attempts&&(routeJob!=j.id||routeAttempt!=j.attempts)){
-          dest[0]=13;memcpy(dest+1,j.recipient,32);n=33;routeJob=j.id;routeAttempt=j.attempts;
-        }
-        else if(delivery.start(job)){
-          dest[0]=2;dest[1]=0;dest[2]=j.attempts-1;memcpy(dest+3,&j.stamp,4);memcpy(dest+7,j.recipient,6);
-          size_t len=strlen(j.text);memcpy(dest+13,j.text,len);n=13+len;memcpy(outgoing,dest,n);outgoingLen=n;
-          activeJob=job;userCommand=true;sentOnce=true;lastSend=millis();
-        }
-      }
-      if(!n&&(int32_t)(millis()-nextPoll)>=0){dest[0]=10;n=1;nextPoll=millis()+1000;}
-    }
-    else if((int32_t)(millis()-nextPoll)>=0){dest[0]=10;n=1;nextPoll=millis()+1000;}
-    if(n){
-      if(dest[0]==4)for(auto &contact:contacts)contact="";
-      active=dest[0];activeSince=millis();
-    }
-    return n;
-  }
-  size_t writeFrame(const uint8_t *p,size_t n) override {
-    if(!n||n>MAX_FRAME_SIZE)return 0;
-    uint8_t code=p[0];
-    if((code==0x85||code==0x86)&&n>=8&&roomTarget.substring(1)==hex(p+2,6)){
-      roomPending=false;roomRights=code==0x85?((n>=13&&(p[12]&3))?(p[12]&3):1):0;  // Gast ohne Schreibrecht (0) = angemeldet, nur Lesen
-      outcome=roomRights>=2?"Raum angemeldet: Lesen und Schreiben":roomRights==1?"Raum angemeldet: nur Lesen":"Raumanmeldung fehlgeschlagen";
-    }
-    if(code==0x83){nextPoll=0;return n;}
-    if(code==5)info=hex(p,n);
-    if(code==18 && n>=34 && p[1]<8)channels[p[1]]=hex(p,34); // omit channel secret
-    if(code==0x8f && n==33){
-      String prefix=hex(p+1,32);
-      for(auto &c:contacts)if(c.substring(2,66)==prefix)c="";
-    }
-    if((code==3 || code==0x8a) && n>=36){
-      String prefix=hex(p+1,32);int slot=-1;
-      for(int i=0;i<64;i++){if(contacts[i].substring(2,66)==prefix){slot=i;break;}if(slot<0&&!contacts[i].length())slot=i;}
-      if(slot>=0)contacts[slot]=hex(p,n);
-    }
-    if(code==0x82&&n>=9)delivery.acknowledge(p+1);
-    if(code==16 || code==17 || code==7 || code==8 || code==0x82)append(p,n);
-    if(code<0x80 && active) {
-      if(activeJob>=0&&code==6&&n>=10)delivery.tag(activeJob,p+2);
-      if((active==2||active==3) && (code==0||code==6||code==1)) {
-        if(code!=1 && outgoingLen){uint8_t record[MAX_FRAME_SIZE];memcpy(record,outgoing,outgoingLen);record[0]=active==2?0xf2:0xf3;
-          size_t recordLen=outgoingLen;
-          // v0.2: preserve the core's ACK tag beside the accepted direct message.
-          // f4: legacy 13-byte header, 4-byte tag, UTF-8 text. Old records remain readable.
-          if(active==2 && code==6 && n>=10 && outgoingLen>=13 && outgoingLen+4<=MAX_FRAME_SIZE) {
-            memmove(record+17,record+13,outgoingLen-13);
-            memcpy(record+13,p+2,4);record[0]=0xf4;recordLen+=4;
-          }
-          append(record,recordLen);outcome="Vom Funkkern angenommen; Zustellung offen";}
-        else outcome="Funkkern meldet Sendefehler";
-        outgoingLen=0;
-      } else if(active==26){
-        if(code==1){roomPending=false;roomRights=0;outcome="Raumanmeldung vom Funkkern abgelehnt";}
-        else outcome="Anmeldung gesendet; Serverantwort ausstehend";
-      } else if(code==1 && userCommand)outcome="Befehl vom Funkkern abgelehnt";
-      else if(code==0 && userCommand)outcome="Gespeichert / angenommen";
-      bool complete = active==4 ? (code==4||code==1) : true;
-      if(complete) {
-        if(code==0 && (active==8 || active==11 || active==32)) startup=1;
-        active=0; activeJob=-1;userCommand=false;
-      }
-    }
-    return n;
+    serviceRoom();
   }
 };
 
