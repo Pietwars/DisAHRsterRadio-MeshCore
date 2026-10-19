@@ -7,7 +7,9 @@ stimmen, keine leere Datei), mindestens einem Flash-Abbild (factory.bin / .uf2 /
 """
 import hashlib, json, sys, zipfile
 from pathlib import Path
+from validate_memory import validate_artifacts
 ROOT = Path(__file__).resolve().parents[1]
+release_boards = json.loads((ROOT / 'tools/release_boards.json').read_text())
 d, version, *only = sys.argv[1:]
 devices = [e['device'] for e in json.load(open(ROOT / 'tools' / 'devices.json'))]
 if only:
@@ -31,6 +33,28 @@ for dev in devices:
         docs = [n for n in files if n.upper().startswith(('LIESMICH', 'ANLEITUNG'))]
         if not docs: errors.append(f'{z.name}: LIESMICH/ANLEITUNG fehlt')
         elif not any(version in zf.read(files[n]).decode('utf-8', 'replace') for n in docs): errors.append(f'{z.name}: Anleitung nennt Version {version} nicht')
+        if dev in release_boards:
+            try:
+                board = release_boards[dev]
+                read = lambda path: zf.read(files[path])
+                report = json.loads(read('memory-report.json'))
+                if report['device'] != dev or report['board'] != board:
+                    raise ValueError('Speicherbericht gehoert nicht zum Release-Board')
+                usage = report['result']['memory']
+                log = '\n'.join(f'{key}: (used {usage[key.lower()]["used"]} bytes from {usage[key.lower()]["total"]} bytes)' for key in ('RAM', 'Flash'))
+                result = validate_artifacts(board, read(f'{name}-firmware.bin'), read('teile/bootloader.bin'),
+                                            read('teile/partitions.bin'), read('teile/spiffs.bin'), log,
+                                            read(f'{name}-factory.bin'), read('teile/boot_app0.bin'))
+                if report['result'] != result:
+                    raise ValueError('Speicherbericht passt nicht zu den Binaerdateien')
+                for artifact in ('firmware.bin', 'bootloader.bin', 'partitions.bin', 'spiffs.bin'):
+                    path = f'{name}-firmware.bin' if artifact == 'firmware.bin' else f'teile/{artifact}'
+                    if report['sha256'][artifact] != hashlib.sha256(read(path)).hexdigest():
+                        raise ValueError(f'Speicherbericht: SHA256 von {artifact} falsch')
+                if not read('memory-report.md'):
+                    raise ValueError('Lesbarer Speicherbericht fehlt')
+            except (KeyError, ValueError) as exc:
+                errors.append(f'{z.name}: Flash-/Speicherpruefung: {exc}')
 if errors:
     print('\n'.join('FEHLER: ' + e for e in errors)); sys.exit(1)
 print(f'Alle {len(devices)} Gerätepakete vollständig, Prüfsummen stimmen.')

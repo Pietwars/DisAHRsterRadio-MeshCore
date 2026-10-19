@@ -1,0 +1,133 @@
+# Flash- und RAM-Prüfung
+
+Release-Boards sind derzeit **LILYGO T-Deck Plus** (`dar_LilyGo_TDeck_wifi`)
+und **LILYGO T-Watch S3** (`dar_LilyGo_TWatchS3_wifi`). Die übrigen Profile im
+Repository gehören nicht zum unterstützten Release. Der unabhängige Boardvertrag
+in [`tools/release_boards.json`](../tools/release_boards.json) verlangt für beide
+ESP32-S3 (Image-Chip-ID 9), **16 MiB Flash** und **327.680 Byte Linker-RAM-Budget**.
+Die tatsächlich eingelötete Flashgröße lässt sich erst am Gerät bestätigen.
+
+## Verbrauch je Board
+
+Referenz: `main` bei Commit `0e1c28ac90d7aac3e987b78f19e2c51e5492bfde`,
+Version 0.9.3, PlatformIO 6.2.0, espressif32 6.11.0 / Arduino-ESP32 2.0.17.
+Quelle sind die erfolgreichen [CI-Builds vom 18.10.2026](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/actions/runs/39154424227).
+Dies sind Messungen der vollständigen WLAN/BLE-Firmware, keine geschätzten Werte.
+
+| Messwert (Bytes) | T-Deck Plus | T-Watch S3 |
+|---|---:|---:|
+| Physischer Flash laut Boardkonfiguration | 16.777.216 | 16.777.216 |
+| App-Partition (`huge_app.csv`) | 3.145.728 | 3.145.728 |
+| Flash laut Linker | 2.058.269 (65,4 %) | 2.092.705 (66,5 %) |
+| Frei im Linker-Flashbudget | 1.087.459 | 1.053.023 |
+| Statisches RAM laut Linker | 160.252 (48,9 %) | 160.752 (49,1 %) |
+| Linker-RAM-Budget | 327.680 | 327.680 |
+| RAM nach statischer Belegung | 167.428 | 166.928 |
+
+Lokale Neubauten dieses PRs am 19.10.2026 (gleicher Firmware-Quellstand,
+vollständige WLAN/BLE-Profile) ergaben zusätzlich folgende Dateimessungen:
+
+| Messwert (Bytes) | T-Deck Plus | T-Watch S3 |
+|---|---:|---:|
+| Flash laut lokalem Linker | 2.058.077 | 2.092.521 |
+| Tatsächliche `firmware.bin` | 2.058.496 | 2.092.944 |
+| Frei in App-Partition nach Binärdatei | 1.087.232 | 1.052.784 |
+| SPIFFS-Abbild | 917.504 | 917.504 |
+| Factory-Abbild | 4.128.768 | 4.128.768 |
+
+Die statischen RAM-Werte stimmen mit der CI-Referenz überein. Die leicht
+abweichenden Linkerwerte sind separat ausgewiesen, damit Messwerte verschiedener
+Buildumgebungen nachvollziehbar bleiben.
+
+**Linker-Flashverbrauch und Dateigröße von `firmware.bin` unterscheiden sich**:
+Header, Segmentausrichtung, Prüfsumme und Digest kommen zur Binärdatei hinzu.
+Die Größenprüfung verwendet deshalb die echte Dateilänge. Jeder neue CI-Build
+liefert `memory-report.json` und `memory-report.md` mit Firmware-Dateigröße,
+App-Restplatz, SPIFFS-Abbildgröße, Flash-Endadresse, nicht partitioniertem Flash,
+statischem RAM, Partitionsliste und SHA256 der geprüften Builddateien.
+Die Berichte stehen im Job Summary und in den Build-Artefakten; die Release-ZIPs
+enthalten sie ebenfalls. So bleiben Messwerte an den konkreten Build gebunden.
+
+Das bestehende `huge_app.csv` nutzt nur die ersten 4 MiB: NVS ab `0x9000`,
+OTA-Daten ab `0xe000`, App ab `0x10000` (3 MiB), SPIFFS ab `0x310000`
+(917.504 Byte) und Coredump ab `0x3f0000` (65.536 Byte). 12 MiB bleiben nicht partitioniert. Mehr physischer Flash erhöht
+die App-Partition nicht automatisch. Das Layout wird durch diese Prüfung nicht
+vergrößert; damit bleiben die vorhandenen Update-Offsets und gespeicherten Daten
+kompatibel. Ein einzelner großer App-Slot ermöglicht kein A/B-OTA-Update.
+
+Die RAM-Zahlen messen statische Belegung. Sie sind **keine Messung des freien
+Laufzeit-Heaps**, des minimal freien Heaps, des größten zusammenhängenden Blocks,
+des Task-Stacks oder von PSRAM. Insbesondere WLAN + BLE + Display benötigen
+zusätzlich dynamischen Speicher.
+
+## Automatische Freigabeprüfung
+
+`tools/validate_memory.py` benötigt nur Python 3 und prüft:
+
+- ESP32-Image-Magic, Headerlänge, Segmentzahl, Flashmodus/-frequenzcodes,
+  Flashgröße gegen Boardvertrag und ESP32-S3-Chip-ID; sowohl App als auch Bootloader.
+- Vollständige Segmente, XOR-Prüfsumme und optionalen SHA256-Image-Digest.
+  Verschlüsselte/signierte Images und zusätzliche Image-Trailer werden nicht
+  stillschweigend akzeptiert; sie benötigen eine eigene Prüferweiterung.
+- Binäre Partitionstabelle inklusive MD5, sofern vorhanden, Abschlussmarkierung,
+  eindeutiger Labels, Ausrichtung, Größen, Überschneidungen und Flashgrenzen.
+- App an `0x10000`, vorhandene SPIFFS-Partition und tatsächliche Dateigrößen.
+- RAM-/Flash-Linkerwerte aus dem Buildlog gegen RAM- und App-Budget.
+- Bei Release-Paketen zusätzlich jedes Teilabbild und alle Füllbereiche des
+  Factory-Abbilds, einschließlich `boot_app0.bin` innerhalb der OTA-Datenpartition.
+
+Ein fehlgeschlagener Build oder Prüfschritt erzeugt kein Release-ZIP und entfernt
+ein gegebenenfalls vorhandenes altes ZIP dieses Geräts. `verify_devices.py` prüft
+die Binärdateien im fertigen Paket erneut und vergleicht sie mit dem Speicherbericht.
+Damit reichen passende ZIP-Prüfsummen allein nicht zur Freigabe.
+
+Beispiel nach einem Build (Bash mit `pipefail`, damit Buildfehler erhalten bleiben):
+
+```bash
+set -o pipefail
+pio run -e dar_LilyGo_TDeck_wifi | tee tdeck-build.log
+pio run -e dar_LilyGo_TDeck_wifi -t buildfs
+python3 tools/validate_memory.py --env dar_LilyGo_TDeck_wifi \
+  --build-dir .pio/build/dar_LilyGo_TDeck_wifi --build-log tdeck-build.log \
+  --output .pio/build/dar_LilyGo_TDeck_wifi/memory-report
+```
+
+Für T-Watch S3 das Environment entsprechend ersetzen. Die reguläre Paketierung
+`tools/build_device.sh LilyGo_TDeck dist/devices` bzw. `LilyGo_TWatchS3`
+führt dieselben Prüfungen einschließlich Factory-Abbild automatisch aus.
+
+## Validierung dieses Pull Requests
+
+- 15 neue Python-Hosttests: gültige Abbilder für beide Boards, beschädigte Header,
+  falsche Flashgröße/Chip-ID, abgeschnittene Segmente, falsche Digests, defekte
+  Partitionstabellen, Überlappung, fehlende Partitionen, Firmware-/SPIFFS-Überlauf,
+  exakte Partitionsgrenze, falsche Speicherberichte, Factory-Abbildfehler und
+  fehlerhafte Release-ZIPs trotz korrekter SHA256SUMS. Ein Buildfehler darf auch
+  kein altes Release-ZIP zurücklassen.
+- Bestehende Web-, Flasher-, Versions-, Bibliotheks-, Karten- und Portal-Routentests.
+- Bestehende C++-Tests: OpenAccess, RoomAccess, SlotFile, AutoAdd und SharedQueue,
+  mit AddressSanitizer und UndefinedBehaviorSanitizer. LeakSanitizer ist lokal
+  wegen der Ausführung unter ptrace in der Sandbox deaktiviert (`ASAN_OPTIONS=detect_leaks=0`).
+- Native PlatformIO-Suites (`native`, `native_kiss_modem`): **54/54 Testfälle bestanden**.
+  `test_companion_node_prefs` wird von der vorhandenen Suite übersprungen.
+- Beide ESP32-S3-Release-Profile vollständig kompiliert, SPIFFS gebaut, Factory-
+  und Update-Abbilder paketiert und die fertigen ZIPs erneut validiert.
+
+### Nicht ausführbare Hardwaretests
+
+Hier sind keine Boards per USB angeschlossen. Folgendes ist deshalb **nicht getestet**
+und vor einer Hardwarefreigabe auf **beiden** Release-Boards auszuführen:
+
+1. Mit `esptool --chip esp32s3 --port PORT flash-id` den realen 16-MiB-Chip prüfen;
+   Bootlog auf erkannte Flashgröße, Partitionslayout und PSRAM kontrollieren.
+2. Neuinstallation an `0x0` auf einem Testgerät: Boot, Display, Advert-Taste bzw.
+   Touch und SPIFFS-Verlauf nach Neustart prüfen. Neuinstallation löscht Gerätedaten.
+3. Firmware-Update an `0x10000` auf einem eingerichteten Testgerät: Identität,
+   Kontakte, Kanäle, PIN und Verlauf müssen erhalten bleiben.
+4. Offenes WLAN und PIN-gekoppelte MeshCore-App **gleichzeitig** nutzen: Kanal-
+   und Direktnachrichten in beide Richtungen, gemeinsame Warteschlange, Reconnects,
+   Kartenabruf und Flood-Advert mit zweitem MeshCore-Knoten prüfen.
+5. Unter dieser Last freien/minimal freien Heap, größten freien Block, PSRAM und
+   Stackreserven messen; keine Neustarts, Brownouts, Speicherfehler oder BLE-Abbrüche.
+
+Hosttests und Compiler-Builds ersetzen diese Hardwaretests nicht.
