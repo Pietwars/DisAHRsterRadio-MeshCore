@@ -71,7 +71,7 @@ void TDeckQuickPage::submit(bool position, uint32_t stamp) {
   switch (result) {
     case quick::Result::NoFix:
       snprintf(status, sizeof(status), "%s", api && !api->gps().share && model.place == 0
-               ? "Standort teilen ist aus (Reiter Standort) / Ort waehlen" : "Kein frischer GPS-Fix. Warten / Ort waehlen."); return;
+               ? "Standort teilen ist aus (Menue Standort) / Ort waehlen" : "Kein frischer GPS-Fix. Warten / Ort waehlen."); return;
     case quick::Result::InvalidTime:
       snprintf(status, sizeof(status), "Uhr fehlt: GPS-Fix abwarten / App verbinden"); return;
     case quick::Result::Empty:
@@ -138,6 +138,20 @@ bool TDeckQuickPage::move(int dx, int dy) {
   return false;
 }
 
+// Touch: the fixed layout of render() below. The status line (back) is handled by the caller.
+bool TDeckQuickPage::tap(int x, int y, uint32_t stamp) {
+  auto in = [&](int rx, int ry, int rw, int rh) { return x >= rx && x < rx + rw && y >= ry && y < ry + rh; };
+  for (int i = 0; i < quick::PRESET_COUNT; ++i)
+    if (in(4 + (i % 2) * 158, 58 + (i / 2) * 18, 154, 17)) { model.focus = quick::Presets; model.preset = i; return activate(stamp); }
+  if (in(268, 130, 49, 13)) { model.focus = quick::Clear; return activate(stamp); }
+  if (in(3, 130, 264, 36)) { model.focus = quick::Text; return false; }
+  if (in(0, 168, 320, 13)) { model.focus = quick::PlaceSelect; return activate(stamp); }
+  if (in(0, 181, 320, 13)) { model.focus = quick::Target; return activate(stamp); }
+  if (in(4, 196, 153, 21)) { model.focus = quick::Send; return activate(stamp); }
+  if (in(163, 196, 153, 21)) { model.focus = quick::Position; return activate(stamp); }
+  return false;
+}
+
 bool TDeckQuickPage::tick(uint32_t now) {
   bool changed = false;
   if (int32_t(now - nextGps) >= 0) {
@@ -180,30 +194,30 @@ void TDeckQuickPage::displayText(DisplayDriver* d, int x, int y, uint16_t color,
 
 void TDeckQuickPage::render(DisplayDriver* d) {
   d->startFrame(BG);
-  ui::navStrip(d, theme::TAB_QUICK, unreadChat, unreadBoard, model.focus == quick::Home);
+  ui::statusLine(d, "Meldung", true, unreadChat + unreadBoard, model.focus == quick::Home);   // Home = back to the menu
   char line[128];
   dev::Gps g = api ? api->gps() : dev::Gps();
   const char* gpsState = !g.detected ? "GPS nicht erkannt" : !g.receiverOn ? "GPS ausgeschaltet" :
                          !g.share ? "Standort teilen aus" : lastFix ? "GPS: frischer Fix" : "GPS: suche Fix";
   snprintf(line, sizeof(line), "%s (%ld Sat) | 1-8: Vorlage", gpsState, lastSatellites < 0 ? 0 : lastSatellites);
-  displayText(d, 4, 19, lastFix ? GREEN : FOCUS, line);
+  displayText(d, 4, 47, lastFix ? GREEN : FOCUS, line);
   for (int i = 0; i < quick::PRESET_COUNT; ++i) {
-    int x = 4 + (i % 2) * 158, y = 30 + (i / 2) * 23;
+    int x = 4 + (i % 2) * 158, y = 58 + (i / 2) * 18;
     const auto& p = quick::PRESETS[i];
-    uint16_t bg = !strcmp(p.kind, "HILFE") ? HELP : !strcmp(p.kind, "INFO") ? INFO : OFFER;
-    d->nativeFill(x, y, 154, 21, bg);
-    d->nativeRect(x, y, 154, 21, model.focus == quick::Presets && model.preset == i ? FOCUS : GREY);
+    uint16_t bg = model.focus == quick::Presets && model.preset == i ? FOCUS : theme::CARD;
+    d->nativeFill(x, y, 154, 17, bg);
+    d->nativeRect(x, y, 154, 17, model.focus == quick::Presets && model.preset == i ? FOCUS : GREY);
     snprintf(line, sizeof(line), "%d %s", i + 1, p.label);
-    displayText(d, x + 4, y + 6, WHITE, line, 24);
+    displayText(d, x + 4, y + 4, bg == FOCUS ? BG : WHITE, line, 24);
   }
   snprintf(line, sizeof(line), "Text: %u/100 Bytes (ohne Ort)", unsigned(strlen(model.text)));
-  displayText(d, 4, 124, model.focus == quick::Text ? FOCUS : GREY, line);
-  d->nativeRect(268, 123, 49, 10, model.focus == quick::Clear ? FOCUS : GREY);
-  displayText(d, 272, 124, WHITE, "Leeren");
-  d->nativeRect(3, 134, 314, 27, model.focus == quick::Text ? FOCUS : GREY);
+  displayText(d, 4, 132, model.focus == quick::Text ? FOCUS : GREY, line);
+  d->nativeRect(268, 131, 49, 10, model.focus == quick::Clear ? FOCUS : GREY);
+  displayText(d, 272, 132, WHITE, "Leeren");
+  d->nativeRect(3, 142, 314, 25, model.focus == quick::Text ? FOCUS : GREY);
   // Wrap by UTF-8 character boundaries; never split an umlaut between lines.
   char textLine[104]; size_t pos = 0;
-  for (int row = 0; row < 3 && model.text[pos]; ++row) {
+  for (int row = 0; row < 2 && model.text[pos]; ++row) {
     size_t n = 0; int chars = 0;
     while (model.text[pos] && chars < 50) {
       uint8_t c = model.text[pos];
@@ -211,22 +225,22 @@ void TDeckQuickPage::render(DisplayDriver* d) {
       while (model.text[pos] && (uint8_t(model.text[pos]) & 0xC0) == 0x80) textLine[n++] = model.text[pos++];
       if ((c & 0xC0) != 0x80) ++chars;
     }
-    textLine[n] = 0; displayText(d, 7, 136 + row * 8, WHITE, textLine, 50);
+    textLine[n] = 0; displayText(d, 7, 145 + row * 9, WHITE, textLine, 50);
   }
   const char* place = model.place < 0 ? "Ohne Standort" : model.place == 0 ? "Mein Standort (Geraete-GPS)" : quick::PLACES[model.place - 1].name;
   snprintf(line, sizeof(line), "Ort: %s%s", model.place > 0 ? "manuell: " : "", place);
-  displayText(d, 4, 165, model.focus == quick::PlaceSelect ? FOCUS : WHITE, line);
+  displayText(d, 4, 170, model.focus == quick::PlaceSelect ? FOCUS : WHITE, line);
   snprintf(line, sizeof(line), "Ziel: %s", targetName);
-  displayText(d, 4, 178, model.focus == quick::Target ? FOCUS : WHITE, line);
-  d->nativeFill(4, 192, 153, 21, OFFER);
-  d->nativeFill(163, 192, 153, 21, INFO);
-  d->nativeRect(4, 192, 153, 21, model.focus == quick::Send ? FOCUS : GREY);
-  d->nativeRect(163, 192, 153, 21, model.focus == quick::Position ? FOCUS : GREY);
-  displayText(d, 12, 199, WHITE, "Meldung senden");
-  displayText(d, 171, 199, WHITE, "Position senden");
-  displayText(d, 4, 215, FOCUS, status);
-  if (strlen(status) > 52) displayText(d, 4, 223, FOCUS, status + 52);
-  displayText(d, 4, 232, GREY, "Trackball/ALT+C: Feld  SPACE: Auswahl  ENTER: Aktion");
+  displayText(d, 4, 183, model.focus == quick::Target ? FOCUS : WHITE, line);
+  d->nativeFill(4, 196, 153, 21, OFFER);
+  d->nativeFill(163, 196, 153, 21, INFO);
+  d->nativeRect(4, 196, 153, 21, model.focus == quick::Send ? FOCUS : GREY);
+  d->nativeRect(163, 196, 153, 21, model.focus == quick::Position ? FOCUS : GREY);
+  displayText(d, 12, 203, WHITE, "Meldung senden");
+  displayText(d, 171, 203, WHITE, "Position senden");
+  displayText(d, 4, 219, FOCUS, status);
+  if (strlen(status) > 52) displayText(d, 4, 227, FOCUS, status + 52);
+
   d->endFrame();
 }
 #endif

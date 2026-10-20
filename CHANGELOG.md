@@ -1,14 +1,26 @@
 # Änderungen
 
+## Unveröffentlicht · Standalone test5 · Oberfläche aus DisAHRsterRadio
+
+- Fünf Touch-Reiter CHAT/HILFE/BRETT/KARTE/SETUP, Originalfarben, vollständiges Bootmotiv
+  (1,8 s), danach MeshCore-Kanal-/Kontaktliste.
+- Bootbild-Farbfehler korrigiert: test4 hatte bei allen RGB565-Pixeln ein leeres Highbyte;
+  neu aus dem Original-JPEG kodiert, mit reproduzierbarem Generator und Farbtest.
+- Eigener SEND-Knopf statt Versand durch Tipp ins Textfeld; Wischen in Chat/Brett.
+- Touch-Zoom/Zentrieren, lokales GPS-Folgen; Setup verlinkt Standort und Touch-Kalibrierung.
+- MeshCore-Kanäle, Kontakte, Room-Server, Bluetooth, SD und OSM-Karten erhalten.
+- Vorschau nutzt denselben Bootrenderer wie die Firmware. Hardwareabnahme offen.
+
 ## Unveröffentlicht · T-Deck Plus Standalone (Issue #35) · Testbuild
 
-Testbuild `LilyGo_TDeck_standalone`, Firmwarekennung `v1.18.0-dar0.9.5-standalone-test` (eigene Zeile `STANDALONE` in `VERSION`; die Web-Builds bleiben bei 0.9.4). Nicht im Release, nicht im Web-Flasher. **Noch nicht auf echter Hardware geprüft.** Details: `docs/STANDALONE.md`.
+Testbuild `LilyGo_TDeck_standalone`, Firmwarekennung `v1.18.0-dar0.9.5-standalone-test3` (test3, siehe unten; davor `…-standalone-test`) (eigene Zeile `STANDALONE` in `VERSION`; die Web-Builds bleiben bei 0.9.4). Nicht im Release, nicht im Web-Flasher. **Noch nicht auf echter Hardware geprüft.** Details: `docs/STANDALONE.md`.
 
-- **Ohne WLAN/Weboberfläche**, MeshCore über PIN-Bluetooth; Bedienung am Gerät mit Tastatur und Trackball im Design der Weboberfläche: Reiter Start, Chat, Meldung, Brett, Karte, Standort, Gerät.
+- **Ohne WLAN/Weboberfläche**, MeshCore über PIN-Bluetooth; Bedienung am Gerät mit Tastatur, Trackball und Touch im Design der Weboberfläche: Boot-Logo, dann Hauptmenü mit Chat, Meldung, Brett, Karte, Standort, Gerät.
 - **Chat:** Kanal- und Kontaktliste, Verlauf, Tippen + Enter, Ungelesen-Zahlen, Aufwachen bei neuer Nachricht, Spiegelung in die MeshCore-App (Herkunft „T-Deck“).
 - **Gemeinsamer Kern:** lokales Senden mit Sendepause, Verlauf, Ausgangsspeicher, Brett-Anmeldung und App-Echo aus `DisasterPortal.h` nach `LocalCompanion.h`/`LocalSend.h`; die Weboberfläche nutzt dieselben Bausteine (Verhalten unverändert).
 - **Schnellmeldung** mit denselben Vorlagen und Orten wie die Weboberfläche (aus 0.9.5-test #33/#34), **Brett** (Beitreten, Beiträge, Aushängen), **Karte** (fünf Webkarten vereinfacht im Flash, © OpenStreetMap-Mitwirkende, ODbL).
 - **GPS ins Mesh** nur nach Einschalten von „Standort teilen“ und nur mit frischem Fix; **SD-Karte** am gemeinsamen SPI-Bus für `config.txt` und `log.txt` (keine PINs/Schlüssel, keine Nachrichtentexte im Log).
+- **test3 (Bedienung):** statt Startseite nur ein **Boot-Logo** (2,5 s oder bis zur ersten Eingabe), danach ein **Hauptmenü** (Chat, Meldung, Brett, Karte, Standort, Gerät). **Keine Reiterleiste und keine Buchstaben-Kürzel** mehr; oben eine schmale **Statuszeile** mit Seitentitel, „N neu“ und **Akku**. Der **Trackball** wählt nur innerhalb einer Seite, Klick/Enter öffnet bzw. führt aus. **ALT+Backspace** geht auf jeder Seite eine Ebene zurück, auch aus Textfeldern und von der Karte (Erkennung über die Tastenmatrix der Tastatur, Hardwaretest offen); Backspace allein löscht, bei leerem Feld bzw. ohne Textfeld geht er ebenfalls zurück. **Touch** (GT911) überall: Menü, Listen, Knöpfe, Meldung, Eingabefeld, Statuszeile = zurück. **Karte:** Knopf „← Zurück“ (Tippen, Trackball-Klick, ALT+Backspace); nächste Karte mit `n`/Enter/Leertaste. Akku/Verbrauch, **Advert senden** und **Display aus** (auch Taste `d`) in Gerät; Advert weiter per Trackball 2,5 s.
 - Hosttests `local_companion`, `quick_model`, `quick_page`, `chat_log`, `standalone_ui`, `gps_share`, `device_config`; CI prüft `gen_quick_messages.py` und `gen_device_map.py` gegen die Weboberfläche. Vorschaubilder mit `tools/standalone_preview.py`.
 
 ## 0.9.4 · 19.10.2026 · Release

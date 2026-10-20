@@ -8,21 +8,25 @@
 namespace sui {
 using namespace theme;
 namespace {
-const Page TAB_PAGE[TAB_COUNT] = {START, CHAT_LIST, QUICK, BOARD_LIST, MAP, LOCATION, DEVICE};
-int tabOf(Page p) {
+// Main menu: the six entries of the web tabs, in the web order.
+const Page MENU_PAGE[MENU_COUNT] = {CHAT_LIST, QUICK, BOARD_LIST, MAP, LOCATION, DEVICE};
+const char *const MENU_LABEL[MENU_COUNT] = {"Chat", "Meldung", "Brett", "Karte", "Standort", "Ger\xc3\xa4t"};
+const char *title(Page p) {
   switch (p) {
-    case CHAT_LIST: case CHAT_VIEW: return TAB_CHAT;
-    case QUICK: return TAB_QUICK;
-    case BOARD_LIST: case BOARD_VIEW: return TAB_BOARD;
-    case MAP: return TAB_MAP;
-    case LOCATION: return TAB_LOC;
-    case DEVICE: return TAB_INFO;
-    default: return TAB_HOME;
+    case CHAT_LIST: case CHAT_VIEW: return "Chat";
+    case QUICK: return "Meldung";
+    case BOARD_LIST: case BOARD_VIEW: return "Brett";
+    case MAP: return "Karte";
+    case LOCATION: return "Standort";
+    case DEVICE: return "Ger\xc3\xa4t";
+    default: return "DisAHRsterRadio \xc2\xb7 Hauptmen\xc3\xbc";
   }
 }
 constexpr int LIST_TOP = NAV_H + 2, ROW_H = 21, HINT_Y = H - 9;
 constexpr int COMPOSE_Y = 203, COMPOSE_H = 26;
 constexpr int LIST_ROWS = (HINT_Y - LIST_TOP) / ROW_H;   // 10
+constexpr int DEVICE_BUTTONS = 6;                         // plus saved touch calibration
+constexpr int MENU_TOP = NAV_H + 2, MENU_ROW_H = 30;
 }
 
 int mapIndexForKey(const char *key) {
@@ -50,6 +54,15 @@ bool UI::quickText() const {
 #endif
 }
 
+void UI::setBattery(int pct, const char *line, const char *estimate) {
+  bool texts = strcmp(battLine, line ? line : "") || strcmp(battEst, estimate ? estimate : "");
+  bool level = pct != battPct;
+  battPct = pct; ui::navBattery() = pct;
+  snprintf(battLine, sizeof(battLine), "%s", line ? line : "");
+  snprintf(battEst, sizeof(battEst), "%s", estimate ? estimate : "");
+  if (page != BOOT && (level || (texts && page == DEVICE))) dirty = FULL;
+}
+
 void UI::setStatus(const char *s, uint32_t ms) {
   snprintf(status, sizeof(status), "%s", s);
   statusUntil = nowMs + ms;
@@ -71,7 +84,12 @@ void UI::open(Page p) {
 #ifdef SUI_HAS_QUICK
   if (p == QUICK && page != QUICK) { quick.setTarget(conv[0] && !convRoom ? conv : "c0"); quick.enter(); }
 #endif
-  page = p; scroll = 0; startSel = -1; dirty = FULL;
+  if (p == MAP && page != MAP) {
+    mapReturn = page == BOOT ? MENU : page; mapFollow = true;
+    dev::Gps g = api->gps();
+    if (g.receiverOn && g.fresh) { map.centerOn(g.lat,g.lon); followLat=g.lat; followLon=g.lon; }
+  }
+  page = p; scroll = 0; dirty = FULL; nhits = 0;   // touch targets belong to the drawn page
 }
 
 void UI::openConversation(const dev::Target &t, bool room) {
@@ -82,11 +100,20 @@ void UI::openConversation(const dev::Target &t, bool room) {
   open(room ? BOARD_VIEW : CHAT_VIEW);
 }
 
-void UI::tabStep(int dir) {
-  int t = tabOf(page) + dir;
-  if (t < 0) t = TAB_COUNT - 1;
-  if (t >= TAB_COUNT) t = 0;
-  open(TAB_PAGE[t]);
+bool UI::back() {
+  switch (page) {
+    case BOOT: open(MENU); return true;
+    case MENU: return false;
+    case CHAT_VIEW: open(CHAT_LIST); return true;
+    case BOARD_VIEW: open(BOARD_LIST); return true;
+    case MAP: leaveMap(); return true;
+    default: open(MENU); return true;
+  }
+}
+
+void UI::addHit(int x, int y, int w, int h, int idx) {
+  if (nhits >= MAX_HITS) return;
+  Hit &t = hits[nhits++]; t.x = int16_t(x); t.y = int16_t(y); t.w = int16_t(w); t.h = int16_t(h); t.idx = int16_t(idx);
 }
 
 bool UI::listMove(Page p, int dy, unsigned n) {
@@ -132,17 +159,18 @@ void UI::sendPosition() {
 // ---------------------------------------------------------------------------------------------- input
 bool UI::key(uint8_t k) {
   if (!api || !k) return false;
+  if (page == BOOT) { leaveBoot(); return true; }   // the first key only leaves the logo
   if (k == '\n') k = K_ENTER;
   if (k == 127) k = K_BACKSPACE;
+  if (k == K_BACK) return back();                   // ALT+Backspace (UITask) / Esc: one level back, everywhere
   Redraw before = dirty;
   if (page == CHAT_VIEW || page == BOARD_VIEW) {
     size_t n = strlen(compose);
     if (k == K_ENTER) sendCompose();
     else if (k == K_BACKSPACE) {
-      if (!n) open(convRoom ? BOARD_LIST : CHAT_LIST);
-      else { compose[n - 1] = 0; if (dirty < PART) dirty = PART; }
-    } else if (k == K_ESC) open(convRoom ? BOARD_LIST : CHAT_LIST);
-    else if (k >= 32 && k <= 126) {
+      if (!n) return back();                        // empty field: fallback for keyboards without ALT detection
+      compose[n - 1] = 0; if (dirty < PART) dirty = PART;
+    } else if (k >= 32 && k <= 126) {
       if (n < COMPOSE_BYTES) { compose[n] = char(k); compose[n + 1] = 0; if (dirty < PART) dirty = PART; }
       else { setStatus("Text voll: max. 100 Byte"); if (dirty < PART) dirty = PART; }
     }
@@ -150,27 +178,19 @@ bool UI::key(uint8_t k) {
   }
 #ifdef SUI_HAS_QUICK
   if (page == QUICK) {
-    if (!quick.textFocus() && k != ' ' && !(k >= '1' && k <= '8')) {
-      int t = tabForKey(k); if (t >= 0) { open(TAB_PAGE[t]); return true; }
-    }
-    if (k == K_ESC || quick.key(k, api->now())) open(START);
+    if (quick.key(k, api->now())) open(MENU);     // Backspace outside the text / "Zurück" action: menu
     dirty = FULL; return true;
   }
 #endif
-  int t = tabForKey(k);
-  if (t >= 0) { open(TAB_PAGE[t]); return true; }
-  if (k == K_BACKSPACE || k == K_ESC) { if (page != START) { open(START); return true; } return false; }
-  if (page == START) {
-    if (k == K_ENTER) { open(TAB_PAGE[startSel >= 0 ? startSel + 1 : TAB_CHAT]); return true; }
-    return false;
-  }
+  if (k == K_BACKSPACE) return back();             // no text field here: plain Backspace also goes back
+  if (k == 'd' || k == 'D') { requestDisplayOff(); return true; }   // display off (any input wakes it)
   if (page == MAP) {
     if (k == '+' || k == 'z' || k == 'Z') map.zoom(2);
     else if (k == '-' || k == 'x' || k == 'X') map.zoom(0.5);
-    else if (k == 'a' || k == 'A') map.fit();
+    else if (k == 'a' || k == 'A') { mapFollow=false; map.fit(); }
     else if (k == 'i' || k == 'I') {
       dev::Gps g = api->gps();
-      if (g.receiverOn && g.fresh) map.centerOn(g.lat, g.lon); else { setStatus("Kein frischer GPS-Fix"); }
+      if (g.receiverOn && g.fresh) { mapFollow=true; map.centerOn(g.lat, g.lon); followLat=g.lat; followLon=g.lon; } else { setStatus("Kein frischer GPS-Fix"); }
     }
     else if (k == 'n' || k == 'N' || k == K_ENTER || k == ' ') { map.select(map.index() + 1); api->setMapIndex(map.index()); }
     else return false;
@@ -180,37 +200,38 @@ bool UI::key(uint8_t k) {
   return false;
 }
 
+// Trackball: moves the selection inside the page (never switches pages). In vertical lists left/right act like
+// up/down; on the map it pans.
 bool UI::move(int dx, int dy) {
   if (!api || (!dx && !dy)) return false;
+  int step = dy ? dy : dx;
   switch (page) {
-    case START: {
-      int dir = dx ? dx : dy;
-      if (startSel < 0) startSel = dir > 0 ? 0 : TAB_COUNT - 2;
-      else startSel = (startSel + (dir > 0 ? 1 : TAB_COUNT - 2)) % (TAB_COUNT - 1);
-      startSelUntil = nowMs + START_SELECT_MS; dirty = FULL; return true;
+    case BOOT: leaveBoot(); return true;
+    case MENU: {
+      int s = menuSel + (step > 0 ? 1 : -1);
+      if (s < 0) s = 0;
+      if (s >= MENU_COUNT) s = MENU_COUNT - 1;
+      if (s == menuSel) return false;
+      menuSel = s; dirty = FULL; return true;
     }
     case CHAT_LIST: case BOARD_LIST: {
-      if (dx) { tabStep(dx > 0 ? 1 : -1); return true; }
       dev::Target list[MAX_LIST]; unsigned n = buildList(page, list, MAX_LIST);
-      if (listMove(page, dy, n)) { dirty = FULL; return true; }
+      if (listMove(page, step, n)) { dirty = FULL; return true; }
       return false;
     }
     case CHAT_VIEW: case BOARD_VIEW:
-      if (dx < 0) { open(convRoom ? BOARD_LIST : CHAT_LIST); return true; }
       if (dy) { scroll += dy < 0 ? 1 : -1; if (scroll < 0) scroll = 0; if (scroll > 95) scroll = 95; dirty = FULL; return true; }
       return false;
 #ifdef SUI_HAS_QUICK
     case QUICK:
       if (quick.move(dx, dy)) { dirty = FULL; return true; }
-      if (dx) { tabStep(dx > 0 ? 1 : -1); return true; }
       return false;
 #endif
     case MAP:
-      map.pan(dx * 32, dy * 32); dirty = FULL; return true;
+      mapFollow=false; map.pan(dx * 32, dy * 32); dirty = FULL; return true;
     case LOCATION: case DEVICE: {
-      if (dx) { tabStep(dx > 0 ? 1 : -1); return true; }
-      int &sel = page == LOCATION ? locSel : devSel; int n = page == LOCATION ? 4 : 3;
-      int s = sel + (dy > 0 ? 1 : -1); if (s < 0) s = 0; if (s >= n) s = n - 1;
+      int &sel = page == LOCATION ? locSel : devSel; int n = page == LOCATION ? 4 : DEVICE_BUTTONS;
+      int s = sel + (step > 0 ? 1 : -1); if (s < 0) s = 0; if (s >= n) s = n - 1;
       if (s == sel) return false;
       sel = s; dirty = FULL; return true;
     }
@@ -222,9 +243,8 @@ bool UI::click() {
   if (!api) return false;
   char st[96] = "";
   switch (page) {
-    case START:
-      if (startSel < 0) return false;
-      open(TAB_PAGE[startSel + 1]); return true;
+    case BOOT: leaveBoot(); return true;
+    case MENU: open(MENU_PAGE[menuSel]); return true;
     case CHAT_LIST: case BOARD_LIST: {
       dev::Target list[MAX_LIST]; unsigned n = buildList(page, list, MAX_LIST);
       if (!n) { setStatus(page == BOARD_LIST ? "Kein Brett (Room-Server) bekannt" : "Noch keine Kan\xc3\xa4le geladen"); dirty = FULL; return true; }
@@ -233,9 +253,9 @@ bool UI::click() {
     }
     case CHAT_VIEW: case BOARD_VIEW: sendCompose(); return true;
 #ifdef SUI_HAS_QUICK
-    case QUICK: if (quick.activate(api->now())) open(START); dirty = FULL; return true;
+    case QUICK: if (quick.activate(api->now())) open(MENU); dirty = FULL; return true;
 #endif
-    case MAP: return key('n');
+    case MAP: leaveMap(); return true;   // the trackball pans; its click is the "Zurück" button
     case LOCATION: {
       dev::Gps g = api->gps();
       if (locSel == 0) api->setGpsReceiver(!g.receiverOn);
@@ -247,17 +267,79 @@ bool UI::click() {
     case DEVICE:
       if (devSel == 0) { setStatus(api->refresh() ? "Kontakte werden neu gelesen" : "Funkkern besch\xc3\xa4" "ftigt \xe2\x80\x93 sp\xc3\xa4ter erneut"); }
       else if (devSel == 1) { api->advert(st, sizeof(st)); setStatus(st); }
+      else if (devSel == 2) { requestDisplayOff(); return true; }
+      else if (devSel == 4) { touchCalibrationReq=true; return true; }
+      else if (devSel == 5) { open(LOCATION); return true; }
       else { api->saveConfig(st, sizeof(st)); setStatus(st); }
       dirty = FULL; return true;
     default: return false;
   }
 }
 
+// Touch: status line = back; otherwise the targets recorded while the page was drawn (menu entries, list rows,
+// buttons, compose box, the map's "Zurück"). A tap acts like selecting the target and clicking.
+bool UI::tap(int x, int y) {
+  if (!api) return false;
+  if (page == BOOT) { leaveBoot(); return true; }
+  if (x < 0 || x >= W || y < 0 || y >= H) return false;
+  if (y < TAB_H) {
+    const Page tabs[] = {CHAT_LIST, QUICK, BOARD_LIST, MAP, DEVICE};
+    Page next = tabs[x / 64];
+    if ((next == CHAT_LIST && page == CHAT_VIEW) || (next == BOARD_LIST && page == BOARD_VIEW)) return back();
+    if (page != next) open(next);
+    return true;
+  }
+  if (y < NAV_H) return x < ui::BACK_ZONE_W && back();
+  if (page == MAP && y >= 206 && y < 228) {
+    if (x < 106) return key('-');
+    if (x >= 214) return key('+');
+    return key('i');
+  }
+#ifdef SUI_HAS_QUICK
+  if (page == QUICK) { if (quick.tap(x, y, api->now())) open(MENU); dirty = FULL; return true; }
+#endif
+  for (int i = 0; i < nhits; ++i) {
+    const Hit &h = hits[i];
+    if (x < h.x || y < h.y || x >= h.x + h.w || y >= h.y + h.h) continue;
+    switch (page) {
+      case MENU: menuSel = h.idx; break;
+      case CHAT_LIST: case BOARD_LIST: listSel[page] = h.idx; break;
+      case LOCATION: locSel = h.idx; break;
+      case DEVICE: devSel = h.idx; break;
+      default: break;   // compose box (send), map "Zurück": the click action of the page
+    }
+    return click();
+  }
+  return false;
+}
+
+// Match the original standalone gestures; a swipe must never activate SEND or a tab.
+bool UI::gesture(int x, int y, int endX, int endY) {
+  if (x < 0 || x >= W || endX < 0 || endX >= W || y < 0 || y >= H || endY < 0 || endY >= H) return false;
+  if (page == BOOT) { leaveBoot(); return true; }
+  if (y < TAB_H || endY < TAB_H) {
+    return y < TAB_H && endY < TAB_H && x / 64 == endX / 64 && abs(x-endX) <= 20 && abs(y-endY) <= 20 && tap(x,y);
+  }
+  if (y >= NAV_H && endY >= NAV_H && abs(endY-y) > 30 && abs(endX-x) < 40) {
+    if (page == CHAT_VIEW || page == BOARD_VIEW || page == CHAT_LIST || page == BOARD_LIST)
+      return move(0, endY > y ? -1 : 1);
+    return false;
+  }
+  if (abs(x-endX) > 20 || abs(y-endY) > 20) return false;
+  // Keep a release in the same explicit SEND target.
+  if ((page == CHAT_VIEW || page == BOARD_VIEW) && y >= COMPOSE_Y &&
+      (endX < 260 || endY < COMPOSE_Y || endY >= COMPOSE_Y + COMPOSE_H)) return false;
+  return tap(x,y);
+}
+
 // ---------------------------------------------------------------------------------------------- state
 bool UI::tick(uint32_t ms) {
   nowMs = ms;
   if (!api) return false;
-  if (startSel >= 0 && int32_t(ms - startSelUntil) >= 0) { startSel = -1; if (page == START) dirty = FULL; }
+  if (page == BOOT) {
+    if (!bootUntil) bootUntil = ms + BOOT_MS ? ms + BOOT_MS : 1;
+    else if (int32_t(ms - bootUntil) >= 0) leaveBoot();
+  }
   if (status[0] && int32_t(ms - statusUntil) >= 0) { status[0] = 0; if (dirty < PART) dirty = PART; }
 #ifdef SUI_HAS_QUICK
   if (page == QUICK && quick.tick(ms)) dirty = FULL;
@@ -265,6 +347,12 @@ bool UI::tick(uint32_t ms) {
 #endif
   if (int32_t(ms - nextPoll) < 0) return dirty != NONE;
   nextPoll = ms + 250;
+  if (page == MAP && mapFollow) {
+    dev::Gps g=api->gps();
+    if (g.receiverOn && g.fresh && (g.lat!=followLat || g.lon!=followLon)) {
+      map.centerOn(g.lat,g.lon); followLat=g.lat; followLon=g.lon; dirty=FULL;
+    }
+  }
   uint32_t seq = api->historySeq();
   if (api->ready() && log.needsRebuild(seq)) {
     bool first = log.size() == 0 && wakeSeq == 0;
@@ -313,33 +401,69 @@ const char *UI::authorName(const chat::Entry &e, char *buf, size_t cap, const ch
 }
 
 // ---------------------------------------------------------------------------------------------- drawing
-void UI::renderStartTiles(DisplayDriver *d, int y, int h) {
-  int w = W / (TAB_COUNT - 1);
-  unsigned uc = unreadChat(), ub = unreadBoard();
-  for (int i = 0; i < TAB_COUNT - 1; ++i) {
-    int x = i * w, ww = i == TAB_COUNT - 2 ? W - x : w;
-    bool sel = i == startSel;
-    d->nativeFill(x + 1, y, ww - 2, h, sel ? MESH : BUTTON2);
-    d->nativeRect(x + 1, y, ww - 2, h, sel ? ui::FOCUS : LINE);
-    const char *l = TAB_LABEL[i + 1];
-    int tw = int(strlen(l)) * CW;
-    d->nativeText(x + (ww - tw) / 2, y + (h - CH) / 2, 1, sel ? INK : TEXT, l);
-    unsigned n = i + 1 == TAB_CHAT ? uc : i + 1 == TAB_BOARD ? ub : 0;
-    if (n) ui::badge(d, x + ww - 2, y + 1, n);
+void UI::drawBoot(DisplayDriver *d) {
+  d->startFrame(BG);
+  if (splash) {
+    uint16_t row[320];
+    for (int y = 0; y < 213; ++y) {
+      memcpy(row, splash + y * 640, sizeof(row));
+      d->nativeImage(0, 13 + y, 320, 1, row);
+    }
+    d->endFrame(); return;
   }
+  int y = logo ? (H - logoH - 34) / 2 : 70;
+  if (y < 0) y = 0;
+  if (logo) { d->nativeImage((W - logoW) / 2, y, logoW, logoH, logo); y += logoH + 8; }
+  else { ui::centerText(d, W / 2, y, MESH, "DisAHRsterRadio", 2); y += 24; }
+  dev::Info in; api->info(in);
+  char v[64]; snprintf(v, sizeof(v), "%s \xc2\xb7 ohne WLAN", in.firmware);
+  ui::centerText(d, W / 2, y, MUTED, v); y += 11;
+  ui::centerText(d, W / 2, y, BAD, "Kein zertifiziertes Notrufsystem \xc2\xb7 Lebensgefahr: 112");
+  d->endFrame();
 }
 
 void UI::drawHint(DisplayDriver *d) {
   if (status[0]) { ui::hint(d, status, PEND); return; }
   const char *h = "";
   switch (page) {
-    case CHAT_LIST: case BOARD_LIST: h = "\x18\x19 w\xc3\xa4hlen \xc2\xb7 Klick: \xc3\xb6" "ffnen \xc2\xb7 \x1b\x1a Reiter \xc2\xb7 Del: Start"; break;
-    case CHAT_VIEW: h = "Enter: senden \xc2\xb7 \x18\x19 bl\xc3\xa4ttern \xc2\xb7 \x1b/Del (leer): Liste"; break;
-    case BOARD_VIEW: h = "Enter: Aush\xc3\xa4ngen (leer: Beitreten) \xc2\xb7 \x1b/Del: Liste"; break;
-    case LOCATION: case DEVICE: h = "\x18\x19 w\xc3\xa4hlen \xc2\xb7 Klick/Enter: ausf\xc3\xbchren \xc2\xb7 \x1b\x1a Reiter"; break;
+    case MENU: h = "\x18\x19 + Klick/Enter/Tippen: \xc3\xb6" "ffnen \xc2\xb7 d: Display aus"; break;
+    case CHAT_LIST: case BOARD_LIST: h = "\x18\x19 w\xc3\xa4hlen \xc2\xb7 Klick: \xc3\xb6" "ffnen \xc2\xb7 ALT+Del: Men\xc3\xbc"; break;
+    case CHAT_VIEW: h = "Enter: senden \xc2\xb7 \x18\x19 bl\xc3\xa4ttern \xc2\xb7 ALT+Del: Liste"; break;
+    case BOARD_VIEW: h = "Enter: Aush\xc3\xa4ngen (leer: Beitreten) \xc2\xb7 ALT+Del: Liste"; break;
+    case LOCATION: case DEVICE: h = "\x18\x19 w\xc3\xa4hlen \xc2\xb7 Klick/Enter: ausf\xc3\xbchren \xc2\xb7 ALT+Del: Men\xc3\xbc"; break;
     default: break;
   }
   ui::hint(d, h);
+}
+
+void UI::drawMenu(DisplayDriver *d) {
+  unsigned uc = unreadChat(), ub = unreadBoard();
+  dev::Gps g = api->gps();
+  char sub[64];
+  for (int i = 0; i < MENU_COUNT; ++i) {
+    int y = MENU_TOP + i * MENU_ROW_H;
+    bool on = i == menuSel;
+    d->nativeFill(0, y, W, MENU_ROW_H - 2, on ? CARD : BG);
+    if (on) { d->nativeFill(0, y, 4, MENU_ROW_H - 2, MESH); d->nativeRect(0, y, W, MENU_ROW_H - 2, ui::FOCUS); }
+    else d->nativeFill(8, y + MENU_ROW_H - 2, W - 16, 1, LINE);
+    ui::text(d, 12, y + 4, on ? MESH : TEXT, MENU_LABEL[i], 20, 2);
+    switch (MENU_PAGE[i]) {
+      case CHAT_LIST: snprintf(sub, sizeof(sub), "%s", uc ? "neue Nachrichten" : "Kan\xc3\xa4le und Kontakte"); break;
+      case QUICK: snprintf(sub, sizeof(sub), "Schnellmeldung mit Vorlage und Ort"); break;
+      case BOARD_LIST: snprintf(sub, sizeof(sub), "%s", ub ? "neue Aush\xc3\xa4nge" : "Aush\xc3\xa4nge am Room-Server"); break;
+      case MAP: snprintf(sub, sizeof(sub), "Ahrtal-Karten (OpenStreetMap)"); break;
+      case LOCATION: snprintf(sub, sizeof(sub), "GPS %s \xc2\xb7 Teilen %s", !g.receiverOn ? "aus" : g.fresh ? "Fix" : "sucht", g.share ? "an" : "aus"); break;
+      default:
+        if (battPct >= 0) snprintf(sub, sizeof(sub), "Akku %d %% \xc2\xb7 Advert \xc2\xb7 Display \xc2\xb7 SD", battPct);
+        else snprintf(sub, sizeof(sub), "Akku \xc2\xb7 Advert \xc2\xb7 Display \xc2\xb7 SD");
+        break;
+    }
+    ui::text(d, 12, y + 20, MUTED, sub, 40);
+    unsigned n = MENU_PAGE[i] == CHAT_LIST ? uc : MENU_PAGE[i] == BOARD_LIST ? ub : 0;
+    if (n) ui::badge(d, W - 20, y + 4, n);
+    d->nativeText(W - 12, y + 12, 1, on ? MESH : MUTED, ">");
+    addHit(0, y, W, MENU_ROW_H, i);
+  }
 }
 
 void UI::drawList(DisplayDriver *d, Page p) {
@@ -347,7 +471,7 @@ void UI::drawList(DisplayDriver *d, Page p) {
   if (!api->ready()) { ui::text(d, 6, LIST_TOP + 10, MUTED, "Funkkern startet \xe2\x80\x93 Kontakte werden gelesen \xe2\x80\xa6"); return; }
   if (!n) {
     ui::text(d, 6, LIST_TOP + 10, MUTED, p == BOARD_LIST ? "Kein Brett (Room-Server) in den Kontakten." : "Keine Kan\xc3\xa4le oder Kontakte.");
-    ui::text(d, 6, LIST_TOP + 22, MUTED, p == BOARD_LIST ? "Room-Server erscheinen nach ihrer Bekanntgabe." : "Ger\xc3\xa4t \xe2\x86\x92 Kontakte neu lesen.");
+    ui::text(d, 6, LIST_TOP + 22, MUTED, p == BOARD_LIST ? "Room-Server erscheinen nach ihrer Bekanntgabe." : "Men\xc3\xbc \xe2\x86\x92 Ger\xc3\xa4t \xe2\x86\x92 Kontakte neu lesen.");
     return;
   }
   int &sel = listSel[p], &top = listTop[p];
@@ -361,6 +485,7 @@ void UI::drawList(DisplayDriver *d, Page p) {
     bool on = top + r == sel;
     d->nativeFill(0, y, W, ROW_H - 1, on ? CARD : BG);
     if (on) d->nativeFill(0, y, 3, ROW_H - 1, MESH);
+    addHit(0, y, W, ROW_H, top + r);
     char line[64];
     snprintf(line, sizeof(line), "%s %s", t.kind == dev::Kind::Channel ? "#" : p == BOARD_LIST ? "\xe2\x96\xa0" : "@", t.name);
     ui::text(d, 7, y + 2, p == BOARD_LIST ? BOARD : t.kind == dev::Kind::Channel ? MESH : TEXT, line, 40);
@@ -389,19 +514,21 @@ void UI::drawCompose(DisplayDriver *d) {
   bool typingNow = compose[0] != 0;
   d->nativeFill(0, COMPOSE_Y - 1, W, COMPOSE_H + 2, BG);
   d->nativeFill(2, COMPOSE_Y, W - 4, COMPOSE_H, CARD);
-  d->nativeRect(2, COMPOSE_Y, W - 4, COMPOSE_H, typingNow ? ui::FOCUS : LINE);
-  if (!typingNow) ui::text(d, 6, COMPOSE_Y + 4, MUTED, convRoom ? "Aushang (max. 100 Byte)" : "Nachricht (max. 100 Byte) \xe2\x80\xa6");
+  ui::button(d, 260, COMPOSE_Y, 58, COMPOSE_H, "SEND", false, true);
+  d->nativeRect(2, COMPOSE_Y, 254, COMPOSE_H, typingNow ? ui::FOCUS : LINE);
+  if (!nhits) addHit(260, COMPOSE_Y, 58, COMPOSE_H, 0);   // tap = Enter (send / join)
+  if (!typingNow) ui::text(d, 6, COMPOSE_Y + 4, MUTED, convRoom ? "Aushang (max. 100 Byte)" : "Nachricht (max. 100 Byte)");
   else {
     int lines = 0;
     // last two lines of the draft, cursor at the end
-    int total = countLines(compose, 51);
-    wrap(compose, 51, [&](const char *s, size_t n) {
+    int total = countLines(compose, 40);
+    wrap(compose, 40, [&](const char *s, size_t n) {
       if (lines++ < total - 2) return;
       ui::raw(d, 6, COMPOSE_Y + 3 + (lines - 1 - (total > 2 ? total - 2 : 0)) * 9, TEXT, s, n);
     });
   }
   char cnt[12]; snprintf(cnt, sizeof(cnt), "%u/100", unsigned(strlen(compose)));
-  d->nativeText(W - 4 - int(strlen(cnt)) * CW - 2, COMPOSE_Y + COMPOSE_H - 8, 1, strlen(compose) >= COMPOSE_BYTES ? BAD : MUTED, cnt);
+  d->nativeText(256 - int(strlen(cnt)) * CW - 2, COMPOSE_Y + COMPOSE_H - 8, 1, strlen(compose) >= COMPOSE_BYTES ? BAD : MUTED, cnt);
   drawHint(d);
 }
 
@@ -414,7 +541,7 @@ void UI::drawConversation(DisplayDriver *d) {
     bool here = !strcmp(r.id, conv);
     const char *st = here && r.pending ? "Anmeldung l\xc3\xa4uft \xe2\x80\xa6" : here && r.rights >= 2 ? "beigetreten" : "Enter: Beitreten";
     ui::rightText(d, W - 4, NAV_H + 2, here && r.rights >= 2 ? MESH : PEND, st);
-  } else ui::rightText(d, W - 4, NAV_H + 2, MUTED, "\x1b Liste");
+  } else ui::rightText(d, W - 4, NAV_H + 2, MUTED, "ALT+Del: Liste");
   const int top = NAV_H + 13, bottom = COMPOSE_Y - 2;
   const chat::Entry *items[chat::Log::CAP]; size_t n = 0;
   log.forEach(conv, convRoom, [&](const chat::Entry &e) { if (n < chat::Log::CAP) items[n++] = &e; });
@@ -470,12 +597,18 @@ void UI::drawMap(DisplayDriver *d) {
   dev::Gps g = api->gps();
   if (g.receiverOn && g.fresh) { me.lat = g.lat; me.lon = g.lon; me.color = TEXT; snprintf(me.label, sizeof(me.label), "Ich"); haveMe = true; }
   map.render(d, marks, nm, haveMe ? &me : nullptr);
-  d->nativeFill(0, NAV_H, W, 10, BG);
-  d->nativeText(3, NAV_H + 1, 1, MESH, map.map().name);   // map names are CP437 already (MapData.h)
-  char z[48]; snprintf(z, sizeof(z), "x%.0f  +/-  i  a  n", map.zoomFactor() < 1 ? 1.0 : map.zoomFactor());
-  if (map.zoomFactor() < 1) snprintf(z, sizeof(z), "x1/2  +/-  i  a  n");
-  d->nativeText(W - 3 - int(strlen(z)) * CW, NAV_H + 1, 1, MUTED, z);
-  if (status[0]) ui::text(d, 3, H - 20, PEND, status);
+  d->nativeFill(0, NAV_H, W, BACK_H + 2, BG);
+  // "Zurück" (web .b2 button, always focused: the trackball click and a tap here leave the map)
+  ui::button(d, BACK_X, BACK_Y, BACK_W, BACK_H, "\xe2\x86\x90 Zur\xc3\xbc" "ck", true);
+  addHit(BACK_X - 2, NAV_H, BACK_W + 6, BACK_H + 4, 0);
+  d->nativeText(BACK_X + BACK_W + 5, NAV_H + 4, 1, MESH, map.map().name);   // map names are CP437 already (MapData.h)
+  char z[48]; snprintf(z, sizeof(z), "x%.0f", map.zoomFactor() < 1 ? 1.0 : map.zoomFactor());
+  if (map.zoomFactor() < 1) snprintf(z, sizeof(z), "x1/2");
+  d->nativeText(W - 3 - int(strlen(z)) * CW, NAV_H + 4, 1, MUTED, z);
+  ui::button(d, 2, 206, 102, 22, "- Zoom", false);
+  ui::button(d, 108, 206, 104, 22, "Zentrieren", false);
+  ui::button(d, 216, 206, 102, 22, "Zoom +", false);
+  if (status[0]) ui::text(d, 3, 195, PEND, status);
 }
 
 void UI::drawLocation(DisplayDriver *d) {
@@ -493,6 +626,7 @@ void UI::drawLocation(DisplayDriver *d) {
   for (int i = 0; i < 4; ++i) {
     bool on = i == locSel;
     int h = 20;
+    addHit(4, y, W - 8, h, i);
     if (i < 2) {
       bool v = i == 0 ? g.receiverOn : g.share;
       d->nativeFill(4, y, W - 8, h, on ? CARD : BG);
@@ -526,7 +660,7 @@ void UI::drawDevice(DisplayDriver *d) {
   auto row = [&](const char *k, const char *val, uint16_t c) {
     ui::text(d, 4, y, MUTED, k, 14);
     ui::text(d, 92, y, c, val, 37);
-    y += 10;
+    y += 8;
   };
   row("Name", in.name[0] ? in.name : "\xe2\x80\x93", TEXT);
   row("Firmware", in.firmware, TEXT);
@@ -547,9 +681,13 @@ void UI::drawDevice(DisplayDriver *d) {
                           in.sdNote[0] ? " \xc2\xb7 " : "", in.sdNote);
   else snprintf(v, sizeof(v), "%s", in.sdNote[0] ? in.sdNote : "keine Karte");
   row("SD-Karte", v, in.sdCard ? TEXT : MUTED);
-  y += 3;
-  const char *buttons[3] = {"Kontakte neu lesen", "Bekanntgabe senden", "Einstellungen auf SD speichern"};
-  for (int i = 0; i < 3; ++i) { ui::button(d, 4, y, W - 8, 17, buttons[i], i == devSel); y += 19; }
+  row("Akku", battLine[0] ? battLine : "\xe2\x80\x93", battPct >= 0 && battPct < 15 ? BAD : TEXT);
+  const char *est = !strncmp(battEst, "Verbrauch: ", 11) ? battEst + 11 : battEst;   // the row is labelled already
+  row("Verbrauch", est[0] ? est : "noch keine Sch\xc3\xa4tzung", est[0] ? TEXT : MUTED);
+  y += 2;
+  const char *buttons[DEVICE_BUTTONS] = {"Kontakte neu lesen", "Advert senden (Bekanntgabe)", "Display aus (Taste/Trackball weckt)",
+                                         "Einstellungen auf SD speichern", "Touch neu kalibrieren", "Standort / GPS / Teilen"};
+  for (int i = 0; i < DEVICE_BUTTONS; ++i) { ui::button(d, 4, y, W - 8, 12, buttons[i], i == devSel); addHit(4, y, W - 8, 14, i); y += 14; }
   d->nativeFill(0, y, W, 11, WARN_BG);
   ui::text(d, 4, y + 2, BAD, "Kein zertifiziertes Notrufsystem \xc2\xb7 Lebensgefahr: 112");
   drawHint(d);
@@ -557,12 +695,16 @@ void UI::drawDevice(DisplayDriver *d) {
 
 void UI::render(DisplayDriver *d) {
   dirty = NONE;
+  if (page == BOOT) { drawBoot(d); return; }
 #ifdef SUI_HAS_QUICK
   if (page == QUICK) { quick.render(d); return; }
 #endif
   d->startFrame(BG);
-  ui::navStrip(d, tabOf(page), unreadChat(), unreadBoard());
+  nhits = 0;
+  bool inConv = page == CHAT_VIEW || page == BOARD_VIEW;
+  ui::statusLine(d, title(page), page != MENU, inConv ? 0 : unreadChat() + unreadBoard());
   switch (page) {
+    case MENU: drawMenu(d); drawHint(d); break;
     case CHAT_LIST: case BOARD_LIST: drawList(d, page); drawHint(d); break;
     case CHAT_VIEW: case BOARD_VIEW: drawConversation(d); break;
     case MAP: drawMap(d); break;
@@ -574,7 +716,7 @@ void UI::render(DisplayDriver *d) {
 }
 
 void UI::renderPart(DisplayDriver *d) {
-  if (dirty == FULL || page == QUICK || page == MAP || page == START) { if (page != START) render(d); dirty = NONE; return; }
+  if (dirty == FULL || page == QUICK || page == MAP || page == BOOT) { render(d); return; }
   dirty = NONE;
   if (page == CHAT_VIEW || page == BOARD_VIEW) drawCompose(d); else drawHint(d);
   d->endFrame();

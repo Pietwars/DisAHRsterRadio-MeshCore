@@ -9,31 +9,64 @@ Die Web-Schicht wird im Standalone-Build **weggelassen, nicht per Flag unterdrü
 Sendepause, App-Echo und Brett-Anmeldung liegen in webfreien Bausteinen, die Web- und Standalone-Build gemeinsam
 nutzen.
 
-> **Status: Testbuild `0.9.5-standalone-test`** (Firmwarekennung `v1.18.0-dar0.9.5-standalone-test`).
-> Alle Punkte aus Issue #35 sind umgesetzt und ohne Hardware geprüft (Hosttests, Builds, Vorschaubilder).
-> Nicht im Release, nicht im Web-Flasher, nicht in `tools/devices.json` oder `tools/release_boards.json`.
-> **Noch nicht auf echter Hardware geprüft** (siehe [Hardwaretest](#hardwaretest-offen)).
+> **Status: Testbuild `0.9.5-standalone-test5`**, noch nicht auf MeshCore-Hardware abgenommen.
+> Oberfläche aus `Pietwars/DisAHRsterRadio`, Branch `feature/tdeck-local-display-mvp`,
+> Quellstand `50d21caba97a4cbbe97f75428214fd676e51dbe6`.
+> Kein Tag, kein Release und keine Änderung am Web-Flasher durch diese Übernahme.
 
-## Bedienung
+## Bedienung (test5)
 
-Oben steht wie in der Weboberfläche die Reiterleiste **Start · Chat · Meldung · Brett · Karte · Standort · Gerät**
-(„Meldung“ = Reiter „Schnellmeldung“ der Weboberfläche). Ungelesene Nachrichten erscheinen als weinrote Zahl an
-„Chat“ und „Brett“ und auf den Start-Kacheln; eine neue eingehende Nachricht schaltet das dunkle Display ein.
+Beim Einschalten erscheint dasselbe vollständige Tal-und-Funk-Bootmotiv wie im Standalone-Original
+(320 × 213 RGB565, aus dem Original-JPEG mit vollständigen Farbkanälen neu kodiert), für 1,8 Sekunden oder bis zur ersten Eingabe. Danach öffnet sich
+**CHAT** mit der MeshCore-Kanal-/Kontaktliste. Ohne gespeicherte Touch-Kalibrierung startet zuerst
+die Drei-Punkt-Kalibrierung mit anschließender Mittelkontrolle. Gespeichert wird erst nach Erfolg;
+Trackball-Klick oder Esc bricht ab. Unter **SETUP → Touch neu kalibrieren** erneut aufrufbar.
+
+Die fünf grünen Touch-Reiter **CHAT · HILFE · BRETT · KARTE · SETUP** und die dunklen Flächen entsprechen
+dem Standalone-Original. Darunter bleiben MeshCore-Seitentitel, Zurück, Ungelesen-Zahl und Akku sichtbar.
+**SETUP → Standort / GPS / Teilen** öffnet die GPS-Einstellungen. ALT+Backspace führt weiterhin
+Unterhaltung → Liste → ergänzendes Hauptmenü; dort sind alle sechs MeshCore-Seiten erreichbar.
 
 | Eingabe | Wirkung |
 |---|---|
-| Buchstaben **h c m b k s g** (außerhalb eines Textfelds) | Start, Chat, Meldung, Brett, Karte, Standort, Gerät |
-| Trackball **hoch/runter** | Auswahl in Listen und Feldern; im Chat ältere/neuere Nachrichten |
-| Trackball **links/rechts** | vorheriger/nächster Reiter; im Chat/Brett links = zurück zur Liste; auf der Meldung-Seite Auswahl im Feld (Vorlage, Ort, Ziel) |
-| Trackball **Klick** oder **Enter** | öffnen bzw. ausführen; im Chat **senden** |
-| Trackball **2,5 s halten** | Flood-Advert (wie Schritt 1) |
-| **Backspace** (Del) | löscht im Textfeld; bei leerem Feld bzw. außerhalb zurück (Liste → Start) |
-| Start: Trackball bewegen, dann Klick | Kachel wählen und öffnen; Klick ohne gewählte Kachel = Display an/aus (wie Schritt 1) |
-| Meldung: **1–8**, **ALT+C**, **Leertaste** | Vorlage, nächstes Feld, Auswahl wechseln (wie 0.9.5-test #34) |
-| Karte: **+**/**z**, **-**/**x**, **i**, **a**, **n**/Klick, Trackball | Zoom, „Ich“, „Alles“, nächste Karte, verschieben |
+| Tipp auf einen Reiter | Chatliste, Schnellmeldung, Room-Server-Liste, Karte oder Gerät/Setup öffnen |
+| Tipp auf CHAT/BRETT in einer Unterhaltung | zurück zur jeweiligen Liste; Entwurf bleibt dieser Unterhaltung zugeordnet |
+| Trackball hoch/runter | Auswahl bzw. Verlauf blättern; auf Karte verschieben |
+| Trackball links/rechts | Auswahl innerhalb der Seite; bei HILFE Vorlage/Ort/Ziel ändern; auf Karte verschieben |
+| Kurzer Klick / Enter | öffnen oder senden; **Ausnahme Karte: Klick zurück, Enter nächste Karte** |
+| Chat/Brett: Tipp auf **SEND** | senden bzw. bei leerem Brett-Text beitreten; Tipp ins Textfeld sendet nicht |
+| Chat/Brett: vertikal wischen | Verlauf bzw. Liste blättern; kein Senden durch Wischen |
+| ALT+Backspace / Esc | eine Ebene zurück, auch bei gefülltem Entwurf |
+| Backspace | Zeichen löschen; ohne Textfeld bzw. bei leerem Chatfeld zurück |
+| Tipp auf Statuszeile unter den Reitern, links vom Akku | eine Ebene zurück |
+| HILFE: 1–8, ALT+C, Leertaste | Vorlage, nächstes Feld, Auswahl ändern; Versand über die beschrifteten Sendeknöpfe |
+| Karte: `+`/`z`, `-`/`x`, `i`, `a`, `n`/Enter/Leertaste | Zoom, Zentrieren/Folgen, Übersicht, nächste Karte |
+| Karte: Touch unten | **- Zoom · Zentrieren · Zoom +** |
+| Karte: Trackball-Klick / Zurück-Knopf / ALT+Backspace | Karte verlassen |
+| `d` außerhalb Chat-/Brett-Text und HILFE / SETUP: Display aus | Display ausschalten |
+| Trackball 2,5 s halten | Flood-Advert; dies gilt auch bei dunklem Display (Hardwareprüfung offen) |
 
-Eine Taste oder ein Trackball-Schritt bei dunklem Display weckt nur und sendet nie. Während der Bluetooth-Kopplung
-zeigt das Display wie bisher nur die PIN-Anzeige.
+Die Karte zentriert beim Öffnen auf einen frischen GPS-Fix und folgt neuen Fixes. Manuelles Verschieben
+oder `a` beendet das Folgen; `i`/Zentrieren aktiviert es erneut. Dies ist lokale Anzeige und schaltet
+**Standort teilen** nicht ein. Die fünf vorhandenen OSM-Karten bleiben erhalten; die einfache
+Ortsübersicht des LoRaLayer2-Originals ersetzt sie nicht.
+
+Der erste kurze Tastendruck, Trackball-Schritt, Klick oder Tipp bei dunklem Display weckt nur.
+Neue eingehende Nachrichten wecken das Display ebenfalls. Auto-Aus nach 30 Sekunden ohne Eingabe.
+Während Bluetooth-Kopplung erscheint die PIN-Anzeige.
+
+Touch verwendet `TDeckTouchRaw.h` am gemeinsamen I2C-Bus und gespeicherte affine Kalibrierung,
+Abfrage alle 20 ms. Einzelfinger-Gesten 25–900 ms; Mehrfinger werden verworfen. Reiterwechsel
+nur bei Beginn und Ende im selben Reiter. Normale Tipps dürfen sich höchstens 20 Pixel je Achse
+bewegen; vertikale Wischgesten in Chat/Brett werden separat verarbeitet. Trackball: CHANGE-Flanken,
+vier Flanken je Schritt, 350 ms Pause. Hardwareprüfung von Orientierung, Treffern und Schrittweite bleibt nötig.
+
+ALT+Backspace benötigt den Rohmodus der Tastatur (I2C 0x55; 0x03 Matrix lesen, danach 0x04 Zeichenmodus).
+Alte Tastaturfirmware kann nur Backspace liefern. Rückfallweg: Status-Zurück oder Backspace im leeren Feld.
+
+MeshCore-spezifische Anpassungen: Kanal-/Kontaktwahl, Room-Server, Ziel/Ort/Teilen in HILFE, Akku,
+SD und PIN-Bluetooth bleiben erhalten. Deshalb sind Seiteninhalte und HILFE-Kachelhöhen an MeshCore
+angepasst; die Oberfläche ist kein Austausch des Funkprotokolls und keine pixelgleiche Kopie aller Seiten.
 
 ## Funktionen
 
@@ -80,8 +113,11 @@ zeigt das Display wie bisher nur die PIN-Anzeige.
 - Kartendaten © OpenStreetMap-Mitwirkende, ODbL 1.0 (Hinweis unten rechts auf jeder Karte).
 
 ### 6. GPS ins Mesh
-- Reiter **Standort**: GPS-Empfänger an/aus, **Standort teilen** an/aus (ab Werk **aus**, Wahl bleibt nach Neustart),
+- Seite **Standort**: GPS-Empfänger an/aus, **Standort teilen** an/aus (ab Werk **aus**, Wahl bleibt nach Neustart),
   „Position in Chat senden“ (`!DP1|lat,lon|Zeit` wie die Weboberfläche), „Bekanntgabe senden“.
+- Seite **Gerät**: Name, Firmware, Bluetooth (ohne PIN-Ziffern), Netz, Verlauf, Uhr, Funk, Speicher, SD-Karte,
+  **Akku** und **Verbrauch**; Knöpfe „Kontakte neu lesen“, „Advert senden (Bekanntgabe)“, „Display aus“,
+  „Einstellungen auf SD speichern“; 112-Hinweis.
 - Nur bei eingeschaltetem Teilen **und** frischem Fix (15 s) tragen Bekanntgaben und Meldungen die GPS-Position.
   Sonst gilt der in der App gesetzte Standort (oder keiner). Ein GPS-Fix wird nie als Gerätestandort gespeichert
   (`GpsShare.h`, Speicher-Haken in `MyMesh::savePrefs`).
@@ -92,7 +128,7 @@ zeigt das Display wie bisher nur die PIN-Anzeige.
   CS **GPIO 39** laut LilyGO-Belegung, **auf Hardware zu prüfen**. Ohne Karte läuft alles weiter.
 - `/disaster/config.txt`: nur `name`, `gps_teilen`, `karte`, `log` (`DeviceConfig.h`). Zeilen, deren Schlüssel
   nach PIN, Schlüssel, Passwort o. Ä. aussieht, werden abgelehnt; es wird nie eine PIN oder ein Schlüssel
-  geschrieben. „Einstellungen auf SD speichern“ im Reiter Gerät.
+  geschrieben. „Einstellungen auf SD speichern“ in Gerät.
 - `/disaster/log.txt`: Ereignisse (Start, Senden mit Ziel­art und Länge, GPS-Fix, Teilen an/aus, wenig Speicher),
   **keine Nachrichtentexte**; ab 64 KB nach `log.old.txt` rotiert.
 - Wie bei den SD-Builds der Web-Familie wird der Nachrichtenverlauf zusätzlich nach `/disaster/current.bin`
@@ -106,29 +142,33 @@ zeigt das Display wie bisher nur die PIN-Anzeige.
 | `examples/companion_radio/StandaloneFrontend.cpp` | Frontend: lokaler Companion-Client, `dev::Api`, SD, GPS-Teilen |
 | `examples/companion_radio/LocalCompanion.h`, `LocalSend.h` | gemeinsamer webfreier Kern (auch für `DisasterPortal.h`) |
 | `examples/companion_radio/GpsShare.h`, `DeviceConfig.h` | Standort teilen, SD-Einstellungen (reine Logik) |
-| `examples/companion_radio/ui-brand/StandaloneUI.*` | Seiten Start/Chat/Brett/Karte/Standort/Gerät |
+| `examples/companion_radio/ui-brand/StandaloneUI.*` | Boot-Logo, Hauptmenü, Seiten Chat/Meldung/Brett/Karte/Standort/Gerät, Touch-Ziele |
 | `examples/companion_radio/ui-brand/TDeckQuickPage.*`, `QuickModel.h`, `QuickData.h` | Schnellmeldung |
-| `examples/companion_radio/ui-brand/Theme.h`, `Widgets.h` | Farben, Reiter, Texte des Design-Systems (CP437-Schrift) |
+| `examples/companion_radio/ui-brand/Theme.h`, `Widgets.h` | Farben, Statuszeile, Knöpfe, Texte des Design-Systems (CP437-Schrift) |
 | `examples/companion_radio/ui-brand/ChatLog.h`, `MapView.h`, `MapData.h`, `DeviceApi.h` | Verlauf, Karte, Schnittstelle |
-| `examples/companion_radio/ui-brand/UITask.*` | Tastatur, Trackball, Startseite (unter `DAR_STANDALONE_UI`) |
+| `examples/companion_radio/ui-brand/UITask.*` | Tastatur (mit ALT+Backspace-Erkennung), Trackball, Touch, Akku, PIN-Anzeige (unter `DAR_STANDALONE_UI`) |
+| `examples/companion_radio/ui-brand/TDeckTouch.h` | Touch GT911 (nur Standalone) |
 | `tools/standalone_preview.py` | Vorschaubilder aller Seiten ohne Hardware |
 
 Hosttests (C++11, ASAN/UBSAN, in `open-access.yml`): `local_companion`, `quick_model`, `quick_page`, `chat_log`,
-`standalone_ui` (alle Seiten, Navigation, Bildschirmgrenzen), `gps_share`, `device_config`.
+`standalone_ui` (Reiter, SEND, Wischen, Navigation, Bildschirmgrenzen), `gps_share`, `device_config`,
+`tdeck_input`, `tdeck_calibration`.
 
-## Messwerte (lokal, Linkerwerte, PlatformIO espressif32 6.11.0)
+## Messwerte (lokal, Linkerwerte, PlatformIO espressif32 6.11.0, Stand test3)
 
 | Messwert | normal `dar_LilyGo_TDeck_wifi` (main) | Standalone | Unterschied |
 |---|---:|---:|---:|
-| Flash laut Linker | 2.063.913 B | 1.622.481 B | **−441.432 B (−21,4 %)** |
-| `firmware.bin` | 2.064.336 B | 1.622.896 B | −441.440 B |
-| Statisches RAM (.data/.bss) | 160.988 B | 153.612 B | **−7.376 B (−4,6 %)** |
-| Frei in App-Partition (3 MiB) | 1.081.392 B | 1.522.832 B | |
+| Flash laut Linker | 2.063.913 B | 1.626.121 B | **−437.792 B (−21,2 %)** |
+| `firmware.bin` | 2.064.336 B | 1.626.544 B | −437.792 B |
+| Statisches RAM (.data/.bss) | 160.988 B | 153.916 B | **−7.072 B (−4,4 %)** |
+| Frei in App-Partition (3 MiB) | 1.081.392 B | 1.519.184 B | |
 
 Gegenüber Schritt 1 (1.365.005 B Flash, 135.564 B RAM) kommen die Seiten, die Karten (ca. 164 KB), SD und der
 Companion-Kern dazu. Der normale T-Deck-Build wird auf diesem Stand um 748 B Flash und 112 B RAM größer
 (gemeinsamer Kern, GPS-Frische-Abfrage), sein Verhalten bleibt gleich. Heap zur Laufzeit: auf Hardware messen
-(Reiter Gerät und serielle `[HEAP]`-Zeilen alle 30 s).
+(Seite Gerät und serielle `[HEAP]`-Zeilen alle 30 s). test3 gegenüber test: +3.640 B Flash, +304 B RAM
+(Boot-Logo, Hauptmenü, Touch, ALT+Backspace, Statuszeile); der normale T-Deck-Build bleibt dabei gleich groß
+(2.064.661 B / 161.100 B).
 
 ## Bauen und flashen
 
@@ -147,7 +187,12 @@ python3 tools/standalone_preview.py <Ordner>      # Vorschaubilder
 
 ## Hardwaretest (offen)
 
-1. Start und Anzeige (Startseite, alle Reiter, Lesbarkeit), Display an/aus, Aufwachen bei neuer Nachricht.
+1. Boot-Logo (1,8 s, erste Eingabe überspringt), danach CHAT bzw. Erstkalibrierung; alle Seiten, Lesbarkeit, Akku in der
+   Statuszeile und in Gerät, „Display aus“ (Gerät, Taste d) und Wecken, Aufwachen bei neuer Nachricht.
+1a. Touch: Ausrichtung (Menüeinträge, Listenzeilen, Knöpfe treffen), Statuszeile = zurück, „Zurück“ auf der Karte
+   per Tipp, Trackball-Klick und ALT+Backspace.
+1b. **ALT+Backspace:** kann die eingebaute Tastatur den Rohmodus (0x03)? Wird ALT+Backspace auf jeder Seite als
+   „zurück“ erkannt, auch in Textfeldern, und löscht Backspace allein weiterhin nur ein Zeichen?
 2. PIN-Kopplung mit der MeshCore-App; Senden/Empfangen parallel in App und Gerät.
 3. Update von 0.9.4 mit `firmware.bin`: Kontakte, Kanäle, Name, PIN und Verlauf bleiben.
 4. Tastatur (Zeichenmodus, Enter, Backspace, ALT+C) und Trackball-Richtungen (Pins 3/15/1/2, Schrittweite).
@@ -155,3 +200,22 @@ python3 tools/standalone_preview.py <Ordner>      # Vorschaubilder
 6. GPS-Fix (Baudraten-Erkennung), „Standort teilen“: Bekanntgabe mit/ohne Position, `!DP1`-Meldung.
 7. SD-Karte: CS-Pin 39 am gemeinsamen Bus, Einhängen neben LoRa/Display, `config.txt`, `log.txt`, Archiv.
 8. Heap (frei/minimal) und Akkulaufzeit im Vergleich zu 0.9.4.
+
+## Herkunft der Eingaben (test4): Bedienung aus dem erprobten T-Deck-Profil
+
+Vollstaendiges Tal-und-Funk-Startmotiv, impulsbasierter Trackball (vier Flanken je Schritt, 350 ms Ruhezeit) und gespeicherte Touch-Kalibrierung. Beim ersten Start drei Kreuze antippen, danach die Mitte bestaetigen. Erst nach erfolgreicher Kontrolle wird gespeichert. Unter Geraet: Touch neu kalibrieren. Klick oder Esc bricht ab. Die Kalibrierung blockiert den Funkbetrieb nicht.
+
+MeshCore-Kanaele, Kontakte und Room-Server bleiben die Funkanbindung. Vor einem Wechsel von LoRaLayer2 komplett sichern und die MeshCore-Erstinstallationsanleitung verwenden: die Partitionen sind verschieden. Ein App-Update allein ist nur bei bereits passender MeshCore-Partitionierung geeignet.
+
+Der eigene Test4-Geraetetest fuer Eingaben, Touch, Bluetooth, Funk, GPS/Karte und Dauerbetrieb steht noch aus.
+
+## Prüfung der Oberflächenübernahme (test5)
+
+- Hosttests aus `open-access.yml`: insbesondere fünf Reiter, Entwurf beim Reiterwechsel,
+  nur SEND sendet, Wischbewegung sendet nicht, alle Seiten innerhalb 320 × 240.
+- `tools/standalone_preview.py`: nutzt nun dieselbe vollständige Bootbild-Datei und denselben
+  Bootrenderer wie die Firmware; Vorschauen sind simulierte Daten, kein Hardwarebeleg.
+- Auf Gerät zusätzlich prüfen: Touch aller fünf Reiter, SEND/Beitreten, Wischen, GPS-Folgen,
+  Zentrieren/Zoom, Setup → Standort und Kalibrierung. Die offene Abnahme aus test4 bleibt bestehen.
+- Die test3-Speichertabelle oben gilt nicht als Messung für test5. Neues Build/Standalone-Prüfung
+  und Hardwaretest müssen für den tatsächlichen test5-Commit dokumentiert werden.

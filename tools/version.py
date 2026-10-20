@@ -63,9 +63,10 @@ RULES = [
     # Firmwarekennung aller Profile
     ('platformio.local.ini', FW, r'\g<1>@MESHCORE@-dar@VERSION@\g<2>', 10),
     ('platformio.devices.ini', FW, r'\g<1>@MESHCORE@-dar@VERSION@\g<2>', 100),
-    # T-Deck-Plus-Standalone (Issue #35, Testbuild ohne WLAN/Web): Kennung …-dar<STANDALONE>-standalone-test;
+    # T-Deck-Plus-Standalone (Issue #35, Testbuild ohne WLAN/Web): Kennung …-dar<STANDALONE>-standalone-test[N]
+    # (laufende Testnummer N steht nur in platformio.standalone.ini, z. B. -standalone-test2);
     # eigene Zeile STANDALONE in VERSION, damit die Web-Builds (VERSION) unverändert bleiben
-    ('platformio.standalone.ini', r"(FIRMWARE_VERSION='\"v)[0-9.]+-dar[^\"']*?(-standalone-test\"')", r'\g<1>@MESHCORE@-dar@STANDALONE@\g<2>'),
+    ('platformio.standalone.ini', r"(FIRMWARE_VERSION='\"v)[0-9.]+-dar[^\"']*?(-standalone-test\d*\"')", r'\g<1>@MESHCORE@-dar@STANDALONE@\g<2>'),
     # README
     ('README.md', r'^(\*\*Version )[^*]+(\*\* · MeshCore )[0-9.]+( .*· Firmwarekennung `v)[0-9.]+-dar[^`]+(`)', r'\g<1>@VERSION@\g<2>@MESHCORE@\g<3>@MESHCORE@-dar@VERSION@\g<4>'),
     ('README.md', r'(in Handygröße, Stand )[^;]+(; alle Daten simuliert)', r'\g<1>@VERSION@\g<2>'),

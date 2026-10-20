@@ -23,17 +23,20 @@ class TDeckQuickPage {
   static void displayText(DisplayDriver* d, int x, int y, uint16_t color, const char* text, int limit = 52);
   static bool quickTarget(const dev::Api& a, unsigned index, char* id, size_t id_size, char* name, size_t name_size);
 public:
-  unsigned unreadChat = 0, unreadBoard = 0;   // shown in the tab strip
+  unsigned unreadChat = 0, unreadBoard = 0;   // unread total in the status line
   void begin(dev::Api* a) { api = a; enter(); }
   // On opening the page: default place "Mein Standort" only while sharing is on, else "Ohne Standort"
   // (until the user picks a place himself).
   void enter() { if (!placeChosen) model.place = api && api->gps().share ? 0 : -1; }
   quick::Fix gpsFix() const;
-  bool activate(uint32_t stamp); // true=request return to home page
+  bool activate(uint32_t stamp); // true=request return to the main menu
   bool key(uint8_t key, uint32_t stamp);
   // Trackball: up/down = previous/next field; left/right = change the selection of the field.
-  // Returns false if left/right had nothing to change (the caller then switches tabs).
+  // Returns false if left/right had nothing to change.
   bool move(int dx, int dy);
+  // Touch tap on a preset, the text box, "Leeren", Ort, Ziel or the two send buttons (same as focus + Enter).
+  // Returns true only for the Home action (never for a tap, the status line is the caller's back zone).
+  bool tap(int x, int y, uint32_t stamp);
   bool textFocus() const { return model.focus == quick::Text; }
   void setTarget(const char* id);             // preselect the chat currently open (like the web)
   bool tick(uint32_t now);
