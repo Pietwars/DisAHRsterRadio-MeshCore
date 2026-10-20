@@ -3,6 +3,8 @@
 Aktuell: **0.9.4**, MeshCore 1.18.0, LILYGO T-Deck Plus und LILYGO T-Watch S3.
 Die ursprüngliche MeshCore-Anleitung steht in [README.meshcore.md](README.meshcore.md).
 
+**Getrennt vom stabilen 0.9.4-Release:** Das experimentelle [T-Deck-Standalone-Prerelease `standalone-test5`](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/standalone-test5) ist veröffentlicht, aber **nicht auf echter Hardware abgenommen** und nicht im Web-Flasher. Hardwareabnahme: [Protokoll](docs/STANDALONE-ABNAHME.md) / [Issue #40](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/issues/40). Ein stabiler Standalone-Tag setzt dokumentierte Gerätetests und eine separate Freigabeentscheidung voraus.
+
 1. `VERSION` ändern, `python3 tools/version.py` und `python3 tools/embed_web.py`
    ausführen. README, CHANGELOG, Geräteanleitung und Hardwarestatus aktualisieren.
 2. Hosttests und beide Board-Builds prüfen; Flash-/Speicherprüfung ist im Build
