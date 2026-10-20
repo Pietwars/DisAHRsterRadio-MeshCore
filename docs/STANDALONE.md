@@ -9,10 +9,10 @@ Die Web-Schicht wird im Standalone-Build **weggelassen, nicht per Flag unterdrü
 Sendepause, App-Echo und Brett-Anmeldung liegen in webfreien Bausteinen, die Web- und Standalone-Build gemeinsam
 nutzen.
 
-> **Status: Testbuild `0.9.5-standalone-test5`**, noch nicht auf MeshCore-Hardware abgenommen.
+> **Status: experimentelle [Vorabversion `standalone-test5`](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/standalone-test5)** mit Firmwarekennung `v1.18.0-dar0.9.5-standalone-test5`; **noch nicht auf MeshCore-Hardware abgenommen**. PR #39 wurde am 20.10.2026 gemergt, die Vorabversion danach veröffentlicht. **Kein stabiles Release und kein Eintrag im Web-Flasher.**
 > Oberfläche aus `Pietwars/DisAHRsterRadio`, Branch `feature/tdeck-local-display-mvp`,
 > Quellstand `50d21caba97a4cbbe97f75428214fd676e51dbe6`.
-> Kein Tag, kein Release und keine Änderung am Web-Flasher durch diese Übernahme.
+> Hardwareabnahme: [Protokoll](STANDALONE-ABNAHME.md) und [offenes Issue #40](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/issues/40).
 
 ## Bedienung (test5)
 
@@ -187,6 +187,9 @@ python3 tools/standalone_preview.py <Ordner>      # Vorschaubilder
 
 ## Hardwaretest (offen)
 
+Die folgenden Kurzpunkte sind weiterhin **nicht auf echter Hardware abgeschlossen**. Die ausführliche Prüffolge mit Ergebnisfeldern und Datensicherungs-Hinweisen steht in [STANDALONE-ABNAHME.md](STANDALONE-ABNAHME.md); Ergebnisse und reproduzierbare Fehler in [Issue #40](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/issues/40) verlinken.
+
+
 1. Boot-Logo (1,8 s, erste Eingabe überspringt), danach CHAT bzw. Erstkalibrierung; alle Seiten, Lesbarkeit, Akku in der
    Statuszeile und in Gerät, „Display aus“ (Gerät, Taste d) und Wecken, Aufwachen bei neuer Nachricht.
 1a. Touch: Ausrichtung (Menüeinträge, Listenzeilen, Knöpfe treffen), Statuszeile = zurück, „Zurück“ auf der Karte
@@ -217,5 +220,6 @@ Der eigene Test4-Geraetetest fuer Eingaben, Touch, Bluetooth, Funk, GPS/Karte un
   Bootrenderer wie die Firmware; Vorschauen sind simulierte Daten, kein Hardwarebeleg.
 - Auf Gerät zusätzlich prüfen: Touch aller fünf Reiter, SEND/Beitreten, Wischen, GPS-Folgen,
   Zentrieren/Zoom, Setup → Standort und Kalibrierung. Die offene Abnahme aus test4 bleibt bestehen.
-- Die test3-Speichertabelle oben gilt nicht als Messung für test5. Neues Build/Standalone-Prüfung
-  und Hardwaretest müssen für den tatsächlichen test5-Commit dokumentiert werden.
+- Die test3-Speichertabelle oben gilt nicht als Messung für test5. Der test5-Firmwarebuild und
+  `check_standalone` waren in CI erfolgreich; die Werte für den veröffentlichten Build sind anhand
+  des zugehörigen Build-/Paketberichts festzuhalten. Die eigentliche Hardwareabnahme bleibt offen.
