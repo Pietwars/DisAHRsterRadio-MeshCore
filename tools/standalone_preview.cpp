@@ -36,7 +36,10 @@ int main(int argc, char **argv) {
   fake.demo();
   fake.g.share = true; fake.g.fresh = true; fake.g.lat = 50.54292; fake.g.lon = 7.11463; fake.g.sats = 9;
   sui::UI u; FakeDisplay d; d.font = font;
-  u.setLogo(BRAND_LOGO, BRAND_LOGO_W, BRAND_LOGO_H);
+  static uint8_t splash[320 * 213 * 2];
+  FILE *asset = fopen("examples/companion_radio/ui-brand/assets/tdeck-splash.rgb565", "rb");
+  if (!asset || fread(splash, 1, sizeof(splash), asset) != sizeof(splash)) return 1;
+  fclose(asset); u.setSplash(splash);
   u.begin(&fake); u.tick(ms);
   // battery as UITask passes it (T-Deck: voltage only, level estimated)
   batt::Now b; b.mv = 4050; b.pct = 87; b.pct_approx = true;
@@ -47,7 +50,8 @@ int main(int argc, char **argv) {
   fake.channelIn(1, "Lea: Pumpe kommt um 15 Uhr zum Marktplatz", fake.clock - 120);
   fake.roomIn("dcafe0012ab34", "11223344", "Heute 18 Uhr: Treffen am Gemeindehaus", fake.clock - 60);
   ms += 300; u.tick(ms);
-  ms += sui::UI::BOOT_MS; page(u, d, "hauptmenue");   // main menu after the logo
+  ms += sui::UI::BOOT_MS; page(u, d, "chat-liste");
+  u.key(sui::K_BACK); page(u, d, "hauptmenue");   // main menu after the logo
   u.click(); page(u, d, "chat-liste");
   u.click(); type(u, "Bin in 10 Min. mit Kanistern da"); page(u, d, "chat");
   u.key(sui::K_BACK); u.move(0, 1); u.move(0, 1); u.click(); page(u, d, "chat-direkt");

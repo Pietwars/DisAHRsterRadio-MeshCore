@@ -12,18 +12,17 @@ constexpr uint16_t rgb(uint32_t c) {
   return uint16_t((((c >> 16) & 0xFF) >> 3) << 11 | (((c >> 8) & 0xFF) >> 2) << 5 | ((c & 0xFF) >> 3));
 }
 // :root of web/index.html
-constexpr uint16_t BG = rgb(0x0b141c), TEXT = rgb(0xeaf2f7), MUTED = rgb(0x99aabb), LINE = rgb(0x294b3d);
-constexpr uint16_t MESH = rgb(0x9ee576), SAGE = rgb(0xb7d6b7), WINE = rgb(0xb7506b), CARD = rgb(0x14263a);
-constexpr uint16_t SELF = rgb(0x1f3d2c), BUTTON2 = rgb(0x24384a), WARN_BG = rgb(0x3a1d26), PEND = rgb(0xffcc66);
+constexpr uint16_t BG = 0x0862, TEXT = 0xffff, MUTED = rgb(0x99aabb), LINE = rgb(0x294b3d);
+constexpr uint16_t MESH = 0x9e85, SAGE = rgb(0xb7d6b7), WINE = rgb(0xb7506b), CARD = 0x10c4;
+constexpr uint16_t SELF = rgb(0x1f3d2c), BUTTON2 = 0x10c4, WARN_BG = rgb(0x3a1d26), PEND = rgb(0xffcc66);
 constexpr uint16_t BAD = rgb(0xff9aa8), INFO = rgb(0x6ab0e0), BOARD = rgb(0xffb84d), POST = rgb(0x3c5a6e);
 constexpr uint16_t PIN_BG = rgb(0x2a2618), MAP_BG = rgb(0x0d1a22), PHARMACY = rgb(0xff7d8f), WATER = rgb(0x4dd2ff);
-constexpr uint16_t NAV_BG = rgb(0x0b141c), INK = rgb(0x102010);   // dark text on mesh-green buttons (#102)
+constexpr uint16_t NAV_BG = 0x10c4, INK = rgb(0x102010);   // dark text on mesh-green buttons (#102)
 constexpr int W = 320, H = 240, CW = 6, CH = 8;                    // display and character cell (size 1)
 
-// Navigation: boot logo -> main menu (Chat, Meldung, Brett, Karte, Standort, Gerät) -> pages; no tab bar and no
-// letter shortcuts. Every page has a slim status line on top (back arrow, page title, unread, battery).
-constexpr int NAV_H = 16;   // status line height on every page except the boot logo
-constexpr int BATT_W = 42;  // battery level at the right end of the status line
+// DisAHRsterRadio standalone: five touch tabs, plus MeshCore back/unread/battery strip.
+constexpr int TAB_H = 28, STATUS_H = 16, NAV_H = TAB_H + STATUS_H;
+constexpr int BATT_W = 52;
 
 // UTF-8 -> CP437 for the GFX font. German umlauts and sharp s map to their CP437 glyphs, other non-ASCII
 // characters become '?'. Never splits a multi-byte character. Returns output length.

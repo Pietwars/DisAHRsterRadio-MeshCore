@@ -25,8 +25,8 @@ const char *title(Page p) {
 constexpr int LIST_TOP = NAV_H + 2, ROW_H = 21, HINT_Y = H - 9;
 constexpr int COMPOSE_Y = 203, COMPOSE_H = 26;
 constexpr int LIST_ROWS = (HINT_Y - LIST_TOP) / ROW_H;   // 10
-constexpr int DEVICE_BUTTONS = 5;                         // plus saved touch calibration
-constexpr int MENU_TOP = NAV_H + 2, MENU_ROW_H = 34;
+constexpr int DEVICE_BUTTONS = 6;                         // plus saved touch calibration
+constexpr int MENU_TOP = NAV_H + 2, MENU_ROW_H = 30;
 }
 
 int mapIndexForKey(const char *key) {
@@ -84,7 +84,11 @@ void UI::open(Page p) {
 #ifdef SUI_HAS_QUICK
   if (p == QUICK && page != QUICK) { quick.setTarget(conv[0] && !convRoom ? conv : "c0"); quick.enter(); }
 #endif
-  if (p == MAP && page != MAP) mapReturn = page == BOOT ? MENU : page;
+  if (p == MAP && page != MAP) {
+    mapReturn = page == BOOT ? MENU : page; mapFollow = true;
+    dev::Gps g = api->gps();
+    if (g.receiverOn && g.fresh) { map.centerOn(g.lat,g.lon); followLat=g.lat; followLon=g.lon; }
+  }
   page = p; scroll = 0; dirty = FULL; nhits = 0;   // touch targets belong to the drawn page
 }
 
@@ -183,10 +187,10 @@ bool UI::key(uint8_t k) {
   if (page == MAP) {
     if (k == '+' || k == 'z' || k == 'Z') map.zoom(2);
     else if (k == '-' || k == 'x' || k == 'X') map.zoom(0.5);
-    else if (k == 'a' || k == 'A') map.fit();
+    else if (k == 'a' || k == 'A') { mapFollow=false; map.fit(); }
     else if (k == 'i' || k == 'I') {
       dev::Gps g = api->gps();
-      if (g.receiverOn && g.fresh) map.centerOn(g.lat, g.lon); else { setStatus("Kein frischer GPS-Fix"); }
+      if (g.receiverOn && g.fresh) { mapFollow=true; map.centerOn(g.lat, g.lon); followLat=g.lat; followLon=g.lon; } else { setStatus("Kein frischer GPS-Fix"); }
     }
     else if (k == 'n' || k == 'N' || k == K_ENTER || k == ' ') { map.select(map.index() + 1); api->setMapIndex(map.index()); }
     else return false;
@@ -224,7 +228,7 @@ bool UI::move(int dx, int dy) {
       return false;
 #endif
     case MAP:
-      map.pan(dx * 32, dy * 32); dirty = FULL; return true;
+      mapFollow=false; map.pan(dx * 32, dy * 32); dirty = FULL; return true;
     case LOCATION: case DEVICE: {
       int &sel = page == LOCATION ? locSel : devSel; int n = page == LOCATION ? 4 : DEVICE_BUTTONS;
       int s = sel + (step > 0 ? 1 : -1); if (s < 0) s = 0; if (s >= n) s = n - 1;
@@ -265,6 +269,7 @@ bool UI::click() {
       else if (devSel == 1) { api->advert(st, sizeof(st)); setStatus(st); }
       else if (devSel == 2) { requestDisplayOff(); return true; }
       else if (devSel == 4) { touchCalibrationReq=true; return true; }
+      else if (devSel == 5) { open(LOCATION); return true; }
       else { api->saveConfig(st, sizeof(st)); setStatus(st); }
       dirty = FULL; return true;
     default: return false;
@@ -276,7 +281,20 @@ bool UI::click() {
 bool UI::tap(int x, int y) {
   if (!api) return false;
   if (page == BOOT) { leaveBoot(); return true; }
-  if (y >= 0 && y < NAV_H) return x < ui::BACK_ZONE_W && back();
+  if (x < 0 || x >= W || y < 0 || y >= H) return false;
+  if (y < TAB_H) {
+    const Page tabs[] = {CHAT_LIST, QUICK, BOARD_LIST, MAP, DEVICE};
+    Page next = tabs[x / 64];
+    if ((next == CHAT_LIST && page == CHAT_VIEW) || (next == BOARD_LIST && page == BOARD_VIEW)) return back();
+    if (page != next) open(next);
+    return true;
+  }
+  if (y < NAV_H) return x < ui::BACK_ZONE_W && back();
+  if (page == MAP && y >= 206 && y < 228) {
+    if (x < 106) return key('-');
+    if (x >= 214) return key('+');
+    return key('i');
+  }
 #ifdef SUI_HAS_QUICK
   if (page == QUICK) { if (quick.tap(x, y, api->now())) open(MENU); dirty = FULL; return true; }
 #endif
@@ -295,6 +313,25 @@ bool UI::tap(int x, int y) {
   return false;
 }
 
+// Match the original standalone gestures; a swipe must never activate SEND or a tab.
+bool UI::gesture(int x, int y, int endX, int endY) {
+  if (x < 0 || x >= W || endX < 0 || endX >= W || y < 0 || y >= H || endY < 0 || endY >= H) return false;
+  if (page == BOOT) { leaveBoot(); return true; }
+  if (y < TAB_H || endY < TAB_H) {
+    return y < TAB_H && endY < TAB_H && x / 64 == endX / 64 && abs(x-endX) <= 20 && abs(y-endY) <= 20 && tap(x,y);
+  }
+  if (y >= NAV_H && endY >= NAV_H && abs(endY-y) > 30 && abs(endX-x) < 40) {
+    if (page == CHAT_VIEW || page == BOARD_VIEW || page == CHAT_LIST || page == BOARD_LIST)
+      return move(0, endY > y ? -1 : 1);
+    return false;
+  }
+  if (abs(x-endX) > 20 || abs(y-endY) > 20) return false;
+  // Keep a release in the same explicit SEND target.
+  if ((page == CHAT_VIEW || page == BOARD_VIEW) && y >= COMPOSE_Y &&
+      (endX < 260 || endY < COMPOSE_Y || endY >= COMPOSE_Y + COMPOSE_H)) return false;
+  return tap(x,y);
+}
+
 // ---------------------------------------------------------------------------------------------- state
 bool UI::tick(uint32_t ms) {
   nowMs = ms;
@@ -310,6 +347,12 @@ bool UI::tick(uint32_t ms) {
 #endif
   if (int32_t(ms - nextPoll) < 0) return dirty != NONE;
   nextPoll = ms + 250;
+  if (page == MAP && mapFollow) {
+    dev::Gps g=api->gps();
+    if (g.receiverOn && g.fresh && (g.lat!=followLat || g.lon!=followLon)) {
+      map.centerOn(g.lat,g.lon); followLat=g.lat; followLon=g.lon; dirty=FULL;
+    }
+  }
   uint32_t seq = api->historySeq();
   if (api->ready() && log.needsRebuild(seq)) {
     bool first = log.size() == 0 && wakeSeq == 0;
@@ -360,6 +403,14 @@ const char *UI::authorName(const chat::Entry &e, char *buf, size_t cap, const ch
 // ---------------------------------------------------------------------------------------------- drawing
 void UI::drawBoot(DisplayDriver *d) {
   d->startFrame(BG);
+  if (splash) {
+    uint16_t row[320];
+    for (int y = 0; y < 213; ++y) {
+      memcpy(row, splash + y * 640, sizeof(row));
+      d->nativeImage(0, 13 + y, 320, 1, row);
+    }
+    d->endFrame(); return;
+  }
   int y = logo ? (H - logoH - 34) / 2 : 70;
   if (y < 0) y = 0;
   if (logo) { d->nativeImage((W - logoW) / 2, y, logoW, logoH, logo); y += logoH + 8; }
@@ -407,7 +458,7 @@ void UI::drawMenu(DisplayDriver *d) {
         else snprintf(sub, sizeof(sub), "Akku \xc2\xb7 Advert \xc2\xb7 Display \xc2\xb7 SD");
         break;
     }
-    ui::text(d, 12, y + 22, MUTED, sub, 40);
+    ui::text(d, 12, y + 20, MUTED, sub, 40);
     unsigned n = MENU_PAGE[i] == CHAT_LIST ? uc : MENU_PAGE[i] == BOARD_LIST ? ub : 0;
     if (n) ui::badge(d, W - 20, y + 4, n);
     d->nativeText(W - 12, y + 12, 1, on ? MESH : MUTED, ">");
@@ -463,20 +514,21 @@ void UI::drawCompose(DisplayDriver *d) {
   bool typingNow = compose[0] != 0;
   d->nativeFill(0, COMPOSE_Y - 1, W, COMPOSE_H + 2, BG);
   d->nativeFill(2, COMPOSE_Y, W - 4, COMPOSE_H, CARD);
-  d->nativeRect(2, COMPOSE_Y, W - 4, COMPOSE_H, typingNow ? ui::FOCUS : LINE);
-  if (!nhits) addHit(2, COMPOSE_Y, W - 4, COMPOSE_H, 0);   // tap = Enter (send / join)
-  if (!typingNow) ui::text(d, 6, COMPOSE_Y + 4, MUTED, convRoom ? "Aushang (max. 100 Byte)" : "Nachricht (max. 100 Byte) \xe2\x80\xa6");
+  ui::button(d, 260, COMPOSE_Y, 58, COMPOSE_H, "SEND", false, true);
+  d->nativeRect(2, COMPOSE_Y, 254, COMPOSE_H, typingNow ? ui::FOCUS : LINE);
+  if (!nhits) addHit(260, COMPOSE_Y, 58, COMPOSE_H, 0);   // tap = Enter (send / join)
+  if (!typingNow) ui::text(d, 6, COMPOSE_Y + 4, MUTED, convRoom ? "Aushang (max. 100 Byte)" : "Nachricht (max. 100 Byte)");
   else {
     int lines = 0;
     // last two lines of the draft, cursor at the end
-    int total = countLines(compose, 51);
-    wrap(compose, 51, [&](const char *s, size_t n) {
+    int total = countLines(compose, 40);
+    wrap(compose, 40, [&](const char *s, size_t n) {
       if (lines++ < total - 2) return;
       ui::raw(d, 6, COMPOSE_Y + 3 + (lines - 1 - (total > 2 ? total - 2 : 0)) * 9, TEXT, s, n);
     });
   }
   char cnt[12]; snprintf(cnt, sizeof(cnt), "%u/100", unsigned(strlen(compose)));
-  d->nativeText(W - 4 - int(strlen(cnt)) * CW - 2, COMPOSE_Y + COMPOSE_H - 8, 1, strlen(compose) >= COMPOSE_BYTES ? BAD : MUTED, cnt);
+  d->nativeText(256 - int(strlen(cnt)) * CW - 2, COMPOSE_Y + COMPOSE_H - 8, 1, strlen(compose) >= COMPOSE_BYTES ? BAD : MUTED, cnt);
   drawHint(d);
 }
 
@@ -550,10 +602,13 @@ void UI::drawMap(DisplayDriver *d) {
   ui::button(d, BACK_X, BACK_Y, BACK_W, BACK_H, "\xe2\x86\x90 Zur\xc3\xbc" "ck", true);
   addHit(BACK_X - 2, NAV_H, BACK_W + 6, BACK_H + 4, 0);
   d->nativeText(BACK_X + BACK_W + 5, NAV_H + 4, 1, MESH, map.map().name);   // map names are CP437 already (MapData.h)
-  char z[48]; snprintf(z, sizeof(z), "x%.0f +/- i a n", map.zoomFactor() < 1 ? 1.0 : map.zoomFactor());
-  if (map.zoomFactor() < 1) snprintf(z, sizeof(z), "x1/2 +/- i a n");
+  char z[48]; snprintf(z, sizeof(z), "x%.0f", map.zoomFactor() < 1 ? 1.0 : map.zoomFactor());
+  if (map.zoomFactor() < 1) snprintf(z, sizeof(z), "x1/2");
   d->nativeText(W - 3 - int(strlen(z)) * CW, NAV_H + 4, 1, MUTED, z);
-  ui::text(d, 3, H - 20, status[0] ? PEND : MUTED, status[0] ? status : "Trackball: verschieben \xc2\xb7 Klick/ALT+Del: Zur\xc3\xbc" "ck");
+  ui::button(d, 2, 206, 102, 22, "- Zoom", false);
+  ui::button(d, 108, 206, 104, 22, "Zentrieren", false);
+  ui::button(d, 216, 206, 102, 22, "Zoom +", false);
+  if (status[0]) ui::text(d, 3, 195, PEND, status);
 }
 
 void UI::drawLocation(DisplayDriver *d) {
@@ -605,7 +660,7 @@ void UI::drawDevice(DisplayDriver *d) {
   auto row = [&](const char *k, const char *val, uint16_t c) {
     ui::text(d, 4, y, MUTED, k, 14);
     ui::text(d, 92, y, c, val, 37);
-    y += 10;
+    y += 8;
   };
   row("Name", in.name[0] ? in.name : "\xe2\x80\x93", TEXT);
   row("Firmware", in.firmware, TEXT);
@@ -631,8 +686,8 @@ void UI::drawDevice(DisplayDriver *d) {
   row("Verbrauch", est[0] ? est : "noch keine Sch\xc3\xa4tzung", est[0] ? TEXT : MUTED);
   y += 2;
   const char *buttons[DEVICE_BUTTONS] = {"Kontakte neu lesen", "Advert senden (Bekanntgabe)", "Display aus (Taste/Trackball weckt)",
-                                         "Einstellungen auf SD speichern", "Touch neu kalibrieren"};
-  for (int i = 0; i < DEVICE_BUTTONS; ++i) { ui::button(d, 4, y, W - 8, 14, buttons[i], i == devSel); addHit(4, y, W - 8, 15, i); y += 16; }
+                                         "Einstellungen auf SD speichern", "Touch neu kalibrieren", "Standort / GPS / Teilen"};
+  for (int i = 0; i < DEVICE_BUTTONS; ++i) { ui::button(d, 4, y, W - 8, 12, buttons[i], i == devSel); addHit(4, y, W - 8, 14, i); y += 14; }
   d->nativeFill(0, y, W, 11, WARN_BG);
   ui::text(d, 4, y + 2, BAD, "Kein zertifiziertes Notrufsystem \xc2\xb7 Lebensgefahr: 112");
   drawHint(d);

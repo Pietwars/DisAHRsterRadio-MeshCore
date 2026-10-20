@@ -78,13 +78,14 @@ int main() {
   u.render(&d); assert(d.outOfBounds == 0);
   assert(d.allText.find("standalone-test") != std::string::npos && d.allText.find("112") != std::string::npos);
   ms += sui::UI::BOOT_MS - 100; u.tick(ms); assert(u.onBoot());
-  ms += 200; u.tick(ms); assert(u.current() == sui::MENU && u.menuSelection() == 0);
+  ms += 200; u.tick(ms); assert(u.current() == sui::CHAT_LIST);
+  u.key(sui::K_BACK);
   {   // the first key / trackball step / click / tap only leaves the logo (nothing typed, nothing opened)
     sui::UI b; b.begin(&fake); b.tick(ms);
-    assert(b.onBoot() && b.key('x') && b.current() == sui::MENU && !b.draft()[0]);
-    sui::UI c; c.begin(&fake); c.tick(ms); assert(c.move(0, 1) && c.current() == sui::MENU && c.menuSelection() == 0);
-    sui::UI e; e.begin(&fake); e.tick(ms); assert(e.click() && e.current() == sui::MENU);
-    sui::UI f; f.begin(&fake); f.tick(ms); assert(f.tap(200, 120) && f.current() == sui::MENU);
+    assert(b.onBoot() && b.key('x') && b.current() == sui::CHAT_LIST && !b.draft()[0]);
+    sui::UI c; c.begin(&fake); c.tick(ms); assert(c.move(0, 1) && c.current() == sui::CHAT_LIST && c.menuSelection() == 0);
+    sui::UI e; e.begin(&fake); e.tick(ms); assert(e.click() && e.current() == sui::CHAT_LIST);
+    sui::UI f; f.begin(&fake); f.tick(ms); assert(f.tap(200, 120) && f.current() == sui::CHAT_LIST);
   }
   // main menu: six entries, status line with title and battery, no tab bar, no letter shortcuts
   u.setBattery(87, "~87 % \xc2\xb7 4,05 V", "ca. 18 h Restlaufzeit");
@@ -101,10 +102,10 @@ int main() {
   for (int i = 0; i < 8; ++i) u.move(0, 1);
   assert(u.menuSelection() == 5 && u.current() == sui::MENU);         // clamps, never leaves the menu
   // touch: tap the "Brett" row (row 2), the status line goes back
-  u.render(&d); assert(u.tap(100, 18 + 2 * 34 + 10) && u.current() == sui::BOARD_LIST);
-  assert(u.tap(40, 5) && u.current() == sui::MENU);
-  assert(!u.tap(theme::W - 10, 5));                                   // battery field is no back button
-  u.render(&d); assert(u.tap(100, 18 + 10) && u.current() == sui::CHAT_LIST);   // "Chat" row
+  u.render(&d); assert(u.tap(100, theme::NAV_H + 2 + 2 * 30 + 10) && u.current() == sui::BOARD_LIST);
+  assert(u.tap(40, theme::TAB_H + 5) && u.current() == sui::MENU);
+  assert(!u.tap(theme::W - 10, theme::TAB_H + 5));                                   // battery field is no back button
+  u.render(&d); assert(u.tap(100, theme::NAV_H + 12) && u.current() == sui::CHAT_LIST);   // "Chat" row
   u.render(&d); assert(d.outOfBounds == 0);
   assert(d.allText.find("Ahrtal-Hilfe") != std::string::npos);
 
@@ -131,7 +132,16 @@ int main() {
   while (u.draft()[0]) u.key(sui::K_BACKSPACE);
   // empty Enter does not send; tap on the compose box = Enter
   u.key(sui::K_ENTER); assert(fake.sends == 1);
-  type(u, "per Tipp"); u.render(&d); assert(u.tap(100, 210) && fake.sends == 2 && fake.lastText == "per Tipp");
+  type(u, "per Tipp"); u.render(&d); assert(u.tap(280, 210) && fake.sends == 2 && fake.lastText == "per Tipp");
+  type(u, "draft across tabs"); u.render(&d);
+  assert(!u.tap(100,210) && fake.sends == 2);
+  assert(!u.gesture(280,210,240,210) && fake.sends == 2);
+  assert(!u.gesture(10,10,80,10) && u.current() == sui::CHAT_VIEW);
+  assert(u.tap(90,10) && u.current() == sui::QUICK);
+  assert(u.tap(20,10) && u.current() == sui::CHAT_LIST);
+  u.click(); assert(!strcmp(u.draft(), "draft across tabs"));
+  assert(u.gesture(100,100,100,150) && fake.sends == 2);
+  while (u.draft()[0]) u.key(sui::K_BACKSPACE);
   // Backspace on an empty draft goes back to the list (fallback without ALT detection)
   u.key(sui::K_BACKSPACE); assert(u.current() == sui::CHAT_LIST);
 
@@ -145,7 +155,7 @@ int main() {
   assert(u.unreadChat() == 0);
   u.key(sui::K_BACK); assert(u.current() == sui::CHAT_LIST);
   // direct chat by touch: tap the third row
-  u.render(&d); assert(u.tap(100, 18 + 2 * 21 + 5) && !strcmp(u.conversation(), "d0a1b2c3d4e5f"));
+  u.render(&d); assert(u.tap(100, theme::NAV_H + 2 + 2 * 21 + 5) && !strcmp(u.conversation(), "d0a1b2c3d4e5f"));
   u.render(&d); assert(d.allText.find("zugestellt") != std::string::npos);
   u.key(sui::K_BACK); u.key(sui::K_BACK); assert(u.current() == sui::MENU);
 
@@ -185,6 +195,22 @@ int main() {
   u.click(); u.key(sui::K_BACK); assert(u.current() == sui::MENU);    // ALT+Backspace
   u.click(); u.key(sui::K_BACKSPACE); assert(u.current() == sui::MENU);   // plain Backspace (no text field)
 
+  // Map touch controls and GPS following are local only, never enable sharing.
+  bool shareBefore = fake.g.share;
+  fake.g.fresh=true; fake.g.lat=50.5432; fake.g.lon=7.1130;
+  openEntry(u,d,M_MAP); u.render(&d);
+  assert(u.mapView().ppd() >= 29999);
+  assert(u.tap(20,215));
+  double zoomBefore=u.mapView().zoomFactor();
+  assert(u.tap(280,215) && u.mapView().zoomFactor()>zoomBefore);
+  assert(u.tap(20,215));
+  assert(u.tap(160,215) && fake.g.share == shareBefore);
+  u.move(1,0); double cx,cy; u.mapView().project(0,0,cx,cy);
+  fake.g.lon+=0.001; step(u,d); double nx,ny; u.mapView().project(0,0,nx,ny);
+  assert(cx == nx && cy == ny); // manual pan pauses following
+  u.tap(160,215); fake.g.lon+=0.001; step(u,d);
+  u.mapView().project(0,0,nx,ny); assert(cx != nx);
+  fake.g.fresh=false;
   // Standort: share off by default; position only with share + fresh fix
   openEntry(u, d, M_LOC); assert(u.current() == sui::LOCATION);
   u.render(&d); assert(d.outOfBounds == 0 && d.allText.find("Standort teilen") != std::string::npos);
@@ -200,7 +226,7 @@ int main() {
   u.render(&d); assert(d.outOfBounds == 0);
   // touch on the first row (receiver toggle)
   { bool on = fake.g.receiverOn; u.move(0, 3); u.render(&d);
-    assert(u.tap(100, 70) && fake.g.receiverOn != on); }            // row 0 at y 65..84
+    assert(u.tap(100, 98) && fake.g.receiverOn != on); }            // row 0 at y 65..84
 
   // Gerät
   openEntry(u, d, M_DEV); assert(u.current() == sui::DEVICE);
@@ -216,7 +242,7 @@ int main() {
   u.move(0, 1); u.click(); assert(fake.saves == 1);
   u.key('d'); assert(u.takeDisplayOff() && u.current() == sui::DEVICE);   // key 'd' outside text fields
   { int r = fake.refreshes; u.render(&d);
-    assert(u.tap(100, 135) && fake.refreshes == r + 1); }           // "Kontakte neu lesen" at y 131..147
+    assert(u.tap(100, 139) && fake.refreshes == r + 1); }           // "Kontakte neu lesen" at y 131..147
 
   // Schnellmeldung: preset, letters into the text, Enter path to "Meldung senden"
   fake.g.fresh = true;                        // receiver was switched off/on above: wait for a new fix
@@ -232,10 +258,10 @@ int main() {
   u.render(&d); assert(d.outOfBounds == 0);
   u.key(sui::K_BACK); assert(u.current() == sui::MENU);               // ALT+Backspace, also from the text field
   openEntry(u, d, M_QUICK); u.render(&d);
-  assert(u.tap(20, 35) && u.quickPage().draft().focus == quick::Text);   // tap on preset 1
+  assert(u.tap(20, 63) && u.quickPage().draft().focus == quick::Text);   // tap on preset 1
   type(u, "x"); assert(u.current() == sui::QUICK);
   u.key(sui::K_BACK); assert(u.current() == sui::MENU);
-  openEntry(u, d, M_QUICK); u.render(&d); assert(u.tap(30, 5) && u.current() == sui::MENU);   // status line
+  openEntry(u, d, M_QUICK); u.render(&d); assert(u.tap(30, theme::TAB_H + 5) && u.current() == sui::MENU);   // status line
 
   // not ready: lists say so
   fake.isReady = false; openEntry(u, d, M_CHAT); u.render(&d); assert(d.allText.find("Funkkern startet") != std::string::npos);

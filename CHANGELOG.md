@@ -1,5 +1,16 @@
 # Änderungen
 
+## Unveröffentlicht · Standalone test5 · Oberfläche aus DisAHRsterRadio
+
+- Fünf Touch-Reiter CHAT/HILFE/BRETT/KARTE/SETUP, Originalfarben, vollständiges Bootmotiv
+  (1,8 s), danach MeshCore-Kanal-/Kontaktliste.
+- Bootbild-Farbfehler korrigiert: test4 hatte bei allen RGB565-Pixeln ein leeres Highbyte;
+  neu aus dem Original-JPEG kodiert, mit reproduzierbarem Generator und Farbtest.
+- Eigener SEND-Knopf statt Versand durch Tipp ins Textfeld; Wischen in Chat/Brett.
+- Touch-Zoom/Zentrieren, lokales GPS-Folgen; Setup verlinkt Standort und Touch-Kalibrierung.
+- MeshCore-Kanäle, Kontakte, Room-Server, Bluetooth, SD und OSM-Karten erhalten.
+- Vorschau nutzt denselben Bootrenderer wie die Firmware. Hardwareabnahme offen.
+
 ## Unveröffentlicht · T-Deck Plus Standalone (Issue #35) · Testbuild
 
 Testbuild `LilyGo_TDeck_standalone`, Firmwarekennung `v1.18.0-dar0.9.5-standalone-test3` (test3, siehe unten; davor `…-standalone-test`) (eigene Zeile `STANDALONE` in `VERSION`; die Web-Builds bleiben bei 0.9.4). Nicht im Release, nicht im Web-Flasher. **Noch nicht auf echter Hardware geprüft.** Details: `docs/STANDALONE.md`.

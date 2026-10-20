@@ -115,6 +115,14 @@ Alle Demos sind simuliert.
 
 [Details (ausführlich)](docs/DETAILS.md) · [Anleitung Flashen](docs/FLASHEN.md) · [Flash- und RAM-Prüfung](docs/SPEICHER.md) · [Offener Zugang](docs/OFFENER_ZUGANG.md) · [Änderungen](CHANGELOG.md) · [Original-README MeshCore](README.meshcore.md)
 
+## Standalone-Testversion für T-Deck Plus
+
+Die zusätzliche Variante `LilyGo_TDeck_standalone` übernimmt ab test5 die Oberfläche des
+DisAHRsterRadio-Standalone: vollständiges Bootmotiv, Touch-Kalibrierung und die Reiter
+CHAT/HILFE/BRETT/KARTE/SETUP. Sie verwendet MeshCore mit PIN-Bluetooth und enthält kein WLAN/Web.
+Bedienung, Installationsweg und offene Hardwaretests: [Standalone](docs/STANDALONE.md).
+Die obige Tastenbeschreibung gilt weiterhin für den normalen 0.9.4-Release.
+
 ## Für 0.9.5 vorgemerkt
 
 [T-Deck: Schnellmeldungsansicht wie auf dem Handy, mit Position senden und Tastatur](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/issues/33). Als zweite Geräteseite mit denselben Vorlagen, Text-, Orts- und Zielauswahl wie in der Weboberfläche geplant. In 0.9.4 bleibt die Tastatur ohne Funktion.

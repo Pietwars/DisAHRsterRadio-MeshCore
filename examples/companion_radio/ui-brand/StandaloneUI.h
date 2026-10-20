@@ -1,8 +1,9 @@
 #pragma once
 // Native operation of the LilyGO T-Deck Plus standalone build (Issue #35): the pages of the web UI
 // (web/index.html: Chat, Schnellmeldung, Brett, Karte, Standort, Gerät) on 320 x 240 with keyboard, trackball and
-// touch. At boot the brand logo shows for BOOT_MS (or until the first input), then the main menu opens (no tab bar,
-// no letter shortcuts). Trackball/touch select inside a page; ALT+Backspace (K_BACK) goes one level back.
+// touch. DisAHRsterRadio standalone appearance: full boot image, CHAT/HILFE/BRETT/KARTE/SETUP tabs,
+// explicit SEND button and swipe scrolling. MeshCore adds back/unread/battery below the tabs.
+// ALT+Backspace keeps the hierarchical back path and opens the auxiliary six-entry menu.
 // Hardware-free: everything goes through dev::Api (DeviceApi.h), so host tests and the preview harness
 // (tools/standalone_preview.py) run the same code as the firmware.
 #include "DeviceApi.h"
@@ -37,6 +38,8 @@ private:
   chat::Log log;
   devmap::View map;
   Page page = BOOT;
+  bool mapFollow = true;
+  double followLat = 0, followLon = 0;
   Page mapReturn = MENU;             // page that the map's "Zurück" button returns to
   int menuSel = 0;
   // touch targets of the drawn page (index = list row / menu entry / button)
@@ -46,6 +49,7 @@ private:
   int nhits = 0;
   void addHit(int x, int y, int w, int h, int idx);
   uint32_t bootUntil = 0, nowMs = 0;
+  const uint8_t *splash = nullptr;
   const uint16_t *logo = nullptr; int logoW = 0, logoH = 0;
   int battPct = -1; char battLine[48] = "", battEst[48] = "";
   bool displayOffReq = false;
@@ -69,7 +73,7 @@ private:
   bool quickText() const;
   void sendCompose();
   void sendPosition();
-  void leaveBoot() { open(MENU); }
+  void leaveBoot() { open(CHAT_LIST); }
   void leaveMap() { open(mapReturn); }
   void requestDisplayOff() { displayOffReq = true; }
   bool listMove(Page p, int dy, unsigned n);
@@ -85,11 +89,12 @@ private:
   void drawMenu(DisplayDriver *d);
   const char *authorName(const chat::Entry &e, char *buf, size_t cap, const char **body) const;
 public:
-  static constexpr uint32_t BOOT_MS = 2500;                // boot logo, then the main menu
+  static constexpr uint32_t BOOT_MS = 1800;                // original standalone timing, then channel/contact list
   // "Zurück" button of the map (top left, below the tab strip): touch target and trackball-click action.
   static constexpr int BACK_X = 2, BACK_Y = theme::NAV_H + 1, BACK_W = 62, BACK_H = 14;
   bool begin(dev::Api *a);
   // Brand image of the boot logo (RGB565, BrandLogo.h in the firmware); without one only text is shown.
+  void setSplash(const uint8_t *pixels) { splash = pixels; }
   void setLogo(const uint16_t *img, int w, int h) { logo = img; logoW = w; logoH = h; }
   // Battery reading of UITask: level for the tab strip, texts (level/voltage, consumption) for Gerät.
   void setBattery(int pct, const char *line, const char *estimate);
@@ -98,11 +103,12 @@ public:
   // Input. Each returns true if the page must be redrawn.
   bool key(uint8_t k);
   bool move(int dx, int dy);
-  // Trackball click: Enter on every page; on the map it is the "Zurück" button; on the boot logo it opens the menu.
+  // Trackball click: Enter on every page; on the map it is the "Zurück" button; on the boot logo it opens the chat list.
   bool click();
-  // Touch tap at screen coordinates: status line = back; menu entries, list rows, buttons, compose box, the map's
+  // Touch tap at screen coordinates: status line = back; menu entries, list rows, buttons, SEND, the map's
   // "Zurück" (targets of the last render); leaves the boot logo.
   bool tap(int x, int y);
+  bool gesture(int x, int y, int endX, int endY);
   // One level back (ALT+Backspace, Esc, status line tap): conversation -> list -> menu, map -> where it was opened.
   bool back();
   // true once after "Display aus" (Gerät button or key 'd'): the caller switches the display off.

@@ -52,7 +52,7 @@ void UITask::begin(DisplayDriver* display, SensorManager* sensors, NodePrefs* no
   sampleBattery(millis());
 #ifdef DAR_STANDALONE_UI
   _sui.begin(&dev::api());
-  _sui.setLogo(BRAND_LOGO, BRAND_LOGO_W, BRAND_LOGO_H);   // boot logo, then Chat
+  _sui.setSplash(tdeckSplash);   // boot logo, then Chat
   pushBattery();
   Wire.setTimeOut(20);
   tdeck_touch_found=tdeck_touch.begin();
@@ -204,12 +204,6 @@ void UITask::render() {
   bool small = W <= 240;
 #ifdef DAR_STANDALONE_UI
   if(!_pairing && _touch_calibrating) {renderCalibration(); return;}
-  if(!_pairing && _sui.onBoot()) {
-    d->startFrame(C_BG);
-    uint16_t row[320];
-    for(int y=0;y<213;++y) {memcpy(row,tdeckSplash+y*640,sizeof(row)); d->nativeImage(0,13+y,320,1,row);}
-    d->endFrame(); return;
-  }
   if (!_pairing) { _sui.render(d); return; }      // boot logo or page; the PIN screen below stays as before
 #endif
   d->startFrame(C_BG);
@@ -411,8 +405,8 @@ void UITask::pollTouch(unsigned long now) {
   int sx,sy,ex,ey;
   _touch_transform.map(_touch_x,_touch_y,sx,sy);
   _touch_transform.map(_touch_last_x,_touch_last_y,ex,ey);
-  if(abs(sx-ex)>20||abs(sy-ey)>20||sx<0||sx>=320||sy<0||sy>=240)return;
-  if(_sui.tap(sx,sy))input();
+  if(sx<0||sx>=320||sy<0||sy>=240)return;
+  if(_sui.gesture(sx,sy,ex,ey))input();
   else _auto_off=now+BRAND_AUTO_OFF_MILLIS;
 }
 

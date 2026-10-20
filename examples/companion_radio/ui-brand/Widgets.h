@@ -27,7 +27,7 @@ inline void centerText(DisplayDriver *d, int cx, int y, uint16_t c, const char *
 }
 // Web buttons: .b (mesh green, dark text) and .b2 (#24384a, light text); focus = orange outline like the
 // T-Deck quick page of 0.9.5-test.
-constexpr uint16_t FOCUS = theme::rgb(0xffa500);
+constexpr uint16_t FOCUS = 0xfce0;
 inline void button(DisplayDriver *d, int x, int y, int w, int h, const char *label, bool focused, bool primary = false) {
   d->nativeFill(x, y, w, h, primary ? theme::MESH : theme::BUTTON2);
   d->nativeRect(x, y, w, h, focused ? FOCUS : (primary ? theme::MESH : theme::LINE));
@@ -45,31 +45,44 @@ inline int &navBattery() { static int pct = -1; return pct; }
 // Battery field: outline icon filled by level (green from 40 %, amber from 15 %, else red) and "87%".
 inline void navBatteryField(DisplayDriver *d) {
   const int x0 = theme::W - theme::BATT_W, pct = navBattery();
-  d->nativeFill(x0, 0, theme::BATT_W, theme::NAV_H - 1, theme::NAV_BG);
-  d->nativeFill(x0, 2, 1, theme::NAV_H - 5, theme::LINE);
-  const int ix = x0 + 4, iy = 4, iw = 13, ih = 7;
+  d->nativeFill(x0, theme::TAB_H, theme::BATT_W, theme::STATUS_H - 1, theme::NAV_BG);
+  d->nativeFill(x0, theme::TAB_H + 2, 1, theme::STATUS_H - 5, theme::LINE);
+  const int ix = x0 + 4, iy = theme::TAB_H + 4, iw = 13, ih = 7;
   d->nativeRect(ix, iy, iw, ih, theme::TEXT);
   d->nativeFill(ix + iw, iy + 2, 2, ih - 4, theme::TEXT);
   uint16_t c = pct >= 40 ? theme::MESH : pct >= 15 ? theme::PEND : theme::BAD;
   if (pct > 0) { int fw = (iw - 4) * (pct > 100 ? 100 : pct) / 100; if (fw < 1) fw = 1; d->nativeFill(ix + 2, iy + 2, fw, ih - 4, c); }
   char t[8]; if (pct >= 0) snprintf(t, sizeof(t), "%d%%", pct > 100 ? 100 : pct); else snprintf(t, sizeof(t), "--%%");
-  d->nativeText(theme::W - 2 - int(strlen(t)) * theme::CW, 4, 1, pct >= 0 && pct < 15 ? theme::BAD : theme::TEXT, t);
+  d->nativeText(theme::W - 2 - int(strlen(t)) * theme::CW, theme::TAB_H + 4, 1, pct >= 0 && pct < 15 ? theme::BAD : theme::TEXT, t);
 }
-// Slim status line on top of every page (replaces the tab bar): "← Title" left (tap = one level back; orange
+// Original standalone tab bar plus MeshCore status line: "← Title" left (tap = one level back; orange
 // frame when the back action has the focus), unread total as a wine badge, battery right.
 constexpr int BACK_ZONE_W = theme::W - theme::BATT_W;   // tapping the status line left of the battery = back
 inline void statusLine(DisplayDriver *d, const char *title_utf8, bool back, unsigned unread, bool back_focus = false) {
   d->nativeFill(0, 0, theme::W, theme::NAV_H, theme::NAV_BG);
+  const char *tabs[] = {"CHAT", "HILFE", "BRETT", "KARTE", "SETUP"};
+  int selected = !strcmp(title_utf8, "Chat") ? 0 : !strcmp(title_utf8, "Meldung") ? 1 :
+                 !strcmp(title_utf8, "Brett") ? 2 : !strcmp(title_utf8, "Karte") ? 3 :
+                 !strcmp(title_utf8, "Standort") || !strncmp(title_utf8, "Ger", 3) ? 4 : -1;
+  for (int i = 0; i < 5; ++i) {
+    if (i == selected) { // rounded 60 x 22 tab, as in TDeckUI::header()
+      int x = 2 + i * 64;
+      d->nativeFill(x + 4, 3, 52, 22, theme::MESH);
+      d->nativeFill(x, 7, 60, 14, theme::MESH);
+      d->nativeFill(x + 2, 4, 56, 20, theme::MESH);
+    }
+    text(d, 11 + i * 64, 10, i == selected ? theme::BG : theme::TEXT, tabs[i]);
+  }
   d->nativeFill(0, theme::NAV_H - 1, theme::W, 1, theme::LINE);
   int x = 4;
-  if (back) { d->nativeText(x, 4, 1, theme::MESH, "\x1b"); x += 2 * theme::CW; }
-  text(d, x, 4, back ? theme::TEXT : theme::MESH, title_utf8, 30);
-  if (back_focus) d->nativeRect(0, 0, x + textWidth(title_utf8) + 4, theme::NAV_H - 1, FOCUS);
+  if (back) { d->nativeText(x, theme::TAB_H + 4, 1, theme::MESH, "\x1b"); x += 2 * theme::CW; }
+  text(d, x, theme::TAB_H + 4, back ? theme::TEXT : theme::MESH, title_utf8, 30);
+  if (back_focus) d->nativeRect(0, theme::TAB_H, x + textWidth(title_utf8) + 4, theme::STATUS_H - 1, FOCUS);
   if (unread) {
     char t[12]; snprintf(t, sizeof(t), "%u neu", unread > 99 ? 99 : unread);
     int bw = int(strlen(t)) * theme::CW + 4, bx = theme::W - theme::BATT_W - 4 - bw;
-    d->nativeFill(bx, 3, bw, 10, theme::WINE);
-    d->nativeText(bx + 2, 4, 1, theme::TEXT, t);
+    d->nativeFill(bx, theme::TAB_H + 3, bw, 10, theme::WINE);
+    d->nativeText(bx + 2, theme::TAB_H + 4, 1, theme::TEXT, t);
   }
   navBatteryField(d);
 }
