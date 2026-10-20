@@ -1,0 +1,79 @@
+name: Publish standalone test5 prerelease
+on:
+  push:
+    branches: ['release/standalone-test5']
+    paths: ['.github/workflows/publish-standalone-test5.yml']
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: publish-standalone-test5
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      TAG: standalone-test5
+    steps:
+      - name: Verify tested source and download exact artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(gh api repos/$GH_REPO/actions/runs/39347344229 --jq .conclusion)" = success
+          test "$(gh api repos/$GH_REPO/actions/runs/39347344229 --jq .head_sha)" = 1579dd327891e0248a6d884c52f83a92dfaba65c
+          tested=$(gh api repos/$GH_REPO/git/commits/1579dd327891e0248a6d884c52f83a92dfaba65c --jq .tree.sha)
+          merged=$(gh api repos/$GH_REPO/git/commits/2449ed1aba90101d9ce7fe7df5e703aa64fa63ea --jq .tree.sha)
+          test "$tested" = "$merged"
+          gh api repos/$GH_REPO/actions/artifacts/12231349574/zip > artifact.zip
+          echo '555593ed4edcd0541cb8d218551df3c6c7bb27ab2b22529b69a63319e488959c  artifact.zip' | sha256sum --check
+      - name: Package firmware with explicit hardware-test warning
+        shell: bash
+        run: |
+          set -euo pipefail
+          unzip -q artifact.zip -d artifact
+          mkdir package
+          python3 - <<'PY'
+          from pathlib import Path
+          import shutil, hashlib, json
+          root=Path('artifact'); out=Path('package')
+          for name in ['firmware.bin','bootloader.bin','partitions.bin','standalone-report.json','standalone-report.md']:
+              files=list(root.rglob(name))
+              assert len(files)==1, (name, files)
+              shutil.copyfile(files[0],out/name)
+          rep=json.loads((out/'standalone-report.json').read_text())['result']
+          fw=(out/'firmware.bin').read_bytes()
+          assert hashlib.sha256(fw).hexdigest()==rep['sha256']
+          assert b'v1.18.0-dar0.9.5-standalone-test5' in fw
+          assert not rep['forbidden_linked'] and rep['nm_checked'] and not rep['forbidden_symbols']
+          assert 'Ergebnis: OK' in (out/'standalone-report.md').read_text()
+          (out/'LIESMICH.txt').write_text('NOCH NICHT AUF HARDWARE GETESTET\n\nDisAHRsterRadio-MeshCore Standalone test5 fuer LILYGO T-Deck Plus.\nExperimentelle Vorabversion, keine Hardware-Abnahme.\nHosttests, Firmwarebuild und check_standalone sind erfolgreich.\n\nOffen: ALT+Backspace, Touch/Kalibrierung/Gesten, Bootlogo-Timing/Farben, Akku, Display-Wakeup, Karte, GPS, SD, Bluetooth und offene Punkte aus PR #38.\n\nInstallation und Sicherung: https://github.com/Pietwars/DisAHRsterRadio-MeshCore/blob/standalone-test5/docs/STANDALONE.md\nBei Wechsel von LoRaLayer2 Partitionen beachten; kein blindes App-Update.\nFirmware: v1.18.0-dar0.9.5-standalone-test5\nGepruefter PR-Stand: 1579dd327891e0248a6d884c52f83a92dfaba65c\nMerge-Commit: 2449ed1aba90101d9ce7fe7df5e703aa64fa63ea\n',encoding='utf-8')
+          (out/'SHA256SUMS.txt').write_text(''.join(hashlib.sha256(p.read_bytes()).hexdigest()+'  '+p.name+'\n' for p in sorted(out.iterdir())))
+          PY
+          (cd package && zip -q ../DisAHRsterRadio-MeshCore-TDeck-standalone-test5.zip *)
+          sha256sum DisAHRsterRadio-MeshCore-TDeck-standalone-test5.zip > SHA256SUMS.txt
+          cat > notes.md <<'EOF'
+          **NOCH NICHT AUF HARDWARE GETESTET.**
+          
+          Experimentelle Vorabversion fuer den **LILYGO T-Deck Plus**, Target `LilyGo_TDeck_standalone`. Keine abgeschlossene Hardware-Abnahme.
+          
+          PR #39 ist gemergt. Enthalten sind die DisAHRsterRadio-Standalone-Oberflaeche mit CHAT/HILFE/BRETT/KARTE/SETUP, Touch und Wischbedienung, separater SEND-Taste, Bootmotiv in korrigierten Originalfarben, Karten-Zoom/Zentrieren und GPS-Nachfuehrung. MeshCore-Anbindung, Bluetooth, SD und explizite Standortfreigabe bleiben erhalten.
+          
+          **Softwarepruefungen erfolgreich:** neun Standalone-Hosttests, Firmwarebuild, `check_standalone` sowie alle vier PR-Prueflaeufe. Das Paket stammt unveraendert aus dem geprueften Firmware-Artefakt; Firmware-Pruefsumme und identischer Quellbaum zum Merge wurden geprueft.
+          
+          **Hardwaretests offen:** ALT+Backspace, Touch-Ausrichtung/Kalibrierung/Gesten, Bootlogo-Timing/Farben, Akkuanzeige, Display-Wakeup, Karte, GPS, SD, Bluetooth und offene Punkte aus PR #38.
+          
+          Firmwarekennung: `v1.18.0-dar0.9.5-standalone-test5`.
+          Tag: `standalone-test5`; Merge: `2449ed1`; gepruefter PR-Stand: `1579dd3`.
+          
+          [Installation und Sicherung](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/blob/standalone-test5/docs/STANDALONE.md) beachten. Bei Wechsel von LoRaLayer2 unterscheiden sich die Partitionen: kein blindes App-Update.
+          
+          Das ZIP enthaelt Firmware, Bootloader, Partitionen, Pruefbericht, LIESMICH und SHA256-Pruefsummen. Bestehende stabile Releases bleiben unveraendert.
+          EOF
+      - name: Publish prerelease without replacing stable releases
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release create "$TAG" --target 2449ed1aba90101d9ce7fe7df5e703aa64fa63ea --prerelease --latest=false --title "Standalone test5 – NOCH NICHT AUF HARDWARE GETESTET" --notes-file notes.md DisAHRsterRadio-MeshCore-TDeck-standalone-test5.zip SHA256SUMS.txt
+          gh release view "$TAG" --json url,isPrerelease,assets
