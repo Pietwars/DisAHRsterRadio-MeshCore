@@ -1,6 +1,6 @@
 # Änderungen
 
-## Unveröffentlicht · Standalone test5 · Oberfläche aus DisAHRsterRadio
+## Standalone test5 · 20.10.2026 · experimentelles Prerelease (keine Hardwareabnahme)
 
 - Fünf Touch-Reiter CHAT/HILFE/BRETT/KARTE/SETUP, Originalfarben, vollständiges Bootmotiv
   (1,8 s), danach MeshCore-Kanal-/Kontaktliste.
@@ -9,11 +9,11 @@
 - Eigener SEND-Knopf statt Versand durch Tipp ins Textfeld; Wischen in Chat/Brett.
 - Touch-Zoom/Zentrieren, lokales GPS-Folgen; Setup verlinkt Standort und Touch-Kalibrierung.
 - MeshCore-Kanäle, Kontakte, Room-Server, Bluetooth, SD und OSM-Karten erhalten.
-- Vorschau nutzt denselben Bootrenderer wie die Firmware. Hardwareabnahme offen.
+- Vorschau nutzt denselben Bootrenderer wie die Firmware. [Prerelease standalone-test5](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/standalone-test5) nach Merge von PR #39 veröffentlicht; **Hardwareabnahme offen** ([Prüfprotokoll](docs/STANDALONE-ABNAHME.md), [Issue #40](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/issues/40)). Nicht im stabilen Web-Flasher.
 
-## Unveröffentlicht · T-Deck Plus Standalone (Issue #35) · Testbuild
+## Historie · T-Deck Plus Standalone (Issue #35) · früherer test3-Build
 
-Testbuild `LilyGo_TDeck_standalone`, Firmwarekennung `v1.18.0-dar0.9.5-standalone-test3` (test3, siehe unten; davor `…-standalone-test`) (eigene Zeile `STANDALONE` in `VERSION`; die Web-Builds bleiben bei 0.9.4). Nicht im Release, nicht im Web-Flasher. **Noch nicht auf echter Hardware geprüft.** Details: `docs/STANDALONE.md`.
+Früherer Teststand `LilyGo_TDeck_standalone` mit Firmwarekennung `v1.18.0-dar0.9.5-standalone-test3` (davor `…-standalone-test`, eigene Zeile `STANDALONE` in `VERSION`; Web-Builds bleiben bei 0.9.4). Die nachfolgende test5-Firmware wurde separat als experimentelles Prerelease veröffentlicht; test3 war kein stabiles Release. **Noch keine vollständige Geräteabnahme.** Aktuelle Bedienung siehe `docs/STANDALONE.md`; unten bleibt die historische test3-Bedienung dokumentiert.
 
 - **Ohne WLAN/Weboberfläche**, MeshCore über PIN-Bluetooth; Bedienung am Gerät mit Tastatur, Trackball und Touch im Design der Weboberfläche: Boot-Logo, dann Hauptmenü mit Chat, Meldung, Brett, Karte, Standort, Gerät.
 - **Chat:** Kanal- und Kontaktliste, Verlauf, Tippen + Enter, Ungelesen-Zahlen, Aufwachen bei neuer Nachricht, Spiegelung in die MeshCore-App (Herkunft „T-Deck“).
