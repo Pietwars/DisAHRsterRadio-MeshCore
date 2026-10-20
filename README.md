@@ -120,7 +120,7 @@ Alle Demos sind simuliert.
 Die zusätzliche Variante `LilyGo_TDeck_standalone` übernimmt ab test5 die Oberfläche des
 DisAHRsterRadio-Standalone: vollständiges Bootmotiv, Touch-Kalibrierung und die Reiter
 CHAT/HILFE/BRETT/KARTE/SETUP. Sie verwendet MeshCore mit PIN-Bluetooth und enthält kein WLAN/Web.
-Bedienung, Installationsweg und offene Hardwaretests: [Standalone](docs/STANDALONE.md).
+Die Firmware ist als **[experimentelles Prerelease `standalone-test5`](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/standalone-test5)** erhältlich, **noch ohne Geräteabnahme**; nicht im stabilen Web-Flasher. Bedienung und Flash-Hinweise: [Standalone](docs/STANDALONE.md). Prüfprogramm und offener Status: [Hardware-Abnahmeprotokoll](docs/STANDALONE-ABNAHME.md) · [Issue #40](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/issues/40).
 Die obige Tastenbeschreibung gilt weiterhin für den normalen 0.9.4-Release.
 
 ## Für 0.9.5 vorgemerkt
