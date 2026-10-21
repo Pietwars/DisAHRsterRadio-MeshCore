@@ -353,12 +353,12 @@ void TDeckQuickPage::render(DisplayDriver* d) {
   }
   ui::statusLine(d, "Meldung", true, unreadChat + unreadBoard, model.focus == quick::Home);
   char line[128];
-  auto button = [&](int i, const char *label, bool on, bool primary = false) {
+  auto button = [&](int i, const char *label, bool on, bool primary) {
     auto r = touchui::quickControl(i);
     ui::button(d, r.x, r.y, r.w, r.h, label, on, primary);
   };
   snprintf(line, sizeof(line), "Vorlage: %s  >", quick::PRESETS[model.preset].label);
-  button(0, line, model.focus == quick::Presets);
+  button(0, line, model.focus == quick::Presets, false);
   auto text = touchui::quickControl(1);
   ui::button(d, text.x, text.y, text.w, text.h, "", model.focus == quick::Text);
   // Two physical-keyboard lines, cut only at complete UTF-8 character boundaries.
@@ -371,23 +371,23 @@ void TDeckQuickPage::render(DisplayDriver* d) {
   });
   snprintf(line, sizeof(line), "%u/100", unsigned(strlen(model.text)));
   ui::rightText(d, 256, 130, GREY, line);
-  button(2, "Leeren", model.focus == quick::Clear);
+  button(2, "Leeren", model.focus == quick::Clear, false);
   const char *place = model.place < 0    ? "Ohne Standort"
                       : model.place == 0 ? "Mein GPS"
                                          : quick::PLACES[model.place - 1].name;
   auto placeRect = touchui::quickControl(3);
-  button(3, "", model.focus == quick::PlaceSelect);
+  button(3, "", model.focus == quick::PlaceSelect, false);
   snprintf(line, sizeof(line), "Ort: %s >", place);
   ui::text(d, placeRect.x + 8, placeRect.y + 12, WHITE, line, 20);
   ui::text(d,placeRect.x+placeRect.w-12,placeRect.y+12,WHITE,">");
   // UTF-8-safe truncation is performed by the shared text helper, not snprintf's byte precision.
   auto targetRect = touchui::quickControl(4);
-  button(4, "", model.focus == quick::Target);
+  button(4, "", model.focus == quick::Target, false);
   snprintf(line,sizeof(line),"Ziel: %s",targetName);
   ui::text(d, targetRect.x + 8, targetRect.y + 12, WHITE, line, 20);
   ui::text(d,targetRect.x+targetRect.w-12,targetRect.y+12,WHITE,">");
   button(5, "Meldung senden", model.focus == quick::Send, true);
-  button(6, "Position senden", model.focus == quick::Position);
+  button(6, "Position senden", model.focus == quick::Position, false);
   displayText(d, 4, 222, FOCUS, status);
   if (strlen(status) > 52) displayText(d, 4, 231, FOCUS, status + 52);
   d->endFrame();
