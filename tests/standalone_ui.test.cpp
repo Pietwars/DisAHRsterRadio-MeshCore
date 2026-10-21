@@ -37,6 +37,12 @@ static void testMap() {
   assert(devmap::View::clip(x0, y0, x1, y1) && x0 == 0 && x1 == 319);
   x0 = -5; y0 = 5; x1 = -1; y1 = 300; assert(!devmap::View::clip(x0, y0, x1, y1));
   assert(v.inside(50.53, 7.05));                 // Ahrtal overview contains Dernau / Ahrweiler
+  // View-only fallback: the village centre must project to the screen centre.
+  v.centerOn(50.543333, 7.175806);
+  double ux, uy, px, py;
+  v.toUnits(50.543333, 7.175806, ux, uy); v.project(ux, uy, px, py);
+  assert(fabs(px - 160) < 0.01 && fabs(py - (devmap::View::TOP + devmap::View::HEIGHT / 2.0)) < 0.01);
+  v.select(0);
   assert(!v.inside(52.52, 13.40));               // Berlin is not on the map
   double before = v.ppd(); v.zoom(2); assert(v.ppd() > 1.9 * before);
   v.zoom(1000); assert(v.zoomFactor() <= 32.0001);
@@ -176,6 +182,11 @@ int main() {
 
   // map: "Zurück" button top left (tap, trackball click, ALT+Backspace) back to the menu
   openEntry(u, d, M_MAP); assert(u.current() == sui::MAP && u.mapReturnPage() == sui::MENU);
+  double fallbackX, fallbackY, fallbackPX, fallbackPY;
+  u.mapView().toUnits(50.543333,7.175806,fallbackX,fallbackY);
+  u.mapView().project(fallbackX,fallbackY,fallbackPX,fallbackPY);
+  assert(fabs(fallbackPX-160)<0.01 && fabs(fallbackPY-(devmap::View::TOP+devmap::View::HEIGHT/2.0))<0.01);
+  assert(!fake.g.fresh && fake.g.lat==0 && fake.g.lon==0);
   u.render(&d); assert(d.outOfBounds == 0);
   assert(d.allText.find("\x1b Zur\x81" "ck") != std::string::npos);
   assert(d.fb[sui::UI::BACK_Y * 320 + sui::UI::BACK_X] == ui::FOCUS);      // drawn focused: the click target

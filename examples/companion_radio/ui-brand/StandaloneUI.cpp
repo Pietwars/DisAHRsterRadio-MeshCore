@@ -88,6 +88,7 @@ void UI::open(Page p) {
     mapReturn = page == BOOT ? MENU : page; mapFollow = true;
     dev::Gps g = api->gps();
     if (g.receiverOn && g.fresh) { map.centerOn(g.lat,g.lon); followLat=g.lat; followLon=g.lon; }
+    else map.centerOn(50.543333, 7.175806); // Heimersheim (Ahrtal): view only, never a GPS/advert position
   }
   page = p; scroll = 0; dirty = FULL; nhits = 0;   // touch targets belong to the drawn page
 }
@@ -609,6 +610,7 @@ void UI::drawMap(DisplayDriver *d) {
   ui::button(d, 108, 206, 104, 22, "Zentrieren", false);
   ui::button(d, 216, 206, 102, 22, "Zoom +", false);
   if (status[0]) ui::text(d, 3, 195, PEND, status);
+  else if (!haveMe) ui::text(d, 3, 195, MUTED, "Kein GPS-Fix / Kartenansicht");
 }
 
 void UI::drawLocation(DisplayDriver *d) {
