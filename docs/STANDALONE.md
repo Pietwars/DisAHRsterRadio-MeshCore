@@ -150,9 +150,9 @@ angepasst; die Oberfläche ist kein Austausch des Funkprotokolls und keine pixel
   `dar-mc-touch/cal-v1`, unabhaengig von SD. Erneut unter Geraet / Touch neu
   kalibrieren. Abbrechen behaelt die bisherigen Werte.
 - Beim Oeffnen der Karte ohne frischen GPS-Fix wird nur die Ansicht auf
-  Heimersheim im Ahrtal zentriert: 50.544444 N, 7.170278 E
-  (50 Grad 32 Minuten 40 Sekunden N, 7 Grad 10 Minuten 13 Sekunden E).
-  Quelle: https://de.wikipedia.org/wiki/Heimersheim_(Bad_Neuenahr-Ahrweiler).
+  Heimersheim im Ahrtal zentriert, bei St. Mauritius im Ortskern: 50.543333 N, 7.175806 E
+  (50 Grad 32 Minuten 36 Sekunden N, 7 Grad 10 Minuten 32,9 Sekunden E).
+  Quelle: https://de.wikipedia.org/wiki/St._Mauritius_(Heimersheim).
   Keine Aenderung an GPS-Daten, NodePrefs, Standortfreigabe oder Sendedaten;
   kein Ich-Marker ohne frischen Fix. Manuelles Verschieben bleibt moeglich.
 

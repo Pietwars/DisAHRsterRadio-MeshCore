@@ -88,7 +88,7 @@ void UI::open(Page p) {
     mapReturn = page == BOOT ? MENU : page; mapFollow = true;
     dev::Gps g = api->gps();
     if (g.receiverOn && g.fresh) { map.centerOn(g.lat,g.lon); followLat=g.lat; followLon=g.lon; }
-    else map.centerOn(50.544444, 7.170278); // Heimersheim (Ahrtal): view only, never a GPS/advert position
+    else map.centerOn(50.543333, 7.175806); // Heimersheim (Ahrtal): view only, never a GPS/advert position
   }
   page = p; scroll = 0; dirty = FULL; nhits = 0;   // touch targets belong to the drawn page
 }
