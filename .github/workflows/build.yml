@@ -99,6 +99,10 @@ jobs:
           --output .pio/build/LilyGo_TDeck_standalone/standalone-report
       - name: Bericht
         run: cat .pio/build/LilyGo_TDeck_standalone/standalone-report.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Echte Touch-Layout-Vorschauen (Demodaten, keine Hardwareaufnahme)
+        run: |
+          pip install pillow==11.3.0
+          python3 tools/standalone_preview.py .pio/build/LilyGo_TDeck_standalone/touch-preview
       - uses: actions/upload-artifact@v4
         with:
           name: LilyGo_TDeck_standalone-test
@@ -108,4 +112,5 @@ jobs:
             .pio/build/LilyGo_TDeck_standalone/partitions.bin
             .pio/build/LilyGo_TDeck_standalone/standalone-report.json
             .pio/build/LilyGo_TDeck_standalone/standalone-report.md
+            .pio/build/LilyGo_TDeck_standalone/touch-preview/*.png
             .pio-LilyGo_TDeck_standalone.log

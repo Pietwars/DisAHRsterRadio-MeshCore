@@ -136,6 +136,8 @@ angepasst; die Oberfläche ist kein Austausch des Funkprotokolls und keine pixel
 
 ## Aufbau
 
+Fingerfreundliche Folgeversion: [Touch-Bedienung und Testhinweise](STANDALONE_TOUCH.md).
+
 ### Korrekturen nach Hardware-Rueckmeldung zu test5
 
 - I2C: `TDeckBoard::begin()` setzt SDA 18 / SCL 8 vor `ESP32Board::begin()`.

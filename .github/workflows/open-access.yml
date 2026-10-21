@@ -50,6 +50,8 @@ jobs:
           /tmp/chat-log
           $C11 -Wno-unused-parameter -DLILYGO_TDECK -DDISASTER_STANDALONE -I tests/ui_fakes -I src tests/standalone_ui.test.cpp examples/companion_radio/ui-brand/StandaloneUI.cpp examples/companion_radio/ui-brand/TDeckQuickPage.cpp -o /tmp/standalone-ui
           /tmp/standalone-ui
+          $C11 -Wno-unused-parameter -Wno-misleading-indentation -DLILYGO_TDECK -DDISASTER_STANDALONE -I tests/ui_fakes -I src tests/touch_ui.test.cpp examples/companion_radio/ui-brand/StandaloneUI.cpp examples/companion_radio/ui-brand/TDeckQuickPage.cpp -o /tmp/touch-ui
+          /tmp/touch-ui
           $C11 tests/gps_share.test.cpp -o /tmp/gps-share
           /tmp/gps-share
           $C11 tests/device_config.test.cpp -o /tmp/device-config

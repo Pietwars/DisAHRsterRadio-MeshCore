@@ -84,6 +84,10 @@ void TDeckQuickPage::submit(bool position, uint32_t stamp) {
 }
 
 bool TDeckQuickPage::activate(uint32_t stamp) {
+  if (picker >= 0) {
+    choose(pickerSel);
+    return false;
+  }
   switch (model.focus) {
     case quick::Presets: model.selectPreset(model.preset); model.focus = quick::Text; draftChanged(); break;
     case quick::Text: model.focus = quick::PlaceSelect; break;
@@ -100,6 +104,17 @@ bool TDeckQuickPage::activate(uint32_t stamp) {
 
 bool TDeckQuickPage::key(uint8_t key, uint32_t stamp) {
   // The original keyboard has no TAB/ESC keys. Its documented ALT+C sends 0x0C.
+  if (picker >= 0) {
+    if (key == 27 || key == 8) {
+      closePicker();
+      return false;
+    }
+    if (key == '\r' || key == '\n') {
+      choose(pickerSel);
+      return false;
+    }
+    return false;
+  }
   if (key == 12 || key == '\t') { model.focus = quick::Focus((model.focus + 1) % quick::FOCUS_COUNT); return false; }
   if (key == 27) return true;
   if (key == '\r' || key == '\n') return activate(stamp);
@@ -129,6 +144,16 @@ bool TDeckQuickPage::key(uint8_t key, uint32_t stamp) {
 }
 
 bool TDeckQuickPage::move(int dx, int dy) {
+  if (picker >= 0) {
+    int n = int(choiceCount()), dir = dy ? dy : dx;
+    if (!dir || !n) return false;
+    pickerSel += dir > 0 ? 1 : -1;
+    if (pickerSel < 0) pickerSel = 0;
+    if (pickerSel >= n) pickerSel = n - 1;
+    if (pickerSel < pickerTop) pickerTop = pickerSel;
+    if (pickerSel >= pickerTop + touchui::VISIBLE_ROWS) pickerTop = pickerSel - touchui::VISIBLE_ROWS + 1;
+    return true;
+  }
   if (dy) { model.focus = quick::Focus((model.focus + quick::FOCUS_COUNT + (dy > 0 ? 1 : -1)) % quick::FOCUS_COUNT); return true; }
   if (!dx) return false;
   int dir = dx < 0 ? -1 : 1;
@@ -138,18 +163,146 @@ bool TDeckQuickPage::move(int dx, int dy) {
   return false;
 }
 
-// Touch: the fixed layout of render() below. The status line (back) is handled by the caller.
+unsigned TDeckQuickPage::choiceCount() const {
+  if (picker == 0) return quick::PRESET_COUNT;
+  if (picker == 1) return quick::PLACE_COUNT + 2;
+  unsigned count = 0;
+  char id[14], name[64];
+  while (api && count < 72 && quickTarget(*api, count, id, sizeof(id), name, sizeof(name)))
+    ++count;
+  return count;
+}
+void TDeckQuickPage::openPicker(int which) {
+  picker = which;
+  pickerSel = which == 0 ? model.preset : which == 1 ? model.place + 1 : int(targetIndex);
+  pickerTop = pickerSel / touchui::VISIBLE_ROWS * touchui::VISIBLE_ROWS;
+  pickerRows = 0;
+}
+void TDeckQuickPage::choose(int index) {
+  if (picker == 0) {
+    model.selectPreset(index);
+    model.focus = quick::Text;
+    draftChanged();
+  } else if (picker == 1) {
+    model.place = index - 1;
+    placeChosen = true;
+    model.focus = quick::PlaceSelect;
+    draftChanged();
+  } else {
+    char id[14], name[64];
+    if (api && quickTarget(*api, unsigned(index), id, sizeof(id), name, sizeof(name))) {
+      setTarget(id);
+      model.focus = quick::Target;
+      draftChanged();
+    }
+  }
+  picker = -1;
+}
+int TDeckQuickPage::touchTarget(int x, int y) const {
+  if (picker >= 0) {
+    for (int r = 0; r < pickerRows; ++r)
+      if (touchui::row(r).contains(x, y)) return 200 + r;
+    return -1;
+  }
+  for (int i = 0; i < 7; ++i)
+    if (touchui::quickControl(i).contains(x, y)) return 210 + i;
+  return -1;
+}
+bool TDeckQuickPage::swipe(int dy) {
+  if (picker < 0) return false;
+  int n = int(choiceCount()), rows = abs(dy) / touchui::ROW + 1;
+  pickerTop += dy < 0 ? rows : -rows;
+  if (pickerTop > n - touchui::VISIBLE_ROWS) pickerTop = n - touchui::VISIBLE_ROWS;
+  if (pickerTop < 0) pickerTop = 0;
+  pickerSel = pickerTop;
+  pickerRows = 0;
+  return true;
+}
 bool TDeckQuickPage::tap(int x, int y, uint32_t stamp) {
-  auto in = [&](int rx, int ry, int rw, int rh) { return x >= rx && x < rx + rw && y >= ry && y < ry + rh; };
-  for (int i = 0; i < quick::PRESET_COUNT; ++i)
-    if (in(4 + (i % 2) * 158, 58 + (i / 2) * 18, 154, 17)) { model.focus = quick::Presets; model.preset = i; return activate(stamp); }
-  if (in(268, 130, 49, 13)) { model.focus = quick::Clear; return activate(stamp); }
-  if (in(3, 130, 264, 36)) { model.focus = quick::Text; return false; }
-  if (in(0, 168, 320, 13)) { model.focus = quick::PlaceSelect; return activate(stamp); }
-  if (in(0, 181, 320, 13)) { model.focus = quick::Target; return activate(stamp); }
-  if (in(4, 196, 153, 21)) { model.focus = quick::Send; return activate(stamp); }
-  if (in(163, 196, 153, 21)) { model.focus = quick::Position; return activate(stamp); }
+  int hit = touchTarget(x, y);
+  if (hit < 0) return false;
+  if (picker >= 0) {
+    int row = hit - 200, index = pickerTop + row;
+    if (picker == 2) {
+      // Use the displayed recipient ID even if the contact list changed since render.
+      char shown[14];
+      snprintf(shown, sizeof(shown), "%s", pickerIds[row]);
+      bool exists = false;
+      char id[14], name[64];
+      for (unsigned i = 0; api && quickTarget(*api, i, id, sizeof(id), name, sizeof(name)); ++i)
+        if (!strcmp(id, shown)) {
+          setTarget(shown);
+          exists = true;
+          break;
+        }
+      if (exists) {
+        model.focus = quick::Target;
+        draftChanged();
+        picker = -1;
+      } else
+        snprintf(status, sizeof(status), "Ziel nicht mehr verfuegbar / neu waehlen");
+    } else
+      choose(index);
+    return false;
+  }
+  switch (hit - 210) {
+  case 0:
+    openPicker(0);
+    break;
+  case 1:
+    model.focus = quick::Text;
+    break;
+  case 2:
+    model.focus = quick::Clear;
+    activate(stamp);
+    break;
+  case 3:
+    openPicker(1);
+    break;
+  case 4:
+    openPicker(2);
+    break;
+  case 5:
+    model.focus = quick::Send;
+    activate(stamp);
+    break;
+  case 6:
+    model.focus = quick::Position;
+    activate(stamp);
+    break;
+  }
   return false;
+}
+
+void TDeckQuickPage::renderPicker(DisplayDriver *d) {
+  const char *title = picker == 0 ? "Vorlage" : picker == 1 ? "Ort waehlen" : "Ziel waehlen";
+  ui::statusLine(d, title, true, unreadChat + unreadBoard);
+  int n = int(choiceCount());
+  if (pickerTop >= n) pickerTop = n > 0 ? n - 1 : 0;
+  pickerRows = 0;
+  for (int r = 0; r < touchui::VISIBLE_ROWS && pickerTop + r < n; ++r) {
+    int index = pickerTop + r;
+    char label[96];
+    pickerIds[r][0] = 0;
+    if (picker == 0)
+      snprintf(label, sizeof(label), "%d  %s", index + 1, quick::PRESETS[index].label);
+    else if (picker == 1)
+      snprintf(label, sizeof(label), "%s",
+               index == 0   ? "Ohne Standort"
+               : index == 1 ? "Mein GPS (nur mit Freigabe)"
+                            : quick::PLACES[index - 2].name);
+    else
+      quickTarget(*api, unsigned(index), pickerIds[r], sizeof(pickerIds[r]), label, sizeof(label));
+    auto rect = touchui::row(r);
+    ui::button(d, rect.x, rect.y, rect.w, rect.h, "", pickerSel == index);
+    ui::text(d, rect.x + 10, rect.y + 13, WHITE, label, 48);
+    ++pickerRows;
+  }
+  char note[64];
+  snprintf(note, sizeof(note), "%d-%d / %d | Wischen, dann antippen", n ? pickerTop + 1 : 0,
+           pickerTop + pickerRows, n);
+  ui::text(d, 4, 222, GREY, n ? note : "Noch keine Ziele geladen");
+  d->endFrame();
 }
 
 bool TDeckQuickPage::tick(uint32_t now) {
@@ -194,53 +347,49 @@ void TDeckQuickPage::displayText(DisplayDriver* d, int x, int y, uint16_t color,
 
 void TDeckQuickPage::render(DisplayDriver* d) {
   d->startFrame(BG);
-  ui::statusLine(d, "Meldung", true, unreadChat + unreadBoard, model.focus == quick::Home);   // Home = back to the menu
+  if (picker >= 0) {
+    renderPicker(d);
+    return;
+  }
+  ui::statusLine(d, "Meldung", true, unreadChat + unreadBoard, model.focus == quick::Home);
   char line[128];
-  dev::Gps g = api ? api->gps() : dev::Gps();
-  const char* gpsState = !g.detected ? "GPS nicht erkannt" : !g.receiverOn ? "GPS ausgeschaltet" :
-                         !g.share ? "Standort teilen aus" : lastFix ? "GPS: frischer Fix" : "GPS: suche Fix";
-  snprintf(line, sizeof(line), "%s (%ld Sat) | 1-8: Vorlage", gpsState, lastSatellites < 0 ? 0 : lastSatellites);
-  displayText(d, 4, 47, lastFix ? GREEN : FOCUS, line);
-  for (int i = 0; i < quick::PRESET_COUNT; ++i) {
-    int x = 4 + (i % 2) * 158, y = 58 + (i / 2) * 18;
-    const auto& p = quick::PRESETS[i];
-    uint16_t bg = model.focus == quick::Presets && model.preset == i ? FOCUS : theme::CARD;
-    d->nativeFill(x, y, 154, 17, bg);
-    d->nativeRect(x, y, 154, 17, model.focus == quick::Presets && model.preset == i ? FOCUS : GREY);
-    snprintf(line, sizeof(line), "%d %s", i + 1, p.label);
-    displayText(d, x + 4, y + 4, bg == FOCUS ? BG : WHITE, line, 24);
-  }
-  snprintf(line, sizeof(line), "Text: %u/100 Bytes (ohne Ort)", unsigned(strlen(model.text)));
-  displayText(d, 4, 132, model.focus == quick::Text ? FOCUS : GREY, line);
-  d->nativeRect(268, 131, 49, 10, model.focus == quick::Clear ? FOCUS : GREY);
-  displayText(d, 272, 132, WHITE, "Leeren");
-  d->nativeRect(3, 142, 314, 25, model.focus == quick::Text ? FOCUS : GREY);
-  // Wrap by UTF-8 character boundaries; never split an umlaut between lines.
-  char textLine[104]; size_t pos = 0;
-  for (int row = 0; row < 2 && model.text[pos]; ++row) {
-    size_t n = 0; int chars = 0;
-    while (model.text[pos] && chars < 50) {
-      uint8_t c = model.text[pos];
-      textLine[n++] = model.text[pos++];
-      while (model.text[pos] && (uint8_t(model.text[pos]) & 0xC0) == 0x80) textLine[n++] = model.text[pos++];
-      if ((c & 0xC0) != 0x80) ++chars;
-    }
-    textLine[n] = 0; displayText(d, 7, 145 + row * 9, WHITE, textLine, 50);
-  }
-  const char* place = model.place < 0 ? "Ohne Standort" : model.place == 0 ? "Mein Standort (Geraete-GPS)" : quick::PLACES[model.place - 1].name;
-  snprintf(line, sizeof(line), "Ort: %s%s", model.place > 0 ? "manuell: " : "", place);
-  displayText(d, 4, 170, model.focus == quick::PlaceSelect ? FOCUS : WHITE, line);
-  snprintf(line, sizeof(line), "Ziel: %s", targetName);
-  displayText(d, 4, 183, model.focus == quick::Target ? FOCUS : WHITE, line);
-  d->nativeFill(4, 196, 153, 21, OFFER);
-  d->nativeFill(163, 196, 153, 21, INFO);
-  d->nativeRect(4, 196, 153, 21, model.focus == quick::Send ? FOCUS : GREY);
-  d->nativeRect(163, 196, 153, 21, model.focus == quick::Position ? FOCUS : GREY);
-  displayText(d, 12, 203, WHITE, "Meldung senden");
-  displayText(d, 171, 203, WHITE, "Position senden");
-  displayText(d, 4, 219, FOCUS, status);
-  if (strlen(status) > 52) displayText(d, 4, 227, FOCUS, status + 52);
-
+  auto button = [&](int i, const char *label, bool on, bool primary = false) {
+    auto r = touchui::quickControl(i);
+    ui::button(d, r.x, r.y, r.w, r.h, label, on, primary);
+  };
+  snprintf(line, sizeof(line), "Vorlage: %s  >", quick::PRESETS[model.preset].label);
+  button(0, line, model.focus == quick::Presets);
+  auto text = touchui::quickControl(1);
+  ui::button(d, text.x, text.y, text.w, text.h, "", model.focus == quick::Text);
+  // Two physical-keyboard lines, cut only at complete UTF-8 character boundaries.
+  char cp[160];
+  theme::toCp437(model.text, cp, sizeof(cp));
+  int count = 0, total = theme::countLines(cp, 40);
+  theme::wrap(cp, 40, [&](const char *part, size_t n) {
+    if (count++ < total - 2) return;
+    ui::raw(d, 8, 106 + (count - 1 - (total > 2 ? total - 2 : 0)) * 10, WHITE, part, n);
+  });
+  snprintf(line, sizeof(line), "%u/100", unsigned(strlen(model.text)));
+  ui::rightText(d, 256, 130, GREY, line);
+  button(2, "Leeren", model.focus == quick::Clear);
+  const char *place = model.place < 0    ? "Ohne Standort"
+                      : model.place == 0 ? "Mein GPS"
+                                         : quick::PLACES[model.place - 1].name;
+  auto placeRect = touchui::quickControl(3);
+  button(3, "", model.focus == quick::PlaceSelect);
+  snprintf(line, sizeof(line), "Ort: %s >", place);
+  ui::text(d, placeRect.x + 8, placeRect.y + 12, WHITE, line, 20);
+  ui::text(d,placeRect.x+placeRect.w-12,placeRect.y+12,WHITE,">");
+  // UTF-8-safe truncation is performed by the shared text helper, not snprintf's byte precision.
+  auto targetRect = touchui::quickControl(4);
+  button(4, "", model.focus == quick::Target);
+  snprintf(line,sizeof(line),"Ziel: %s",targetName);
+  ui::text(d, targetRect.x + 8, targetRect.y + 12, WHITE, line, 20);
+  ui::text(d,targetRect.x+targetRect.w-12,targetRect.y+12,WHITE,">");
+  button(5, "Meldung senden", model.focus == quick::Send, true);
+  button(6, "Position senden", model.focus == quick::Position);
+  displayText(d, 4, 222, FOCUS, status);
+  if (strlen(status) > 52) displayText(d, 4, 231, FOCUS, status + 52);
   d->endFrame();
 }
 #endif

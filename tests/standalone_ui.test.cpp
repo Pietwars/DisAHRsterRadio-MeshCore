@@ -99,7 +99,7 @@ int main() {
   u.render(&d); assert(d.outOfBounds == 0);
   const char *entries[6] = {"Chat", "Meldung", "Brett", "Karte", "Standort", "Ger\x84t"};
   for (int i = 0; i < 6; ++i) assert(d.allText.find(entries[i]) != std::string::npos);
-  assert(d.allText.find("87%") != std::string::npos && d.allText.find("Hauptmen") != std::string::npos);
+  assert(d.allText.find("87%") != std::string::npos && d.allText.find("Men") != std::string::npos);
   const char *letters = "cmbksgh";
   for (const char *l = letters; *l; ++l) { u.key(uint8_t(*l)); assert(u.current() == sui::MENU); }
   assert(!u.key(sui::K_BACK) && u.current() == sui::MENU);           // the menu is the top level
@@ -108,7 +108,8 @@ int main() {
   for (int i = 0; i < 8; ++i) u.move(0, 1);
   assert(u.menuSelection() == 5 && u.current() == sui::MENU);         // clamps, never leaves the menu
   // touch: tap the "Brett" row (row 2), the status line goes back
-  u.render(&d); assert(u.tap(100, theme::NAV_H + 2 + 2 * 30 + 10) && u.current() == sui::BOARD_LIST);
+  u.render(&d);
+  assert(u.tap(100, touchui::tile(2).y + 10) && u.current() == sui::BOARD_LIST);
   assert(u.tap(40, theme::TAB_H + 5) && u.current() == sui::MENU);
   assert(!u.tap(theme::W - 10, theme::TAB_H + 5));                                   // battery field is no back button
   u.render(&d); assert(u.tap(100, theme::NAV_H + 12) && u.current() == sui::CHAT_LIST);   // "Chat" row
@@ -161,7 +162,8 @@ int main() {
   assert(u.unreadChat() == 0);
   u.key(sui::K_BACK); assert(u.current() == sui::CHAT_LIST);
   // direct chat by touch: tap the third row
-  u.render(&d); assert(u.tap(100, theme::NAV_H + 2 + 2 * 21 + 5) && !strcmp(u.conversation(), "d0a1b2c3d4e5f"));
+  u.render(&d);
+  assert(u.tap(100, touchui::row(2).y + 5) && !strcmp(u.conversation(), "d0a1b2c3d4e5f"));
   u.render(&d); assert(d.allText.find("zugestellt") != std::string::npos);
   u.key(sui::K_BACK); u.key(sui::K_BACK); assert(u.current() == sui::MENU);
 
@@ -188,8 +190,8 @@ int main() {
   assert(fabs(fallbackPX-160)<0.01 && fabs(fallbackPY-(devmap::View::TOP+devmap::View::HEIGHT/2.0))<0.01);
   assert(!fake.g.fresh && fake.g.lat==0 && fake.g.lon==0);
   u.render(&d); assert(d.outOfBounds == 0);
-  assert(d.allText.find("\x1b Zur\x81" "ck") != std::string::npos);
-  assert(d.fb[sui::UI::BACK_Y * 320 + sui::UI::BACK_X] == ui::FOCUS);      // drawn focused: the click target
+  assert(d.allText.find("< Zurueck") != std::string::npos);
+  assert(d.fb[(theme::TAB_H + 2) * 320 + 2] == theme::LINE); // drawn focused: the click target
   for (int i = 0; i < 6; ++i) assert(u.move(-1, 0) && u.current() == sui::MAP);   // trackball pans, never leaves
   u.move(0, -3); assert(u.current() == sui::MAP);
   u.key('+'); assert(u.mapView().zoomFactor() > 1.9);
@@ -202,7 +204,7 @@ int main() {
   assert(u.click() && u.current() == sui::MENU);                      // trackball click = Zurück
   u.click(); u.render(&d); assert(u.current() == sui::MAP);           // menu selection stayed on "Karte"
   assert(!u.tap(200, 120) && u.current() == sui::MAP);                // a tap on the map itself does nothing
-  assert(u.tap(sui::UI::BACK_X + 10, sui::UI::BACK_Y + 5) && u.current() == sui::MENU);   // touch on Zurück
+  assert(u.tap(sui::UI::BACK_X + 10, theme::TAB_H + 5) && u.current() == sui::MENU); // touch on Zurück
   u.click(); u.key(sui::K_BACK); assert(u.current() == sui::MENU);    // ALT+Backspace
   u.click(); u.key(sui::K_BACKSPACE); assert(u.current() == sui::MENU);   // plain Backspace (no text field)
 
@@ -242,10 +244,19 @@ int main() {
   // Gerät
   openEntry(u, d, M_DEV); assert(u.current() == sui::DEVICE);
   u.render(&d); assert(d.outOfBounds == 0);
-  assert(d.allText.find("112") != std::string::npos && d.allText.find("Standard-PIN") != std::string::npos);
-  assert(d.allText.find("123456") == std::string::npos);       // never PIN digits
-  assert(d.allText.find("~87 %") != std::string::npos && d.allText.find("18 h") != std::string::npos);   // battery
-  assert(d.allText.find("Advert senden") != std::string::npos && d.allText.find("Display aus") != std::string::npos);
+  assert(d.allText.find("Bekanntgabe senden") != std::string::npos &&
+         d.allText.find("Display aus") != std::string::npos);
+  for (int i = 0; i < 6; ++i)
+    u.move(0, 1);
+  u.click();
+  u.render(&d);
+  assert(u.current() == sui::DEVICE_INFO && d.allText.find("112") != std::string::npos);
+  assert(d.allText.find("Standard-PIN") != std::string::npos &&
+         d.allText.find("123456") == std::string::npos);
+  assert(d.allText.find("~87 %") != std::string::npos && d.allText.find("18 h") != std::string::npos);
+  u.back();
+  for (int i = 0; i < 7; ++i)
+    u.move(0, -1);
   u.click(); assert(fake.refreshes == 1);
   int adv = fake.adverts;
   u.move(0, 1); u.click(); assert(fake.adverts == adv + 1);            // Advert senden
@@ -253,7 +264,8 @@ int main() {
   u.move(0, 1); u.click(); assert(fake.saves == 1);
   u.key('d'); assert(u.takeDisplayOff() && u.current() == sui::DEVICE);   // key 'd' outside text fields
   { int r = fake.refreshes; u.render(&d);
-    assert(u.tap(100, 139) && fake.refreshes == r + 1); }           // "Kontakte neu lesen" at y 131..147
+    assert(u.tap(100, touchui::row(0).y + 10) && fake.refreshes == r + 1);
+  } // "Kontakte neu lesen" at y 131..147
 
   // Schnellmeldung: preset, letters into the text, Enter path to "Meldung senden"
   fake.g.fresh = true;                        // receiver was switched off/on above: wait for a new fix
@@ -269,7 +281,9 @@ int main() {
   u.render(&d); assert(d.outOfBounds == 0);
   u.key(sui::K_BACK); assert(u.current() == sui::MENU);               // ALT+Backspace, also from the text field
   openEntry(u, d, M_QUICK); u.render(&d);
-  assert(u.tap(20, 63) && u.quickPage().draft().focus == quick::Text);   // tap on preset 1
+  assert(u.tap(20, 80) && u.quickPage().picking());
+  u.render(&d);
+  assert(u.tap(20, touchui::row(0).y + 10) && u.quickPage().draft().focus == quick::Text); // tap on preset 1
   type(u, "x"); assert(u.current() == sui::QUICK);
   u.key(sui::K_BACK); assert(u.current() == sui::MENU);
   openEntry(u, d, M_QUICK); u.render(&d); assert(u.tap(30, theme::TAB_H + 5) && u.current() == sui::MENU);   // status line
