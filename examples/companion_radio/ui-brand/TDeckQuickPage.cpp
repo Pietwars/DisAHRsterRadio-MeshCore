@@ -295,7 +295,7 @@ void TDeckQuickPage::renderPicker(DisplayDriver *d) {
       quickTarget(*api, unsigned(index), pickerIds[r], sizeof(pickerIds[r]), label, sizeof(label));
     auto rect = touchui::row(r);
     ui::button(d, rect.x, rect.y, rect.w, rect.h, "", pickerSel == index);
-    ui::text(d, rect.x + 10, rect.y + 13, WHITE, label, 48);
+    ui::text(d, rect.x + 10, rect.y + 9, WHITE, label, 24, 2);
     ++pickerRows;
   }
   char note[64];

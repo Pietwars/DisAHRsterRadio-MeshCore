@@ -16,7 +16,7 @@
       "caption": "Bretter / Room-Server",
       "width": 320,
       "height": 240,
-      "sha256": "73d5ba778c8ab39e1620f441b730a578f3418adc4d52ae49387ec9d77dc0dbea"
+      "sha256": "92a3c0a4fe01477d6b20177f5afdc1f6de600a41df5531b086fcd21b86559706"
     },
     {
       "file": "vorschau-brett.png",
@@ -37,7 +37,7 @@
       "caption": "Chat: Kanaele und Kontakte",
       "width": 320,
       "height": 240,
-      "sha256": "20549b01934bd94242a4faa7644d191ef2b20c9521417bf3fae68bcd938a1ff2"
+      "sha256": "9cc98cdcea7fb281ea2718f46b65413ac08e0c18ce050a99f82e81b071e4ece5"
     },
     {
       "file": "vorschau-chat.png",
@@ -51,14 +51,14 @@
       "caption": "Weitere Geraeteaktionen",
       "width": 320,
       "height": 240,
-      "sha256": "c03805e846a43b1f5231cf90c11324c652fb53d8c3a3c5112bc77d0d4a9ffb9e"
+      "sha256": "7ec87a752a7accb859d6438cdcc8022dc39a41126800e74b71464e36005058f7"
     },
     {
       "file": "vorschau-geraet.png",
       "caption": "Geraeteaktionen",
       "width": 320,
       "height": 240,
-      "sha256": "24eeda2464f38697067be2a26dc3a53b7092bea205234ec330e55a0689c31919"
+      "sha256": "7261379ccbc40dc4ebcfaefccb829063ccff650987916142f1a7073d39f67757"
     },
     {
       "file": "vorschau-geraeteinfo.png",
@@ -100,48 +100,48 @@
       "caption": "Ort waehlen",
       "width": 320,
       "height": 240,
-      "sha256": "8fb966449836f47f207452773a0aa8067008109be0c01f3db8b14cbc8dcd277e"
+      "sha256": "d926316c1813af49fa9907f39b6718456a351646a2c18d975ad19fbf5dcdd4b4"
     },
     {
       "file": "vorschau-standort.png",
       "caption": "GPS und Standortfreigabe",
       "width": 320,
       "height": 240,
-      "sha256": "2a915f0f471c08b747239008d973ca3f99ae3777df164b366861e7dfc2525e9e"
+      "sha256": "7da8aa4aff55a4c953e12a8caa04d3c18e349c725de12e1f71b3d9f55a289e1a"
     },
     {
       "file": "vorschau-vorlagen-weiter.png",
       "caption": "Vorlagen: weiterblaettern",
       "width": 320,
       "height": 240,
-      "sha256": "3636db23ae136d98790a960bd7ab6351793bc4e669ff589387b1dcdfd6c9e209"
+      "sha256": "123c921d64cd5a31b00eb206d9da034f35e150dfe4e81c9cf36a1d37244d7f4f"
     },
     {
       "file": "vorschau-vorlagen.png",
       "caption": "Vorlagen waehlen",
       "width": 320,
       "height": 240,
-      "sha256": "9ad176f1652272f9e0bf5567320297e09e723a7eb35fafa8abc6590da9cc7cf6"
+      "sha256": "aa22c814f3f975267180e74015ba60cd89fdbdfdee6a0d8a259ee98c63c3c5f3"
     },
     {
       "file": "vorschau-ziel-auswahl.png",
       "caption": "Empfaenger waehlen",
       "width": 320,
       "height": 240,
-      "sha256": "940890a90dfe28fa7bc9c4f7ed3959e28811a354631bb809814df5cc3b62e492"
+      "sha256": "2fb2c0eaca2f0b621f60a45e45cce780affd8fd2ba173decd5025a13b3a33348"
     }
   ],
   "sources": {
-    "examples/companion_radio/ui-brand/StandaloneUI.cpp": "2b52e3042c7242d8999eef9930b4e53c0f8ad3bc1308429db4bfab0304636d77",
-    "examples/companion_radio/ui-brand/StandaloneUI.h": "69037b42607caa9bb8a52584025fc7b23cbe94f3b062c0f4c17b3f9ae5cab92b",
-    "examples/companion_radio/ui-brand/TDeckQuickPage.cpp": "fe059711f41062c58f6eda4bd91bfc52c9683b309a9ac5338722359b9226ed56",
-    "examples/companion_radio/ui-brand/TDeckQuickPage.h": "14d14495dc4548d3ae7f27810c4a854f1ed0f12bfd842e9c6ab5550bf2d0ab5f",
+    "examples/companion_radio/ui-brand/StandaloneUI.cpp": "c729faa467fc7089b187099b5649a820befb2bc597431abf713a52dbed447765",
+    "examples/companion_radio/ui-brand/StandaloneUI.h": "36b47b10895446708572f5e76f0f3e3a0fa2653b872f441943fd015cae7412c3",
+    "examples/companion_radio/ui-brand/TDeckQuickPage.cpp": "c2d7f6c17f0e507d82a55c9e349d81d6c9288688739a8d49ad5fd039ad91e2b0",
+    "examples/companion_radio/ui-brand/TDeckQuickPage.h": "ffabfd314fd59f6fb8c1c99e6d8d35598a397852154e05af4a821398e0a3bb83",
     "examples/companion_radio/ui-brand/TouchLayout.h": "dd8bd68c5706bcc48fb7f6feb8c036f76e1cceff4c6070ac964c1201ddbaddaa",
-    "examples/companion_radio/ui-brand/Theme.h": "4182ba726654c4195ee872e539933f6f32da09981434ea1b520419dd27fabc3e",
-    "examples/companion_radio/ui-brand/Widgets.h": "91d002c132068e6981fff48d19ed299a99812f781615a2aecaea09c9db436948",
-    "examples/companion_radio/ui-brand/MapView.h": "d4180b171568fe5a808b4cbfbda7e6b6b626573aa04c3690305794f18dc21c20",
-    "tools/standalone_preview.cpp": "17d405f80c50aed4ea3910a0aa81f82b72fb0ca9ee7bb0a4f9b723bb4ab24eb1",
-    "tests/ui_fakes/FakeApi.h": "92ad124aca07d19bcb9f4980bc8ca28364b4e2f3326aac2b4c850b12ef3058e5",
-    "platformio.standalone.ini": "1b0a98bf99f1dba580b1afa56ba65ae6b18026ab68c1cc18dea5330ee5d61091"
+    "examples/companion_radio/ui-brand/Theme.h": "343d2a6fa9cbaa2fe679faee67627ea73b886f86274bc39a5e71a8f98e937130",
+    "examples/companion_radio/ui-brand/Widgets.h": "a11841c38f259bc226691aabd44b19f6fcdef2bdac21e63ed29c371fc94a2288",
+    "examples/companion_radio/ui-brand/MapView.h": "240f32b7b56cf555543ba9cb7bfdb43fbfd3f828df2bcbf404e9cd4ff11e107a",
+    "tools/standalone_preview.cpp": "137d2a622fd4677119dc1fa485e5ea499a50f2c62975ea32a0ce4ffee262aff2",
+    "tests/ui_fakes/FakeApi.h": "07086d036b8403dc1e3e50bad5ee6a21c6587702ec25c27c9e03d0bb78e33bff",
+    "platformio.standalone.ini": "2ce7aab3a6886d1f0a45d48a67fe63cfa8158f5f516afbe766d25d6a0696c430"
   }
 }

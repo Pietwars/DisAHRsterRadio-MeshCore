@@ -7,6 +7,8 @@ name: Release
 on:
   push:
     tags: ['v*']
+    branches: [main]
+    paths: ['VERSION', '.github/workflows/release.yml']
   pull_request:
     # Probelauf (beide Geräte, ohne Veröffentlichung), wenn sich Paketierung oder dieser Workflow ändern
     paths: ['tools/build_device.sh', 'tools/write_liesmich.py', 'tools/verify_release.py', 'tools/verify_devices.py', 'tools/release_notes.py', 'tools/ANLEITUNG.template.md', 'tools/validate_memory.py', 'tools/release_boards.json', 'tests/test_memory_validation.py', 'platformio*.ini', 'boards/**', 'variants/**/platformio.ini', '.github/workflows/release.yml']
@@ -68,8 +70,36 @@ jobs:
           name: dev-${{ matrix.device }}
           path: dist/devices/*.zip
           if-no-files-found: error
+  standalone:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/cache@v4
+        with:
+          path: ~/.platformio
+          key: pio-release-standalone-${{ hashFiles('platformio*.ini', 'variants/**/platformio.ini') }}
+      - run: pip install platformio==6.2.0 pillow==11.3.0
+      - name: Standalone bauen und pruefen
+        shell: bash
+        run: |
+          set -o pipefail
+          pio run -e LilyGo_TDeck_standalone | tee .pio-LilyGo_TDeck_standalone.log
+          python3 tools/check_standalone.py --build-dir .pio/build/LilyGo_TDeck_standalone --build-log .pio-LilyGo_TDeck_standalone.log --output .pio/build/LilyGo_TDeck_standalone/standalone-report
+          python3 tools/standalone_preview.py .pio/build/LilyGo_TDeck_standalone/touch-preview
+          BOOTAPP0=$(find "$HOME/.platformio/packages/" -path '*framework-arduinoespressif32*' -name boot_app0.bin | head -1)
+          python3 tools/prepare_standalone_candidate.py --release --build-dir .pio/build/LilyGo_TDeck_standalone --build-log .pio-LilyGo_TDeck_standalone.log --boot-app0 "$BOOTAPP0" --out dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dev-LilyGo_TDeck_standalone
+          path: dist/*.zip
+          if-no-files-found: error
   release:
-    needs: [check, devices]
+    needs: [check, devices, standalone]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -83,6 +113,7 @@ jobs:
         run: |
           V=$(python3 tools/version.py --get)
           python3 tools/verify_devices.py dist "$V" LilyGo_TDeck LilyGo_TWatchS3
+          python3 tools/prepare_standalone_candidate.py --release --check dist/DisAHRsterRadio-MeshCore-$V-LilyGo_TDeck_standalone-test6.zip
           (cd dist && sha256sum *.zip > SHA256SUMS-DisAHRsterRadio-MeshCore-$V.txt)
           ls dist | wc -l
       - name: Release-Text erzeugen
@@ -90,10 +121,11 @@ jobs:
           python3 tools/release_notes.py "$(python3 tools/version.py --get)" "${{ github.repository }}" DisAHRsterRadio-MeshCore \
             "LilyGo_TDeck=LILYGO T-Deck Plus" "LilyGo_TWatchS3=LILYGO T-Watch S3" | tee notes.md
       - name: Release veröffentlichen
-        if: env.TAG != ''
+        if: env.TAG != '' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          if [ -z "$TAG" ]; then TAG="v$(python3 tools/version.py --get)"; fi
           ASSETS="dist/*.zip dist/SHA256SUMS-*.txt"
           for f in docs/flyer/*-Flyer.pdf docs/flyer/*-Flyer-digital.pdf docs/flyer/*-Flyer-vorschau.jpg; do [ -f "$f" ] && ASSETS="$ASSETS $f"; done
           if gh release view "$TAG" >/dev/null 2>&1; then
@@ -101,6 +133,6 @@ jobs:
             (cd dist && sha256sum *.zip)
           else
             PRE=""; case "$TAG" in *-*) PRE=--prerelease;; esac
-            gh release create "$TAG" $PRE --verify-tag --title "DisAHRsterRadio-MeshCore $TAG" --notes-file notes.md $ASSETS
+            gh release create "$TAG" $PRE --target "$GITHUB_SHA" --title "DisAHRsterRadio-MeshCore $TAG" --notes-file notes.md $ASSETS
           fi
           gh release view "$TAG" --json assets --jq '.assets | length'

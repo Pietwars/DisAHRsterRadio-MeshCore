@@ -15,7 +15,7 @@ def main():
     if manifest['hardware_approved'] or manifest['kind'] != 'real-layout-demo-data':
         raise ValueError('Vorschau darf keine Hardwareabnahme behaupten')
     for name, digest in manifest['sources'].items():
-        if hashlib.sha256((ROOT / name).read_bytes()).hexdigest() != digest:
+        if hashlib.sha256((ROOT / name).read_text(encoding='utf-8').replace('\r\n', '\n').encode()).hexdigest() != digest:
             raise ValueError('Vorschauen nach Codeaenderung neu rendern: ' + name)
     for item in manifest['images']:
         image = (GALLERY / item['file']).read_bytes()
@@ -26,8 +26,8 @@ def main():
     if len(manifest['images']) != 18:
         raise ValueError('Die vollstaendige Galerie hat 18 unterschiedliche Ansichten')
     readme = (ROOT / 'README.md').read_text(encoding='utf-8')
-    if 'Noch kein Release' not in readme or '0.9.5 in Vorbereitung' not in readme:
-        raise ValueError('README muss Kandidat und veroeffentlichten Stand unterscheiden')
+    if '0.9.5' not in readme or 'Hardwareabnahme' not in readme:
+        raise ValueError('README muss Version und Hardwarestatus nennen')
     print('18 aktuelle 320x240-Layouts, Quellen und Kandidatenkennzeichnung geprueft')
 
 

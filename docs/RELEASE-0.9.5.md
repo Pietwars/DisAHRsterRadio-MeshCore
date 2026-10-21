@@ -1,10 +1,8 @@
-# 0.9.5: Release-Vorbereitung und Abnahme
+# 0.9.5: Release und Hardwarestatus
 
-**Status: VORBEREITET, NICHT FREIGEGEBEN.** Es wurde kein Tag oder Release
-angelegt und nichts nach main zusammengefuehrt. Veröffentlicht bleibt v0.9.4;
-der stabile Web-Flasher verweist weiterhin auf dessen Dateien.
+Veröffentlichung am **21.10.2026** vom Projektbetreiber ausdrücklich beauftragt: „ok release bitte mit allem was es braucht in der readme“. Diese Freigabe ist keine Behauptung, dass alle Hardwaretests durchgeführt wurden.
 
-## Geplanter Inhalt
+## Inhalt
 
 - T-Deck Plus Standalone: vollstaendige lokale Bedienung, grosse Touch-Ziele,
   Kachelmenue, scrollbare Listen und Auswahllisten, explizite Sendeaktionen.
@@ -15,95 +13,21 @@ der stabile Web-Flasher verweist weiterhin auf dessen Dateien.
 - Der normale WLAN/BLE-Betrieb auf T-Deck Plus und T-Watch S3 bleibt eine eigene
   Variante. Die neuen Standalone-Funktionen werden der T-Watch nicht zugeschrieben.
 
-## Was bereits beobachtet wurde
+## Dateien und Installation
 
-Der Nutzer hat das CI-Artefakt aus Lauf **39546599293**, basierend auf PR #42,
-am eigenen Geraet getestet: „das passt alles schon, laeuft, Nachrichten kommen
-auch an“. Das bestaetigt diesen vorigen Teststand, nicht die neue Touch-UI.
-Es ist Nutzerfeedback, kein von uns durchgefuehrter Hardwaretest und keine
-pauschale Freigabe aller 0.9.5-Dateien.
+- WLAN/BLE: `DisAHRsterRadio-MeshCore-0.9.5-LilyGo_TDeck.zip` und `DisAHRsterRadio-MeshCore-0.9.5-LilyGo_TWatchS3.zip`.
+- T-Deck Plus Standalone: `DisAHRsterRadio-MeshCore-0.9.5-LilyGo_TDeck_standalone-test6.zip`, Kennung `v1.18.0-dar0.9.5-standalone-test6`. Experimentelle zusätzliche Variante, ohne WLAN/Webportal.
+- Alle ZIP-Dateien haben interne SHA256SUMS, Anleitung und geprüfte Flash-Abbilder. Die externe `SHA256SUMS-DisAHRsterRadio-MeshCore-0.9.5.txt` prüft die ZIP-Dateien.
+- Update bei passender bestehender MeshCore-Installation an **0x10000 ohne Löschen**. Neuinstallation mit Factory-Abbild an **0x0 nach vollständigem Löschen**, mit Verlust von Identität, Kontakten, Verlauf und Einstellungen. Vorher sichern.
+- Standalone enthält `candidate.json` mit Firmware-SHA, Quellcommit, Hardwarestatus und Veröffentlichungsstatus. Die Firmwarekennung bleibt test6, damit die Testlinie erkennbar bleibt.
+- Der Web-Flasher bleibt bis zu einer gesondert geprüften Umstellung auf den dort beschrifteten 0.9.4-Dateien. Neue 0.9.5-Dateien über die Release-ZIPs verwenden.
 
-## Verbindliche Abnahme des neuen Testpakets
+## Prüfungen und offene Hardwaretests
 
-| Feld | Auszufuellen |
-|---|---|
-| Testpaket / Actions-Lauf | CI-Artefakt `LilyGo_TDeck_standalone-0.9.5-abnahme` aus PR #43; genauen Lauf eintragen |
-| Firmwarekennung | `v1.18.0-dar0.9.5-standalone-test6` |
-| CI-Commit | `source_commit` aus `candidate.json` |
-| SHA-256 der getesteten firmware.bin | aus `candidate.json` / `SHA256SUMS` uebernehmen |
-| Datum / Testperson / Board-Revision | OFFEN |
-| Update an 0x10000 und Neuinstallation mit factory.bin an 0x0 (nach Sicherung) | OFFEN |
-| Kalibrierung beim Erststart und nach Neustart | OFFEN |
-| Kacheln, Tabs, Zurueck, lange Kontakt-/Empfaengerlisten | OFFEN |
-| Wischen auf/weg von Senden, Finger auflegen/wegziehen | OFFEN |
-| Nachrichtenempfang und Versand Kanal + Direkt | OFFEN |
-| Brett: Beitreten und Aushang | OFFEN |
-| Tastatur und Trackball | OFFEN |
-| Karte ziehen, Zoom, Heimersheim ohne GPS | OFFEN |
-| Freigabe AUS / kein Fix: keine Geraete-GPS-Position senden | OFFEN |
-| SD-Speichern und Touch erneut kalibrieren | OFFEN |
-| Stabilitaet, Laufzeit, Heap | OFFEN |
-| Gesamturteil | NICHT ABGENOMMEN |
-| Ausdrueckliches Okay zur Veroeffentlichung | NICHT ERTEILT |
+Der Nutzer hat den vorherigen Fixstand aus PR #42 am Gerät als lauffähig mit Nachrichtenempfang bestätigt. Eine vollständige Hardwareabnahme der neuen Touch-UI und der final veröffentlichten Binärdateien ist nicht dokumentiert.
 
-Das CI-Testpaket enthaelt die Update-Firmware, BIN-Einzelteile, Pruefsummen,
-Commit-/SHA-Manifest, Bedienung, Anleitung und Layout-PNGs mit Demodaten.
-Es enthaelt `firmware.bin` fuer Updates an **0x10000** sowie `factory.bin` fuer
-Neuinstallationen an **0x0**. Letztere erfordern vorheriges vollstaendiges
-Loeschen und vernichten Identitaet, Kontakte, Einstellungen und Verlauf. Beide
-Wege sind getrennt abzunehmen; Details stehen in seiner ANLEITUNG.md.
+Automatisch geprüft werden Hosttests einschließlich Touch-Abbruch, stabile Empfängerauswahl und GPS-Schutz, Firmware-Builds, Ausschluss der WLAN-/Web-Schicht im Standalone-Build, Header/Partitionen/Speichergrenzen, Factory-Offsets, Paketvollständigkeit, SHA-256 und 18 Layout-Vorschauen. Der Release-Workflow veröffentlicht nur nach erfolgreichem Bau und Paketprüfung aller drei Varianten.
 
-## Bereits vorbereitet
+Offen bleiben am realen Gerät: Update und Neuinstallation, Kalibrierung nach Neustart, alle Touch-Kacheln und langen Listen, Abbrechen von Sendegesten, Empfang/Versand Kanal und Direkt, Brett, Tastatur/Trackball, SD, GPS-Freigabe ohne/mit Fix, Laufzeit und Stabilität. Testergebnisse bitte mit `source_commit` und Firmware-SHA aus dem Paket dokumentieren.
 
-- README und Dokumentation unterscheiden veroeffentlichten Stand und Kandidaten.
-- Alle neuen Geraete-Vorschauen werden aus demselben C++-Layout gerendert wie die
-  Firmware; Hauptseite/Galerie kennzeichnen sie als Demodaten und Vorbereitung.
-- Die Hauptseite der Live-Demo bekommt einen Link auf die separate Standalone-
-  Vorschau. Der normale Web-Flasher bleibt bei den veroeffentlichten Dateien.
-- `tools/prepare_standalone_candidate.py` baut nur ein verifiziertes Test-ZIP.
-  Das Werkzeug kann weder Tags noch Releases anlegen und behauptet keine Abnahme.
-- Der untenstehende Release-Text ist als Entwurf fertig.
-
-## Erst nach Hardwareabnahme und ausdruecklichem Okay
-
-1. Obige Tabelle und tatsaechlich getestete SHA-256/CI-Commit dokumentieren.
-   Bei Codeaenderungen nach dem Test erneut bauen und die betroffenen Punkte
-   erneut abnehmen; fremde oder alte Builddateien nicht zum neuen Tag umbenennen.
-2. Zielumfang festlegen: Standalone als klar benannte zusaetzliche T-Deck-Variante.
-   Die bisherigen zwei WLAN/BLE-Pakete bleiben getrennt. Standalone ist derzeit
-   bewusst nicht in `tools/devices.json` / `tools/release_boards.json` und nicht
-   im stabilen Flasher. Das vorbereitete Standalone-ZIP enthaelt bereits
-   Update-/Factory-Abbild, validierte Offsets, Anleitung und Pruefsummen. Es ist
-   als klar benannte dritte Variante neben den beiden bisherigen Paketen
-   zu verwenden; keine WLAN-Firmware durch die Standalone-Datei ersetzen.
-3. Fuer den finalen Release-Commit `VERSION=0.9.5` setzen und `python3 tools/version.py`
-   ausfuehren. Web-/Paketkennungen und die dokumentierten Downloadnamen folgen
-   daraus. Kandidatenhinweise erst nach tatsaechlicher Freigabe umstellen.
-4. Normale T-Deck-/T-Watch-Pakete und Standalone-Finalpaket aus genau diesem
-   Commit bauen, Header/Partitionen/RAM und SHA-256 pruefen. Versionsaenderungen
-   erzeugen neue Bytes; die Abnahme muss zur tatsaechlich veroeffentlichten Datei
-   passen. CI-Erfolg ersetzt diesen Nachweis nicht.
-5. Erst auf ausdruecklichen Auftrag PRs zusammenfuehren, Tag `v0.9.5` und Release
-   erzeugen. Der bestehende Release-Workflow veroeffentlicht bei einem v*-Tag:
-   deshalb jetzt **keinen** solchen Tag setzen oder Workflow manuell starten.
-6. Erst nachdem die Assets existieren den stabilen Flasher auf sie umstellen,
-   SHA-256 gegenpruefen und die Pages-Seite veroeffentlichen.
-
-## Fertiger Release-Text (Entwurf, noch nicht veroeffentlichen)
-
-DisAHRsterRadio-MeshCore 0.9.5 erweitert den T-Deck Plus um die vollstaendige
-Standalone-Bedienung ohne WLAN: Chat, Schnellmeldung, Brett, Offlinekarten,
-Standort und Geraet direkt am Display. Grosse getrennte Touch-Flaechen,
-scrollbare Listen und eine feste Zurueck-Navigation machen die Bedienung mit
-einem Finger einfacher. Tastatur und Trackball bleiben nutzbar.
-
-Die Touch-Kalibrierung wird dauerhaft gespeichert und ist wiederholbar.
-Senden bleibt eine explizite Aktion. Eine Wischbewegung sendet keine Nachricht;
-die Empfaengerauswahl bleibt auch beim Aktualisieren von Kontakten eindeutig.
-Ohne frischen GPS-Fix zeigt die Karte Heimersheim Mitte, ohne diese Ansicht
-als eigene Position zu behandeln oder zu senden.
-
-T-Deck Standalone und die normalen WLAN/BLE-Varianten sind getrennte Pakete.
-Die T-Watch S3 behaelt ihre bisherige Bedienung. Installation, Pruefsummen,
-Hardwarestatus und die zugehoerigen Dateien muessen vor Freigabe dieses Textes
-aus der finalen Abnahme ergaenzt werden.
+[Bedienung](STANDALONE_TOUCH.md) · [Vorschauen mit Demodaten](STANDALONE_VORSCHAU.md) · [Release](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.5)

@@ -48,6 +48,8 @@ class CandidatePackageTest(unittest.TestCase):
                         archive.writestr('candidate/'+name, content)
             package()
             self.assertFalse(verify(path)['publication_approved'])
+            package(approve=True)
+            self.assertTrue(verify(path, release=True)['publication_approved'])
             for options in ({'approve': True}, {'corrupt': True}, {'extra': True}):
                 package(**options)
                 with self.assertRaises(ValueError):

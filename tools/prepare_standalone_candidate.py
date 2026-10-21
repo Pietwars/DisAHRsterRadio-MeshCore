@@ -14,7 +14,7 @@ from check_standalone import check
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def verify(path):
+def verify(path, release=False):
     with zipfile.ZipFile(path) as archive:
         names = archive.namelist()
         sums = next(name for name in names if name.endswith('/SHA256SUMS'))
@@ -28,7 +28,7 @@ def verify(path):
         if listed != set(names) - {sums}:
             raise ValueError('Pruefsummenliste ist nicht vollstaendig')
         candidate = json.loads(archive.read(prefix + 'candidate.json'))
-        if candidate['hardware_status'] != 'pending' or candidate['publication_approved']:
+        if candidate['hardware_status'] != 'pending' or candidate['publication_approved'] != release:
             raise ValueError('Ein Testpaket darf keine Abnahme oder Freigabe behaupten')
         for name, digest in candidate['sha256'].items():
             if hashlib.sha256(archive.read(prefix + name)).hexdigest() != digest:
@@ -63,9 +63,10 @@ def main():
     parser.add_argument('--out', type=Path)
     parser.add_argument('--boot-app0', type=Path)
     parser.add_argument('--check', type=Path)
+    parser.add_argument('--release', action='store_true', help='Publication authorized; does not assert hardware acceptance')
     args = parser.parse_args()
     if args.check:
-        print(json.dumps(verify(args.check), indent=2))
+        print(json.dumps(verify(args.check, release=args.release), indent=2))
         return
     if not all((args.build_dir, args.build_log, args.out, args.boot_app0)):
         parser.error('--build-dir, --build-log, --boot-app0 und --out sind erforderlich')
@@ -84,7 +85,7 @@ def main():
     files['factory.bin'] = build_factory(files, result['partitions'])
     manifest = dict(schema=1, version=version, firmware=firmware, environment='LilyGo_TDeck_standalone',
                     source_commit=os.environ.get('GITHUB_SHA', 'local'), hardware_status='pending',
-                    publication_approved=False, factory_offsets={'bootloader.bin': 0, 'partitions.bin': 0x8000,
+                    publication_approved=args.release, factory_offsets={'bootloader.bin': 0, 'partitions.bin': 0x8000,
                                                                 'boot_app0.bin': 0xe000, 'firmware.bin': 0x10000},
                     sha256={part: hashlib.sha256(data).hexdigest() for part, data in files.items()})
     files['candidate.json'] = (json.dumps(manifest, indent=2) + '\n').encode()
@@ -117,6 +118,8 @@ Vorschauen: echte Layouts mit simulierten Daten, keine Hardwarefotos.
 Kein zertifiziertes Notrufsystem. In Lebensgefahr 112.
 '''
     files['ANLEITUNG.md'] = guide.encode()
+    if args.release:
+        files['ANLEITUNG.md'] = guide.replace('Testpaket fuer die Abnahme', 'Release 0.9.5: Standalone (experimentell)').replace('Noch kein Release, Hardwareabnahme OFFEN.', 'Veroeffentlichung vom Projektbetreiber am 21.10.2026 beauftragt. Vollstaendige Hardwareabnahme OFFEN.').replace('Erst danach ausdrueckliche Freigabe.', 'Die Veroeffentlichungsfreigabe ersetzt diese Hardwarepruefungen nicht.').encode()
     for png in sorted((args.build_dir / 'touch-preview').glob('*.png')):
         files['vorschau/' + png.name] = png.read_bytes()
     files['SHA256SUMS'] = ''.join(hashlib.sha256(data).hexdigest() + '  ' + path + '\n'
@@ -126,7 +129,7 @@ Kein zertifiziertes Notrufsystem. In Lebensgefahr 112.
     with zipfile.ZipFile(output, 'x', compression=zipfile.ZIP_DEFLATED) as archive:
         for path, data in sorted(files.items()):
             archive.writestr(name + '/' + path, data)
-    verify(output)
+    verify(output, release=args.release)
     print(output)
 
 

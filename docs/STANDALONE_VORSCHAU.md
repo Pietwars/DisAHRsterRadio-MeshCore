@@ -1,8 +1,8 @@
 # Standalone 0.9.5: alle neuen Vorschauen
 
-**In Vorbereitung, keine Hardwareabnahme der neuen Touch-UI.** Echte Firmware-Layouts mit Demodaten.
+**Release 0.9.5, keine vollständige Hardwareabnahme der neuen Touch-UI.** Echte Firmware-Layouts mit Demodaten.
 
-[Bedienung](STANDALONE_TOUCH.md) · [Abnahme und Release-Entwurf](RELEASE-0.9.5.md)
+[Bedienung](STANDALONE_TOUCH.md) · [Release und Hardwarestatus](RELEASE-0.9.5.md)
 
 ## Bootmotiv
 

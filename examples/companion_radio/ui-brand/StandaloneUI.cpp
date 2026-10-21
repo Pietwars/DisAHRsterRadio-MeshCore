@@ -623,7 +623,7 @@ void UI::drawList(DisplayDriver *d, Page p) {
     snprintf(hits[nhits - 1].id, sizeof(hits[nhits - 1].id), "%s", t.id);
     char line[64];
     snprintf(line, sizeof(line), "%s %s", t.kind == dev::Kind::Channel ? "#" : p == BOARD_LIST ? "\xe2\x96\xa0" : "@", t.name);
-    ui::text(d, 7, y + 5, p == BOARD_LIST ? BOARD : t.kind == dev::Kind::Channel ? MESH : TEXT, line, 40);
+    ui::text(d, 7, y + 5, p == BOARD_LIST ? BOARD : t.kind == dev::Kind::Channel ? MESH : TEXT, line, 23, 2);
     bool roomList = p == BOARD_LIST;
     unsigned u = log.unread(t.id, roomList);
     if (u) ui::badge(d, W - 4, y + 1, u);
@@ -768,7 +768,7 @@ void UI::drawLocation(DisplayDriver *d) {
     int y = 94 + i * 38;
     bool v = i == 0 ? g.receiverOn : g.share;
     ui::button(d, 4, y, 312, 34, "", locSel == i);
-    ui::text(d, 12, y + 13, TEXT, i == 0 ? "GPS-Empfaenger" : "Standort teilen");
+    ui::text(d, 12, y + 9, TEXT, i == 0 ? "GPS-Empfaenger" : "Standort teilen", 19, 2);
     d->nativeFill(256, y + 6, 52, 22, v ? MESH : BG);
     ui::centerText(d, 282, y + 13, v ? INK : MUTED, v ? "AN" : "AUS");
     addHit(4, y, 312, 34, i);
@@ -796,7 +796,8 @@ void UI::drawDevice(DisplayDriver *d) {
   for (int row = 0; row < LIST_ROWS && devTop + row < DEVICE_BUTTONS; ++row) {
     int i = devTop + row;
     auto r = touchui::row(row);
-    ui::button(d, r.x, r.y, r.w, r.h, buttons[i], i == devSel);
+    ui::button(d, r.x, r.y, r.w, r.h, "", i == devSel);
+    ui::centerText(d,r.x+r.w/2,r.y+9,TEXT,buttons[i],2);
     addHit(r.x, r.y, r.w, r.h, i);
   }
   char note[64];

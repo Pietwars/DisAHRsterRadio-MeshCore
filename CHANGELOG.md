@@ -1,13 +1,13 @@
 # Änderungen
 
-## 0.9.5 · in Vorbereitung, nicht veröffentlicht
+## 0.9.5 · 21.10.2026 · Release
 
 - T-Deck Plus Standalone: fingerfreundliche Touch-Oberfläche mit Kachelmenü, größeren Tabs, scrollbaren Kontakt-/Einstellungslisten und eigener Geräteinfo.
 - Schnellmeldung mit eigenen Auswahlseiten für Vorlage, Ort und Empfänger; getrennte Sendeaktionen, Tastatur und Trackball bleiben erhalten.
 - Sichere Gesten: Tippen erst beim Loslassen auf derselben Aktion, Scrollen/Zurückziehen sendet nicht. Angezeigte Empfänger bleiben bei Kontaktaktualisierungen eindeutig.
 - I²C-Pins vor dem Busstart, dauerhafte wiederholbare Touch-Kalibrierung, Heimersheim Mitte als reine Kartenansicht ohne vorgetäuschten GPS-Fix.
 - Neue echte Layout-Vorschauen, Bedienübersicht und verifiziertes CI-Testpaket mit SHA-256 und Commitmanifest.
-- **Hardwarestatus:** Nutzer bestätigt den vorigen Fixstand aus PR #42 als lauffähig mit Nachrichtenempfang. Neue Touch-UI und finale Release-Dateien noch nicht abgenommen; keine Veröffentlichungsfreigabe. [Abnahme und Release-Entwurf](docs/RELEASE-0.9.5.md).
+- **Hardwarestatus:** Nutzer bestätigt den vorigen Fixstand aus PR #42 als lauffähig mit Nachrichtenempfang. Neue Touch-UI und finale Release-Dateien ohne vollständige dokumentierte Hardwareabnahme. Veröffentlichung am 21.10.2026 ausdrücklich vom Projektbetreiber beauftragt. [Release und Hardwarestatus](docs/RELEASE-0.9.5.md).
 
 ## Standalone test5 · 20.10.2026 · experimentelles Prerelease (keine Hardwareabnahme)
 
