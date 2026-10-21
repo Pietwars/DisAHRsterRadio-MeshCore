@@ -399,8 +399,9 @@ void UITask::pollTouch(unsigned long now) {
   }
   if(!_touch_down)return;
   _touch_down=false;
-  if(_pairing||!_touch_valid||now-_touch_started<25||now-_touch_started>900)return;
+  if(_pairing||!_touch_valid||now-_touch_started<25||now-_touch_started>(_touch_calibrating?5000u:900u))return;
   if(!_display->isOn()){wake();return;}
+  // Calibration is deliberately slower than a normal tap: allow a careful press.
   if(_touch_calibrating){calibrationTap(_touch_last_x,_touch_last_y);return;}
   int sx,sy,ex,ey;
   _touch_transform.map(_touch_x,_touch_y,sx,sy);
@@ -441,6 +442,9 @@ void UITask::renderCalibration() {
   const int x=px[_touch_step],y=py[_touch_step];
   _display->startFrame(C_BG);
   _display->nativeText(45,5,1,C_WHITE,"Touch kalibrieren");
+  char progress[40];
+  snprintf(progress,sizeof(progress),"%u/4: Kreuz antippen",unsigned(_touch_step)+1);
+  _display->nativeText(45,203,1,C_WHITE,progress);
   _display->nativeText(45,219,1,C_GREY,"Klick / Esc: abbrechen");
   _display->nativeLine(x-10,y,x+10,y,C_GREEN);
   _display->nativeLine(x,y-10,x,y+10,C_GREEN);

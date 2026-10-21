@@ -58,3 +58,5 @@ jobs:
           /tmp/tdeck-input
           $C11 tests/tdeck_calibration.test.cpp -o /tmp/tdeck-calibration
           /tmp/tdeck-calibration
+          $C11 -I tests/tdeck_board_fakes tests/tdeck_board.test.cpp variants/lilygo_tdeck/TDeckBoard.cpp -o /tmp/tdeck-board
+          /tmp/tdeck-board

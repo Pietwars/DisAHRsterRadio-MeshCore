@@ -136,6 +136,30 @@ angepasst; die Oberfläche ist kein Austausch des Funkprotokolls und keine pixel
 
 ## Aufbau
 
+### Korrekturen nach Hardware-Rueckmeldung zu test5
+
+- I2C: `TDeckBoard::begin()` setzt SDA 18 / SCL 8 vor `ESP32Board::begin()`.
+  Bisher startete die Basisklasse den generischen ESP32-S3-Bus; das spaetere
+  `Wire.begin(18, 8)` konnte einen bereits gestarteten Bus nicht umkonfigurieren.
+  Das betrifft Tastatur (0x55) und Touch (0x5d/0x14). Der Zeichenmodus 0x04
+  entspricht dem offiziellen LilyGO-Controllerprotokoll und bleibt erhalten.
+- Ohne gespeicherte gueltige Touch-Kalibrierung startet nach dem Logo der
+  Vier-Punkt-Dialog. Drei Kreuze bestimmen die Transformation, das vierte
+  prueft sie. Sorgfaeltige Beruehrungen bis 5 Sekunden sind jetzt erlaubt;
+  Fortschritt und Anleitung werden angezeigt. Speicherung im NVS
+  `dar-mc-touch/cal-v1`, unabhaengig von SD. Erneut unter Geraet / Touch neu
+  kalibrieren. Abbrechen behaelt die bisherigen Werte.
+- Beim Oeffnen der Karte ohne frischen GPS-Fix wird nur die Ansicht auf
+  Heimersheim im Ahrtal zentriert: 50.544444 N, 7.170278 E
+  (50 Grad 32 Minuten 40 Sekunden N, 7 Grad 10 Minuten 13 Sekunden E).
+  Quelle: https://de.wikipedia.org/wiki/Heimersheim_(Bad_Neuenahr-Ahrweiler).
+  Keine Aenderung an GPS-Daten, NodePrefs, Standortfreigabe oder Sendedaten;
+  kein Ich-Marker ohne frischen Fix. Manuelles Verschieben bleibt moeglich.
+
+Protokollquelle: https://github.com/Xinyuan-LilyGO/T-Deck/blob/master/examples/Keyboard_ESP32C3/Keyboard_ESP32C3.ino
+Busverhalten: https://github.com/espressif/arduino-esp32/blob/2.0.17/libraries/Wire/src/Wire.cpp
+Hardware-Abnahme der Korrekturen steht aus.
+
 | Datei | Aufgabe |
 |---|---|
 | `platformio.standalone.ini` | Env, Pins (SD-CS, Trackball), Kennung |

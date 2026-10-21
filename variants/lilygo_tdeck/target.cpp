@@ -51,7 +51,6 @@ EnvironmentSensorManager sensors(gps);
 bool radio_init() {
   fallback_clock.begin();
   rtc_clock.begin(Wire);
-  Wire.begin(18, 8);
 
 #if defined(P_LORA_SCLK)
   tdeck_shared_spi_begin(); // no-op if the display already started the shared bus
