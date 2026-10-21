@@ -4,7 +4,7 @@
 
 ## 0.9.5: T-Deck direkt bedienen
 
-**Release 0.9.5 · 21.10.2026.** T-Deck Plus bekommt eine eigene Standalone-Variante mit vollständiger Touch-Bedienung. WLAN/BLE für T-Deck Plus und T-Watch S3 bleiben getrennte Pakete. **Am 21.10.2026 vom Nutzer am T-Deck erfolgreich getestet:** „test klappt“. Das bestätigt den Standalone-Teststand mit neuer Touch-Oberfläche. Eine vollständige Einzelprüfung aller Funktionen sowie die Zuordnung zum konkret geflashten CI-Commit/SHA wurden nicht dokumentiert.
+**Release 0.9.5 · 21.10.2026.** T-Deck Plus bekommt eine eigene Standalone-Variante mit vollständiger Touch-Bedienung. WLAN/BLE für T-Deck Plus und T-Watch S3 bleiben getrennte Pakete. **Am 21.10.2026 vom Nutzer am T-Deck erfolgreich getestet:** „test klappt“. Das bestätigt den Standalone-Teststand mit neuer Touch-Oberfläche. Eine vollständige Hardwareabnahme mit Einzelprüfung aller Funktionen sowie die Zuordnung zum konkret geflashten CI-Commit/SHA wurden nicht dokumentiert.
 
 <p>
 <img src="docs/images/standalone-test6/vorschau-hauptmenue.png" width="320" alt="Standalone 0.9.5: sechs große Menükacheln">
