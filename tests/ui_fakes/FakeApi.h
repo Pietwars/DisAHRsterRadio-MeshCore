@@ -13,6 +13,7 @@ struct FakeApi : dev::Api {
   bool isReady = true, sendOk = true, loginOk = true;
   dev::Gps g; dev::Room rm{"", 0, false};
   int map = 0, sends = 0, logins = 0, adverts = 0, refreshes = 0, saves = 0;
+  const char *firmwareLabel = "v1.18.0-dar0.9.5-standalone-test";
   std::string lastId, lastText; char st[96] = "Gesendet; Zustellung offen";
   FakeApi() { g.detected = true; g.receiverOn = true; g.sats = 7; }
   void add(const char *id, const char *name, dev::Kind k, double lat = 0, double lon = 0) {
@@ -81,7 +82,7 @@ struct FakeApi : dev::Api {
   bool advert(char *status, size_t size) override { ++adverts; snprintf(status, size, "%s", g.share && g.fresh ? "Bekanntgabe mit Standort gesendet" : "Bekanntgabe gesendet"); return true; }
   bool refresh() override { ++refreshes; return true; }
   void info(dev::Info &o) const override {
-    snprintf(o.name, sizeof(o.name), "DAR-TDeck-3f2a"); o.firmware = "v1.18.0-dar0.9.5-standalone-test";
+    snprintf(o.name, sizeof(o.name), "DAR-TDeck-3f2a"); o.firmware = firmwareLabel;
     o.channels = 2; o.contacts = unsigned(targets.size()) - 2; o.history = seq; o.bleConnected = true; o.defaultPin = true;
     o.clockOK = true; o.heapFree = 142 * 1024; o.heapMin = 118 * 1024; o.sdCard = true; o.sdConfig = true; o.sdLog = true;
     o.txFlood = 12; o.txDirect = 3; o.rxFlood = 57; o.rxDirect = 9;

@@ -6,10 +6,12 @@
 // ALT+Backspace keeps the hierarchical back path and opens the auxiliary six-entry menu.
 // Hardware-free: everything goes through dev::Api (DeviceApi.h), so host tests and the preview harness
 // (tools/standalone_preview.py) run the same code as the firmware.
-#include "DeviceApi.h"
 #include "ChatLog.h"
+#include "DeviceApi.h"
 #include "MapView.h"
 #include "Theme.h"
+#include "TouchLayout.h"
+
 #include <helpers/ui/DisplayDriver.h>
 #if defined(LILYGO_TDECK) && defined(DISASTER_STANDALONE)
 #include "TDeckQuickPage.h"
@@ -21,7 +23,20 @@ namespace sui {
 constexpr uint8_t K_ENTER = 0x0D, K_BACKSPACE = 0x08, K_ALT_C = 0x0C, K_ESC = 0x1B;
 // "One level back": UITask turns ALT+Backspace into this code (the keyboard itself sends 0x08 for both); Esc too.
 constexpr uint8_t K_BACK = K_ESC;
-enum Page : uint8_t { BOOT, MENU, CHAT_LIST, CHAT_VIEW, QUICK, BOARD_LIST, BOARD_VIEW, MAP, LOCATION, DEVICE, PAGE_COUNT };
+enum Page : uint8_t {
+  BOOT,
+  MENU,
+  CHAT_LIST,
+  CHAT_VIEW,
+  QUICK,
+  BOARD_LIST,
+  BOARD_VIEW,
+  MAP,
+  LOCATION,
+  DEVICE,
+  DEVICE_INFO,
+  PAGE_COUNT
+};
 constexpr size_t COMPOSE_BYTES = 100;   // disaster::LOCAL_TEXT_LIMIT
 constexpr unsigned MAX_LIST = 72;       // 8 channels + 64 contacts
 constexpr int MENU_COUNT = 6;           // Chat, Meldung, Brett, Karte, Standort, Gerät
@@ -43,7 +58,10 @@ private:
   Page mapReturn = MENU;             // page that the map's "Zurück" button returns to
   int menuSel = 0;
   // touch targets of the drawn page (index = list row / menu entry / button)
-  struct Hit { int16_t x, y, w, h, idx; };
+  struct Hit {
+    int16_t x, y, w, h, idx;
+    char id[14];
+  };
   static constexpr int MAX_HITS = 16;
   Hit hits[MAX_HITS];
   int nhits = 0;
@@ -55,7 +73,10 @@ private:
   bool displayOffReq = false;
   bool touchCalibrationReq = false;
   int listSel[PAGE_COUNT] = {0}, listTop[PAGE_COUNT] = {0};
-  int locSel = 0, devSel = 0, scroll = 0;
+  int locSel = 0, devSel = 0, devTop = 0, scroll = 0;
+  uint32_t touchRevision = 0;
+  int touchTarget(int x, int y) const;
+  bool swipeList(int dy);
   char conv[14] = "c0", convName[40] = "";
   bool convRoom = false;
   char compose[COMPOSE_BYTES + 1] = "";
@@ -84,14 +105,15 @@ private:
   void drawMap(DisplayDriver *d);
   void drawLocation(DisplayDriver *d);
   void drawDevice(DisplayDriver *d);
+  void drawDeviceInfo(DisplayDriver *d);
   void drawHint(DisplayDriver *d);
   void drawBoot(DisplayDriver *d);
   void drawMenu(DisplayDriver *d);
   const char *authorName(const chat::Entry &e, char *buf, size_t cap, const char **body) const;
 public:
   static constexpr uint32_t BOOT_MS = 1800;                // original standalone timing, then channel/contact list
-  // "Zurück" button of the map (top left, below the tab strip): touch target and trackball-click action.
-  static constexpr int BACK_X = 2, BACK_Y = theme::NAV_H + 1, BACK_W = 62, BACK_H = 14;
+  // Shared back button below the tabs on every page.
+  static constexpr int BACK_X = 2, BACK_Y = theme::TAB_H + 2, BACK_W = 76, BACK_H = 24;
   bool begin(dev::Api *a);
   // Brand image of the boot logo (RGB565, BrandLogo.h in the firmware); without one only text is shown.
   void setSplash(const uint8_t *pixels) { splash = pixels; }
@@ -108,7 +130,8 @@ public:
   // Touch tap at screen coordinates: status line = back; menu entries, list rows, buttons, SEND, the map's
   // "Zurück" (targets of the last render); leaves the boot logo.
   bool tap(int x, int y);
-  bool gesture(int x, int y, int endX, int endY);
+  bool gesture(int x, int y, int endX, int endY, bool travelled = false, uint32_t duration = 200);
+  uint32_t touchEpoch() const { return touchRevision; }
   // One level back (ALT+Backspace, Esc, status line tap): conversation -> list -> menu, map -> where it was opened.
   bool back();
   // true once after "Display aus" (Gerät button or key 'd'): the caller switches the display off.

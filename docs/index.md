@@ -1,4 +1,15 @@
-# Introduction
+# DisAHRsterRadio-MeshCore
+
+**Release 0.9.5: Veröffentlichung vom Projektbetreiber beauftragt.** Die neue
+Standalone-Oberfläche für T-Deck Plus bietet Chat, Meldung, Brett, Karten,
+Standort und Geräteaktionen direkt am Display. Die WLAN/BLE-Pakete für T-Deck Plus und T-Watch S3 bleiben eigene Varianten.
+
+- [Neue Geräte-Vorschauen mit Demodaten](STANDALONE_VORSCHAU.md)
+- [Touch-Bedienung](STANDALONE_TOUCH.md)
+- [Abnahme und fertiger Release-Entwurf für 0.9.5](RELEASE-0.9.5.md)
+- [Aktueller Projektüberblick](../README.md)
+
+## MeshCore-Dokumentation
 
 Welcome to the MeshCore documentation.
 

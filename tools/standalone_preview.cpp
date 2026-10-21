@@ -34,6 +34,9 @@ int main(int argc, char **argv) {
   if (argc < 2) { fprintf(stderr, "usage: preview <dir>\n"); return 2; }
   out = argv[1];
   fake.demo();
+#ifdef PREVIEW_FIRMWARE
+  fake.firmwareLabel=PREVIEW_FIRMWARE;
+#endif
   fake.g.share = true; fake.g.fresh = true; fake.g.lat = 50.54292; fake.g.lon = 7.11463; fake.g.sats = 9;
   sui::UI u; FakeDisplay d; d.font = font;
   static uint8_t splash[320 * 213 * 2];
@@ -56,6 +59,17 @@ int main(int argc, char **argv) {
   u.click(); type(u, "Bin in 10 Min. mit Kanistern da"); page(u, d, "chat");
   u.key(sui::K_BACK); u.move(0, 1); u.move(0, 1); u.click(); page(u, d, "chat-direkt");
   entry(u, 1); u.key('3'); type(u, "Ibuprofen"); page(u, d, "meldung");
+  u.tap(30, 80);
+  page(u, d, "vorlagen");
+  u.gesture(100, 210, 100, 100);
+  page(u, d, "vorlagen-weiter");
+  u.back();
+  u.tap(60, 160);
+  page(u, d, "ort-auswahl");
+  u.back();
+  u.tap(220, 160);
+  page(u, d, "ziel-auswahl");
+  u.back();
   entry(u, 2); page(u, d, "brett-liste");
   u.click(); fake.rm.rights = 2; snprintf(fake.rm.id, sizeof(fake.rm.id), "dcafe0012ab34"); type(u, "Biete 2 Bautrockner");
   page(u, d, "brett");
@@ -63,5 +77,11 @@ int main(int argc, char **argv) {
   u.key('n'); u.key('n'); u.key('i'); page(u, d, "karte-detail");
   entry(u, 4); page(u, d, "standort");
   entry(u, 5); page(u, d, "geraet");
+  u.gesture(100, 210, 100, 100);
+  page(u, d, "geraet-weiter");
+  for (int i = 0; i < 7; ++i)
+    u.move(0, 1);
+  u.click();
+  page(u, d, "geraeteinfo");
   return 0;
 }

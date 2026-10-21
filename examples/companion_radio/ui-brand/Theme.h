@@ -21,7 +21,7 @@ constexpr uint16_t NAV_BG = 0x10c4, INK = rgb(0x102010);   // dark text on mesh-
 constexpr int W = 320, H = 240, CW = 6, CH = 8;                    // display and character cell (size 1)
 
 // DisAHRsterRadio standalone: five touch tabs, plus MeshCore back/unread/battery strip.
-constexpr int TAB_H = 28, STATUS_H = 16, NAV_H = TAB_H + STATUS_H;
+constexpr int TAB_H = 36, STATUS_H = 28, NAV_H = TAB_H + STATUS_H;
 constexpr int BATT_W = 52;
 
 // UTF-8 -> CP437 for the GFX font. German umlauts and sharp s map to their CP437 glyphs, other non-ASCII

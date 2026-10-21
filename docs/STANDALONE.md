@@ -1,5 +1,10 @@
 # T-Deck Plus Standalone (Issue #35)
 
+**Aktuelle Folgeversion: standalone-test6 im Release 0.9.5.** Die neue
+Touch-Bedienung, Vorschauen und Abnahme stehen unter [Touch-Bedienung](STANDALONE_TOUCH.md),
+[Galerie](STANDALONE_VORSCHAU.md) und [Release und Hardwarestatus](RELEASE-0.9.5.md).
+Die unten dokumentierte test5-Historie ersetzt keine Abnahme der neuen Oberfläche.
+
 Umsetzung von [Issue #35](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/issues/35): eine zusätzliche
 Firmware-Variante für das **LILYGO T-Deck Plus** (Tastatur, Trackball, SD-Karte, eingebautes GPS), die **ohne
 Weboberfläche, ohne WLAN und ohne Webserver** auskommt. MeshCore läuft über Bluetooth mit PIN (MeshCore-App);
@@ -135,6 +140,8 @@ angepasst; die Oberfläche ist kein Austausch des Funkprotokolls und keine pixel
   archiviert.
 
 ## Aufbau
+
+Fingerfreundliche Folgeversion: [Touch-Bedienung und Testhinweise](STANDALONE_TOUCH.md).
 
 ### Korrekturen nach Hardware-Rueckmeldung zu test5
 

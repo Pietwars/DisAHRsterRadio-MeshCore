@@ -2,6 +2,28 @@
 
 <img src="logo/disahrsterradio-display.png" width="420" alt="DisAHRsterRadio – MeshCore-Funknetz fürs Ahrtal">
 
+## 0.9.5: T-Deck direkt bedienen
+
+**Release 0.9.5 · 21.10.2026.** T-Deck Plus bekommt eine eigene Standalone-Variante mit vollständiger Touch-Bedienung. WLAN/BLE für T-Deck Plus und T-Watch S3 bleiben getrennte Pakete. Die Veröffentlichung wurde vom Projektbetreiber freigegeben; eine vollständige Hardwareabnahme der neuen Touch-UI und finalen Dateien ist nicht dokumentiert.
+
+<p>
+<img src="docs/images/standalone-test6/vorschau-hauptmenue.png" width="320" alt="Standalone 0.9.5: sechs große Menükacheln">
+<img src="docs/images/standalone-test6/vorschau-chat.png" width="320" alt="Standalone 0.9.5: Chat mit eigenem großen Senden-Button">
+<img src="docs/images/standalone-test6/vorschau-meldung.png" width="320" alt="Standalone 0.9.5: Schnellmeldung mit Auswahl für Vorlage, Ort und Ziel">
+</p>
+
+<sub>Echte 320 × 240 Layouts aus dem Firmware-Code mit Demodaten. Keine Hardwarefotos. [Alle neuen Vorschauen](docs/STANDALONE_VORSCHAU.md).</sub>
+
+- **Touch:** große getrennte Flächen, wischbare Listen, feste Zurück-Navigation und verschiebbare Karte.
+- **Senden:** eigener Button; Wischen oder Wegziehen löst keine Nachricht aus. Tastatur und Trackball bleiben vollständig nutzbar.
+- **Touch-Kalibrierung:** dauerhaft gespeichert und unter Gerät wiederholbar.
+- **GPS-Schutz:** Heimersheim Mitte ohne Fix ist nur Kartenansicht, niemals gesendete Eigenposition.
+- **Varianten:** Standalone für T-Deck Plus ohne WLAN/Web, mit MeshCore-Bluetooth. Der bisherige WLAN/BLE-Betrieb und die T-Watch S3 bleiben getrennte Varianten.
+
+[Touch-Bedienung](docs/STANDALONE_TOUCH.md) · [0.9.5-Release und Hardwarestatus](docs/RELEASE-0.9.5.md) · [Release und Downloads](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.5)
+
+## WLAN und Bluetooth in 0.9.5
+
 **DisAHRsterRadio mit MeshCore fürs Ahrtal: Weboberfläche MeshAhrtal im offenen WLAN und gleichzeitig die offizielle MeshCore-App per Bluetooth – Chat, Brett und Offlinekarten ohne Internet.**
 
 <p>
@@ -10,13 +32,13 @@
 <img src="docs/images/vorschau-karte.jpg" width="250" alt="MeshAhrtal: Offlinekarte">
 </p>
 
-<sub>Aufnahmen der [Live-Demo](https://pietwars.github.io/DisAHRsterRadio-MeshCore/) in Handygröße, Stand 0.9.4; alle Daten simuliert.</sub>
+<sub>Aufnahmen der [Live-Demo](https://pietwars.github.io/DisAHRsterRadio-MeshCore/) in Handygröße, Stand 0.9.5; alle Daten simuliert.</sub>
 
-**Version 0.9.4** · MeshCore 1.18.0 · Weboberfläche MeshAhrtal · 868 MHz · Firmwarekennung `v1.18.0-dar0.9.4`
+**Version 0.9.5** · MeshCore 1.18.0 · Weboberfläche MeshAhrtal · 868 MHz · Firmwarekennung `v1.18.0-dar0.9.5`
 
-**Neu in 0.9.4:** Akku-Zeile am Gerät und automatische Flash-/Speicherprüfungen für beide Release-Boards. Messwerte und offene Hardwaretests: [Flash- und RAM-Prüfung](docs/SPEICHER.md).
+**Weiterhin enthalten (seit 0.9.4):** Akku-Zeile am Gerät und automatische Flash-/Speicherprüfungen für beide Release-Boards. Messwerte und offene Hardwaretests: [Flash- und RAM-Prüfung](docs/SPEICHER.md).
 
-**[Release v0.9.4](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.4)** vom 19.10.2026. Die Akku-Anzeige der Testversion 0.9.4-test wurde vom Nutzer erfolgreich erprobt; eine vollständige Hardwareabnahme der finalen Release-Dateien ist nicht dokumentiert. Nachrichten werden weiterhin zwischen Weboberfläche und MeshCore-App geteilt; Details: [WLAN-Portal und MeshCore-App gleichzeitig](docs/DETAILS.md#wlan-portal-und-meshcore-app-gleichzeitig-bluetooth).
+**[Release v0.9.5](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.5)** vom 21.10.2026. Nachrichten werden zwischen Weboberfläche und MeshCore-App geteilt. Der Standalone-Build bedient Chat, Meldung, Brett, Karte, Standort und Gerät direkt am T-Deck; er enthält kein WLAN/Webportal. [Hardwarestatus und Prüfungen](docs/RELEASE-0.9.5.md).
 
 [![Release](https://img.shields.io/github/v/release/Pietwars/DisAHRsterRadio-MeshCore?label=Release)](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/latest)
 [![Live-Demo](https://img.shields.io/badge/Live--Demo-online-2ea44f)](https://pietwars.github.io/DisAHRsterRadio-MeshCore/)
@@ -34,18 +56,20 @@ Flyer (A5): [Druck-PDF mit QR-Codes](docs/flyer/DisAHRsterRadio-MeshCore-Flyer.p
 - **Gerät:** Status, Kontakte, Knotenname, feste Deutschland-Funkprofile, Kanäle – ohne Anmeldung
 - **Akku am Display:** Ladestand und Spannung; T-Watch zusätzlich USB-/Ladestatus. Verbrauch und Restlaufzeit sind gekennzeichnete Schätzungen.
 
-Nachrichten, Kontakte und Einstellungen laufen **nur über die Weboberfläche und die MeshCore-App** – nicht am Gerät selbst.
+Im **WLAN/BLE-Build** laufen Nachrichten, Kontakte und Einstellungen über Weboberfläche und MeshCore-App. Die **Standalone-Variante für T-Deck Plus** bietet lokale Bedienung und MeshCore-Bluetooth, ohne WLAN/Webportal.
 
 ## Unterstützte Geräte
 
-| Board | Paket (Release v0.9.4) |
+| Board | Paket (Release v0.9.5) |
 |---|---|
-| **LILYGO T-Deck Plus** (ESP32-S3, SX1262, 868 MHz) | [DisAHRsterRadio-MeshCore-0.9.4-LilyGo_TDeck.zip](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/download/v0.9.4/DisAHRsterRadio-MeshCore-0.9.4-LilyGo_TDeck.zip) |
-| **LILYGO T-Watch S3** (ESP32-S3, SX1262, 868 MHz) | [DisAHRsterRadio-MeshCore-0.9.4-LilyGo_TWatchS3.zip](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/download/v0.9.4/DisAHRsterRadio-MeshCore-0.9.4-LilyGo_TWatchS3.zip) |
+| **LILYGO T-Deck Plus** (ESP32-S3, SX1262, 868 MHz) | [DisAHRsterRadio-MeshCore-0.9.5-LilyGo_TDeck.zip](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/download/v0.9.5/DisAHRsterRadio-MeshCore-0.9.5-LilyGo_TDeck.zip) |
+| **LILYGO T-Watch S3** (ESP32-S3, SX1262, 868 MHz) | [DisAHRsterRadio-MeshCore-0.9.5-LilyGo_TWatchS3.zip](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/download/v0.9.5/DisAHRsterRadio-MeshCore-0.9.5-LilyGo_TWatchS3.zip) |
 
-Jedes Paket enthält `…-factory.bin` (komplett an **0x0**), `…-firmware.bin` (Update an **0x10000**), die Einzelteile, `SHA256SUMS`, Flash-/RAM-Berichte und eine deutsche `ANLEITUNG.md`.
+**T-Deck Plus Standalone (ohne WLAN/Web):** [DisAHRsterRadio-MeshCore-0.9.5-LilyGo_TDeck_standalone-test6.zip](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/download/v0.9.5/DisAHRsterRadio-MeshCore-0.9.5-LilyGo_TDeck_standalone-test6.zip). Firmwarekennung `v1.18.0-dar0.9.5-standalone-test6`; eigene Bedienung, Anleitung, Commitmanifest und Vorschauen im ZIP. Diese Variante ist weiterhin experimentell; vollständige Hardwareabnahme offen.
 
-## Anzeige am Gerät
+Die beiden WLAN/BLE-Pakete enthalten `…-factory.bin` (komplett an **0x0**), `…-firmware.bin` (Update an **0x10000**), die Einzelteile, `SHA256SUMS`, Flash-/RAM-Berichte und eine deutsche `ANLEITUNG.md`.
+
+## Anzeige am Gerät im WLAN/BLE-Build
 
 <img src="docs/images/anzeige-tdeck-0.9.4.png" width="320" alt="T-Deck Plus: Ahrtal-Bild, Akku-Zeile und Knopf Advert senden"> <img src="docs/images/anzeige-twatch-0.9.4.png" width="240" alt="T-Watch S3: Ahrtal-Bild, Akku-Zeile und Knopf Advert senden">
 
@@ -78,9 +102,9 @@ Jeder Advert ist ein **Flood-Advert**; danach steht kurz „Advert gesendet“ i
 | Knopf „Advert senden“ antippen | Flood-Advert senden |
 | Antippen bei dunklem Display | nur aufwecken |
 
-## Schnellstart
+## Schnellstart: WLAN/BLE
 
-1. **Flashen:** am einfachsten mit dem [Web-Flasher](https://pietwars.github.io/DisAHRsterRadio-MeshCore/flasher/) (Chrome/Edge am Computer). Grüner Knopf **„Update auf 0.9.4 – … (Einstellungen bleiben)“** (empfohlen, schreibt nur `…-firmware.bin` an 0x10000) oder orange umrandeter Knopf **„Neuinstallation – … (alles löschen)“** (`…-factory.bin` an 0x0, löscht Identität, Kontakte und Verlauf). Ohne Web-Flasher: [Anleitung Flashen](docs/FLASHEN.md) (esptool).
+1. **Flashen:** das passende 0.9.5-ZIP oben herunterladen und nach seiner ANLEITUNG.md flashen. Der [Web-Flasher](https://pietwars.github.io/DisAHRsterRadio-MeshCore/flasher/) (Chrome/Edge am Computer) bleibt vorerst beim ausdrücklich beschrifteten 0.9.4-Stand. Dort: grüner Knopf **„Update auf 0.9.4 – … (Einstellungen bleiben)“** (empfohlen, schreibt nur `…-firmware.bin` an 0x10000) oder orange umrandeter Knopf **„Neuinstallation – … (alles löschen)“** (`…-factory.bin` an 0x0, löscht Identität, Kontakte und Verlauf). Ohne Web-Flasher: [Anleitung Flashen](docs/FLASHEN.md) (esptool).
 2. **Verbinden:** Handy mit dem offenen WLAN `DisAHRsterRadio-XXXXXX` verbinden, **http://192.168.4.1** öffnen – kein Passwort, höchstens 4 Handys.
 3. **MeshCore-App (optional):** per Bluetooth koppeln; die PIN zeigt das Display nur während der Kopplung an. Danach in der App eine eigene PIN setzen. Details: [Offener Zugang](docs/OFFENER_ZUGANG.md)
 
@@ -93,7 +117,7 @@ MeshCore-Preset **EU/UK (Narrow): 869,618 MHz**, 62,5 kHz, SF8, CR 4/8 (SRD-Teil
 
 | Repository | Inhalt | Funk | Version | Demo · Download · Flyer |
 |---|---|---|---|---|
-| [Pietwars/DisAHRsterRadio-MeshCore](https://github.com/Pietwars/DisAHRsterRadio-MeshCore) | MeshCore 1.18 mit kompakter MeshAhrtal-Oberfläche per WLAN plus Bluetooth für die MeshCore-App; Firmware für LILYGO T-Deck Plus und T-Watch S3 (Ahrtal) | MeshCore | 0.9.4 | [Live-Demo](https://pietwars.github.io/DisAHRsterRadio-MeshCore/) · [Release v0.9.4](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.4) · Flyer [Druck](https://pietwars.github.io/DisAHRsterRadio-MeshCore/flyer/DisAHRsterRadio-MeshCore-Flyer.pdf) / [digital](https://pietwars.github.io/DisAHRsterRadio-MeshCore/flyer/DisAHRsterRadio-MeshCore-Flyer-digital.pdf) |
+| [Pietwars/DisAHRsterRadio-MeshCore](https://github.com/Pietwars/DisAHRsterRadio-MeshCore) | MeshCore 1.18 mit kompakter MeshAhrtal-Oberfläche per WLAN plus Bluetooth für die MeshCore-App; Firmware für LILYGO T-Deck Plus und T-Watch S3 (Ahrtal) | MeshCore | 0.9.5 | [Live-Demo](https://pietwars.github.io/DisAHRsterRadio-MeshCore/) · [Release v0.9.5](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.5) · Flyer [Druck](https://pietwars.github.io/DisAHRsterRadio-MeshCore/flyer/DisAHRsterRadio-MeshCore-Flyer.pdf) / [digital](https://pietwars.github.io/DisAHRsterRadio-MeshCore/flyer/DisAHRsterRadio-MeshCore-Flyer-digital.pdf) |
 | [Pietwars/DisAHRsterRadio](https://github.com/Pietwars/DisAHRsterRadio) | Ohne MeshCore: modernisiertes disaster-radio (LoRaLayer2, RadioLib) mit kompakter MeshAhrtal-Oberfläche; Firmware für LILYGO T-Deck Plus und T-Watch S3 (Ahrtal) | LoRaLayer2 | 0.9.2 | [Live-Demo](https://pietwars.github.io/DisAHRsterRadio/) · [Release v0.9.2](https://github.com/Pietwars/DisAHRsterRadio/releases/tag/v0.9.2) · Flyer [Druck](https://pietwars.github.io/DisAHRsterRadio/flyer/DisAHRsterRadio-Flyer.pdf) / [digital](https://pietwars.github.io/DisAHRsterRadio/flyer/DisAHRsterRadio-Flyer-digital.pdf) |
 | [Pietwars/HaldenFunk](https://github.com/Pietwars/HaldenFunk) | Regionalvariante von DisAHRsterRadio für Sangerhausen / Mansfelder Land, ohne MeshCore; Firmware für LILYGO T-Deck Plus und T-Watch S3 | LoRaLayer2 | 0.9.2 | [Live-Demo](https://pietwars.github.io/HaldenFunk/) · [Release v0.9.2](https://github.com/Pietwars/HaldenFunk/releases/tag/v0.9.2) · Flyer [Druck](https://pietwars.github.io/HaldenFunk/flyer/HaldenFunk-Flyer.pdf) / [digital](https://pietwars.github.io/HaldenFunk/flyer/HaldenFunk-Flyer-digital.pdf) |
 | [Pietwars/HaldenFunk-MeshCore](https://github.com/Pietwars/HaldenFunk-MeshCore) | Regionalvariante von DisAHRsterRadio-MeshCore für das Mansfelder Land: MeshCore 1.18, WLAN + Bluetooth; Firmware für LILYGO T-Deck Plus und T-Watch S3 | MeshCore | 0.9.2 | [Live-Demo](https://pietwars.github.io/HaldenFunk-MeshCore/) · [Release v0.9.2](https://github.com/Pietwars/HaldenFunk-MeshCore/releases/tag/v0.9.2) · Flyer [Druck](https://pietwars.github.io/HaldenFunk-MeshCore/flyer/HaldenFunk-MeshCore-Flyer.pdf) / [digital](https://pietwars.github.io/HaldenFunk-MeshCore/flyer/HaldenFunk-MeshCore-Flyer-digital.pdf) |
@@ -115,17 +139,15 @@ Alle Demos sind simuliert.
 
 [Details (ausführlich)](docs/DETAILS.md) · [Anleitung Flashen](docs/FLASHEN.md) · [Flash- und RAM-Prüfung](docs/SPEICHER.md) · [Offener Zugang](docs/OFFENER_ZUGANG.md) · [Änderungen](CHANGELOG.md) · [Original-README MeshCore](README.meshcore.md)
 
-## Standalone-Testversion für T-Deck Plus
+## Schnellstart: T-Deck Plus Standalone
 
-Die zusätzliche Variante `LilyGo_TDeck_standalone` übernimmt ab test5 die Oberfläche des
-DisAHRsterRadio-Standalone: vollständiges Bootmotiv, Touch-Kalibrierung und die Reiter
-CHAT/HILFE/BRETT/KARTE/SETUP. Sie verwendet MeshCore mit PIN-Bluetooth und enthält kein WLAN/Web.
-Die Firmware ist als **[experimentelles Prerelease `standalone-test5`](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/standalone-test5)** erhältlich, **noch ohne Geräteabnahme**; nicht im stabilen Web-Flasher. Bedienung und Flash-Hinweise: [Standalone](docs/STANDALONE.md). Prüfprogramm und offener Status: [Hardware-Abnahmeprotokoll](docs/STANDALONE-ABNAHME.md) · [Issue #40](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/issues/40).
-Die obige Tastenbeschreibung gilt weiterhin für den normalen 0.9.4-Release.
+1. Antenne anschrauben, Identität/Kontakte/Einstellungen sichern und das ausdrücklich als **Standalone** bezeichnete ZIP oben herunterladen. SHA-256 mit `SHA256SUMS` prüfen; die äußere ZIP-Prüfsumme steht im Release.
+2. Bei passender bestehender MeshCore-Installation `firmware.bin` an **0x10000** aktualisieren, **ohne Löschen**. Bei Wechsel von anderer Firmware oder unbekannten Partitionen: `factory.bin` an **0x0**, vorher Flash vollständig löschen; dabei gehen Identität, Kontakte, Verlauf und Einstellungen verloren. Nicht die WLAN- und Standalone-Pakete verwechseln.
+3. Beim ersten Start die angezeigten Touch-Ziele kalibrieren. Die Kalibrierung bleibt nach Neustart erhalten und ist unter **Gerät → Touch kalibrieren** wiederholbar.
+4. Chat, Meldung, Brett, Karte, Standort oder Gerät per Kachel öffnen. Listen wischen, Karte ziehen, mit Zurück eine Ebene hoch. Tastatur und Trackball bleiben nutzbar. Eine Nachricht wird über die ausdrücklich beschriftete Sendeaktion verschickt.
+5. Für GPS-Übertragung **Standort teilen** bewusst einschalten und einen frischen Fix abwarten. Heimersheim ohne Fix ist nur die Kartenansicht, keine eigene Position. MeshCore-App bei Bedarf über Bluetooth koppeln; die PIN erscheint während der Kopplung.
 
-## Für 0.9.5 vorgemerkt
-
-[T-Deck: Schnellmeldungsansicht wie auf dem Handy, mit Position senden und Tastatur](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/issues/33). Als zweite Geräteseite mit denselben Vorlagen, Text-, Orts- und Zielauswahl wie in der Weboberfläche geplant. In 0.9.4 bleibt die Tastatur ohne Funktion.
+[Touch-Bedienung](docs/STANDALONE_TOUCH.md) · [Alle Geräte-Vorschauen](docs/STANDALONE_VORSCHAU.md) · [Release-/Hardwarestatus](docs/RELEASE-0.9.5.md). Die frühere [standalone-test5](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/standalone-test5) bleibt historische Testversion.
 
 ## Lizenz
 

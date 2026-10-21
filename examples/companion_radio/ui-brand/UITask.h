@@ -52,6 +52,8 @@ class UITask : public AbstractUITask {
   uint8_t _touch_step=0;
   int _cal_x[3]={}, _cal_y[3]={}, _touch_last_x=0, _touch_last_y=0;
   unsigned long _touch_started=0, _cal_accept_at=0;
+  bool _touch_travelled = false;
+  uint32_t _touch_epoch = 0;
   void beginCalibration();
   void calibrationTap(int rawX, int rawY);
   void renderCalibration();

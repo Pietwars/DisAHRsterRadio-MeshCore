@@ -46,6 +46,8 @@ public:
   double ppd() const { return ppu * 1e5 / UNIT; }
   double zoomFactor() const { return ppu / fitPpu; }
   void zoom(double f) {
+    // GPS centring can exceed the overview-relative limit. '+' must never zoom OUT.
+    if (f > 1 && ppu >= fitPpu * 32) return;
     double z = ppu * f;
     if (z < fitPpu * 0.5) z = fitPpu * 0.5;
     if (z > fitPpu * 32) z = fitPpu * 32;

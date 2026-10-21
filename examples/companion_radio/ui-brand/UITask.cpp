@@ -393,21 +393,38 @@ void UITask::pollTouch(unsigned long now) {
   bool down=false; int x=0,y=0;
   if(!tdeck_touch.sample(down,x,y))return;
   if(down) {
-    if(!_touch_down) {_touch_x=x;_touch_y=y;_touch_started=now;_touch_valid=x>=0&&y>=0;}
+    if (!_touch_down) {
+      _touch_x = x;
+      _touch_y = y;
+      _touch_started = now;
+      _touch_valid = x >= 0 && y >= 0;
+      _touch_travelled = false;
+      _touch_epoch = _sui.touchEpoch();
+    }
     if(x<0||y<0)_touch_valid=false;
+    if (_touch_valid && !_touch_calibrating) {
+      int sx, sy, cx, cy;
+      _touch_transform.map(_touch_x, _touch_y, sx, sy);
+      _touch_transform.map(x, y, cx, cy);
+      if (abs(cx - sx) > 12 || abs(cy - sy) > 12) _touch_travelled = true;
+    }
     _touch_last_x=x;_touch_last_y=y;_touch_down=true; return;
   }
   if(!_touch_down)return;
   _touch_down=false;
-  if(_pairing||!_touch_valid||now-_touch_started<25||now-_touch_started>(_touch_calibrating?5000u:900u))return;
+  if (_pairing || !_touch_valid || now - _touch_started < 25 ||
+      now - _touch_started > (_touch_calibrating ? 5000u : 2000u))
+    return;
   if(!_display->isOn()){wake();return;}
   // Calibration is deliberately slower than a normal tap: allow a careful press.
   if(_touch_calibrating){calibrationTap(_touch_last_x,_touch_last_y);return;}
+  if (_touch_epoch != _sui.touchEpoch()) return; // content changed beneath the finger: start a new gesture
   int sx,sy,ex,ey;
   _touch_transform.map(_touch_x,_touch_y,sx,sy);
   _touch_transform.map(_touch_last_x,_touch_last_y,ex,ey);
   if(sx<0||sx>=320||sy<0||sy>=240)return;
-  if(_sui.gesture(sx,sy,ex,ey))input();
+  if (_sui.gesture(sx, sy, ex, ey, _touch_travelled, now - _touch_started))
+    input();
   else _auto_off=now+BRAND_AUTO_OFF_MILLIS;
 }
 

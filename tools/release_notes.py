@@ -13,13 +13,18 @@ print(f"""> ⚠️ **Kein zertifiziertes Notrufsystem.** In Lebensgefahr immer *
 ## Änderungen
 {body}
 
-## Pakete
+## Standalone für T-Deck Plus
+Die zusätzliche Variante `DisAHRsterRadio-MeshCore-{version}-LilyGo_TDeck_standalone-test6.zip` bietet Chat, Meldung, Brett, Karten, Standort und Geräteaktionen direkt am Display, ohne WLAN/Webportal, mit MeshCore-Bluetooth. Touch, Tastatur und Trackball bleiben nutzbar. Die Kennung bleibt `standalone-test6`; die vollständige Hardwareabnahme ist offen. Veröffentlichung vom Projektbetreiber beauftragt. Anleitung, SHA256SUMS, Commitmanifest und Vorschauen liegen im ZIP.
+
+Standalone: `firmware.bin` als Update an **0x10000 ohne Löschen**; `factory.bin` an **0x0 nach vollständigem Löschen** (Datenverlust). GPS wird nur bei bewusster Freigabe und frischem Fix geteilt. [Bedienung](https://github.com/{repo}/blob/v{version}/docs/STANDALONE_TOUCH.md).
+
+## WLAN/BLE-Pakete
 | Board | Datei |
 |---|---|
 {rows}
 
 Jedes Paket enthält `…-factory.bin` (komplett an **0x0** flashen, z. B. mit https://espressif.github.io/esptool-js/), die Einzelteile (`firmware.bin` für das Update an **0x10000**), `SHA256SUMS` und eine deutsche `ANLEITUNG.md`. **Antenne zuerst anschrauben!**
 
-Das Display zeigt das DisAHRsterRadio-Logo, die Akku-Zeile und den Knopf „Advert senden“ (Flood-Advert); Nachrichten und Einstellungen über die MeshCore-App (Bluetooth mit PIN, die PIN steht nur während der Kopplung auf dem Display) und die Weboberfläche im offenen WLAN. Verbrauch und Restlaufzeit sind Schätzungen; keines der beiden Boards misst Akkustrom.
+In den WLAN/BLE-Varianten zeigt das Display das DisAHRsterRadio-Logo, die Akku-Zeile und den Knopf „Advert senden“ (Flood-Advert); Nachrichten und Einstellungen über die MeshCore-App (Bluetooth mit PIN, die PIN steht nur während der Kopplung auf dem Display) und die Weboberfläche im offenen WLAN. Verbrauch und Restlaufzeit sind Schätzungen; keines der beiden Boards misst Akkustrom.
 
 Automatisch gebaut vom Workflow „Release“ aus dem Tag `v{version}` ({repo}); vor der Veröffentlichung auf Vollständigkeit, Prüfsummen, Flash-Header, Partitionen und Speichergrenzen geprüft. Markdown-/JSON-Speicherberichte liegen in jedem ZIP.""")
