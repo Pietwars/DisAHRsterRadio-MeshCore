@@ -1,6 +1,6 @@
 # Standalone 0.9.5: alle neuen Vorschauen
 
-**Release 0.9.5, keine vollständige Hardwareabnahme der neuen Touch-UI.** Echte Firmware-Layouts mit Demodaten.
+**Release 0.9.5: Standalone-Test mit neuer Touch-UI am 21.10.2026 vom Nutzer als erfolgreich bestätigt.** Einzelprüfungen und geflashter Commit/SHA sind nicht vollständig dokumentiert. Echte Firmware-Layouts mit Demodaten.
 
 [Bedienung](STANDALONE_TOUCH.md) · [Release und Hardwarestatus](RELEASE-0.9.5.md)
 

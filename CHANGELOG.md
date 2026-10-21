@@ -7,7 +7,7 @@
 - Sichere Gesten: Tippen erst beim Loslassen auf derselben Aktion, Scrollen/Zurückziehen sendet nicht. Angezeigte Empfänger bleiben bei Kontaktaktualisierungen eindeutig.
 - I²C-Pins vor dem Busstart, dauerhafte wiederholbare Touch-Kalibrierung, Heimersheim Mitte als reine Kartenansicht ohne vorgetäuschten GPS-Fix.
 - Neue echte Layout-Vorschauen, Bedienübersicht und verifiziertes CI-Testpaket mit SHA-256 und Commitmanifest.
-- **Hardwarestatus:** Nutzer bestätigt den vorigen Fixstand aus PR #42 als lauffähig mit Nachrichtenempfang. Neue Touch-UI und finale Release-Dateien ohne vollständige dokumentierte Hardwareabnahme. Veröffentlichung am 21.10.2026 ausdrücklich vom Projektbetreiber beauftragt. [Release und Hardwarestatus](docs/RELEASE-0.9.5.md).
+- **Hardwarestatus:** Nutzer bestätigt den vorigen Fixstand aus PR #42 als lauffähig mit Nachrichtenempfang. Aktueller Standalone-Teststand mit neuer Touch-UI am 21.10.2026 vom Nutzer als erfolgreich getestet bestätigt („test klappt“). Getesteter CI-Commit/SHA und vollständige Einzelprüfung aller Funktionen nicht dokumentiert. Veröffentlichung am 21.10.2026 ausdrücklich vom Projektbetreiber beauftragt. [Release und Hardwarestatus](docs/RELEASE-0.9.5.md).
 
 ## Standalone test5 · 20.10.2026 · experimentelles Prerelease (keine Hardwareabnahme)
 

@@ -24,10 +24,12 @@ Veröffentlichung am **21.10.2026** vom Projektbetreiber ausdrücklich beauftrag
 
 ## Prüfungen und offene Hardwaretests
 
-Der Nutzer hat den vorherigen Fixstand aus PR #42 am Gerät als lauffähig mit Nachrichtenempfang bestätigt. Eine vollständige Hardwareabnahme der neuen Touch-UI und der final veröffentlichten Binärdateien ist nicht dokumentiert.
+**Nutzertest am 21.10.2026 erfolgreich:** Nach Bereitstellung der 0.9.5-Standalone-Test6-Firmware und Veröffentlichung von 0.9.5 bestätigt der Nutzer: „test klappt, kann mit rein“. Damit liegt positives Hardwarefeedback zum aktuellen Standalone-Teststand mit neuer Touch-UI vor. Bereits zuvor wurde PR #42 mit Nachrichtenempfang erfolgreich getestet.
+
+Der konkret geflashte CI-Commit und die Firmware-SHA wurden in diesem Feedback nicht genannt. Die Bestätigung wird deshalb nicht pauschal auf sämtliche Release-Dateien oder jede einzelne Funktion übertragen.
 
 Automatisch geprüft werden Hosttests einschließlich Touch-Abbruch, stabile Empfängerauswahl und GPS-Schutz, Firmware-Builds, Ausschluss der WLAN-/Web-Schicht im Standalone-Build, Header/Partitionen/Speichergrenzen, Factory-Offsets, Paketvollständigkeit, SHA-256 und 18 Layout-Vorschauen. Der Release-Workflow veröffentlicht nur nach erfolgreichem Bau und Paketprüfung aller drei Varianten.
 
-Offen bleiben am realen Gerät: Update und Neuinstallation, Kalibrierung nach Neustart, alle Touch-Kacheln und langen Listen, Abbrechen von Sendegesten, Empfang/Versand Kanal und Direkt, Brett, Tastatur/Trackball, SD, GPS-Freigabe ohne/mit Fix, Laufzeit und Stabilität. Testergebnisse bitte mit `source_commit` und Firmware-SHA aus dem Paket dokumentieren.
+Nicht einzeln bestätigt bzw. nicht dokumentiert bleiben: Update und Neuinstallation, Kalibrierung nach Neustart, alle Touch-Kacheln und langen Listen, Abbrechen von Sendegesten, Empfang/Versand Kanal und Direkt, Brett, Tastatur/Trackball, SD, GPS-Freigabe ohne/mit Fix, Laufzeit und Stabilität. Testergebnisse bitte mit `source_commit` und Firmware-SHA aus dem Paket dokumentieren.
 
 [Bedienung](STANDALONE_TOUCH.md) · [Vorschauen mit Demodaten](STANDALONE_VORSCHAU.md) · [Release](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.5)

@@ -4,7 +4,7 @@
 
 ## 0.9.5: T-Deck direkt bedienen
 
-**Release 0.9.5 · 21.10.2026.** T-Deck Plus bekommt eine eigene Standalone-Variante mit vollständiger Touch-Bedienung. WLAN/BLE für T-Deck Plus und T-Watch S3 bleiben getrennte Pakete. Die Veröffentlichung wurde vom Projektbetreiber freigegeben; eine vollständige Hardwareabnahme der neuen Touch-UI und finalen Dateien ist nicht dokumentiert.
+**Release 0.9.5 · 21.10.2026.** T-Deck Plus bekommt eine eigene Standalone-Variante mit vollständiger Touch-Bedienung. WLAN/BLE für T-Deck Plus und T-Watch S3 bleiben getrennte Pakete. **Am 21.10.2026 vom Nutzer am T-Deck erfolgreich getestet:** „test klappt“. Das bestätigt den Standalone-Teststand mit neuer Touch-Oberfläche. Eine vollständige Einzelprüfung aller Funktionen sowie die Zuordnung zum konkret geflashten CI-Commit/SHA wurden nicht dokumentiert.
 
 <p>
 <img src="docs/images/standalone-test6/vorschau-hauptmenue.png" width="320" alt="Standalone 0.9.5: sechs große Menükacheln">
@@ -65,7 +65,7 @@ Im **WLAN/BLE-Build** laufen Nachrichten, Kontakte und Einstellungen über Webob
 | **LILYGO T-Deck Plus** (ESP32-S3, SX1262, 868 MHz) | [DisAHRsterRadio-MeshCore-0.9.5-LilyGo_TDeck.zip](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/download/v0.9.5/DisAHRsterRadio-MeshCore-0.9.5-LilyGo_TDeck.zip) |
 | **LILYGO T-Watch S3** (ESP32-S3, SX1262, 868 MHz) | [DisAHRsterRadio-MeshCore-0.9.5-LilyGo_TWatchS3.zip](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/download/v0.9.5/DisAHRsterRadio-MeshCore-0.9.5-LilyGo_TWatchS3.zip) |
 
-**T-Deck Plus Standalone (ohne WLAN/Web):** [DisAHRsterRadio-MeshCore-0.9.5-LilyGo_TDeck_standalone-test6.zip](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/download/v0.9.5/DisAHRsterRadio-MeshCore-0.9.5-LilyGo_TDeck_standalone-test6.zip). Firmwarekennung `v1.18.0-dar0.9.5-standalone-test6`; eigene Bedienung, Anleitung, Commitmanifest und Vorschauen im ZIP. Diese Variante ist weiterhin experimentell; vollständige Hardwareabnahme offen.
+**T-Deck Plus Standalone (ohne WLAN/Web):** [DisAHRsterRadio-MeshCore-0.9.5-LilyGo_TDeck_standalone-test6.zip](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/download/v0.9.5/DisAHRsterRadio-MeshCore-0.9.5-LilyGo_TDeck_standalone-test6.zip). Firmwarekennung `v1.18.0-dar0.9.5-standalone-test6`; eigene Bedienung, Anleitung, Commitmanifest und Vorschauen im ZIP. Der Nutzer bestätigt den Standalone-Test als erfolgreich; eine vollständige Einzelprüfung aller Funktionen ist weiterhin nicht dokumentiert.
 
 Die beiden WLAN/BLE-Pakete enthalten `…-factory.bin` (komplett an **0x0**), `…-firmware.bin` (Update an **0x10000**), die Einzelteile, `SHA256SUMS`, Flash-/RAM-Berichte und eine deutsche `ANLEITUNG.md`.
 
