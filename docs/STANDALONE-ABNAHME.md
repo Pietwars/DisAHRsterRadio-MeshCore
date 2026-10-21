@@ -1,5 +1,10 @@
 # T-Deck Plus Standalone test5: Hardware-Abnahmeprotokoll
 
+> Historische Vorlage zum alten test5-Prerelease. Für die neue Touch-Oberfläche
+> und Release 0.9.5 gilt das [aktuelle Abnahmeblatt](RELEASE-0.9.5.md).
+> Nutzerfeedback zum späteren Fixstand aus PR #42 bestätigt Lauf und Empfang;
+> es füllt diese alten test5-Prüfungen nicht nachträglich mit „OK“.
+
 **Status: AUSSTEHEND – keine Hardwareabnahme dokumentiert.** Dieses Protokoll ist eine Vorlage, kein bestandenes Testergebnis. Verbindlicher Aufgabenstand: [Issue #40](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/issues/40).
 
 | Feld | Bei echtem Test ausfüllen |

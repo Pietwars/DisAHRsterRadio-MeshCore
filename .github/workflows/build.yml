@@ -32,6 +32,10 @@ jobs:
         run: python3 tools/gen_quick_messages.py --check && python3 tools/gen_device_map.py --check
       - name: Flash- und Speicherpruefungen (Hosttests)
         run: python3 -m unittest discover -s tests -p 'test_memory_validation.py' -v
+      - name: Abnahmepaket (Factory-Offsets, Pruefsummen, keine vorgetaeuschte Freigabe)
+        run: python3 -m unittest discover -s tests -p 'test_candidate_package.py' -v
+      - name: Aktuelle Standalone-Galerie fuer 0.9.5
+        run: python3 tools/check_standalone_previews.py
   build:
     runs-on: ubuntu-latest
     strategy:
@@ -103,6 +107,17 @@ jobs:
         run: |
           pip install pillow==11.3.0
           python3 tools/standalone_preview.py .pio/build/LilyGo_TDeck_standalone/touch-preview
+      - name: Verifiziertes Testpaket fuer die 0.9.5-Abnahme vorbereiten
+        shell: bash
+        run: |
+          BOOTAPP0=$(find "$HOME/.platformio/packages/" -path '*framework-arduinoespressif32*' -name boot_app0.bin | head -1)
+          python3 tools/prepare_standalone_candidate.py --build-dir .pio/build/LilyGo_TDeck_standalone \
+            --build-log .pio-LilyGo_TDeck_standalone.log --boot-app0 "$BOOTAPP0" --out .pio/standalone-candidate
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LilyGo_TDeck_standalone-0.9.5-abnahme
+          path: .pio/standalone-candidate/*.zip
+          if-no-files-found: error
       - uses: actions/upload-artifact@v4
         with:
           name: LilyGo_TDeck_standalone-test

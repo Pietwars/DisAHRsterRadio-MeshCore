@@ -34,6 +34,9 @@ int main(int argc, char **argv) {
   if (argc < 2) { fprintf(stderr, "usage: preview <dir>\n"); return 2; }
   out = argv[1];
   fake.demo();
+#ifdef PREVIEW_FIRMWARE
+  fake.firmwareLabel=PREVIEW_FIRMWARE;
+#endif
   fake.g.share = true; fake.g.fresh = true; fake.g.lat = 50.54292; fake.g.lon = 7.11463; fake.g.sats = 9;
   sui::UI u; FakeDisplay d; d.font = font;
   static uint8_t splash[320 * 213 * 2];

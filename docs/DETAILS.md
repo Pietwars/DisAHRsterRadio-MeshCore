@@ -1,5 +1,7 @@
 # DisAHRsterRadio-MeshCore – Details
 
+> **0.9.5 in Vorbereitung:** Die neue T-Deck-Standalone-Oberfläche ist in [Touch-Bedienung](STANDALONE_TOUCH.md) und [Abnahme/Release-Entwurf](RELEASE-0.9.5.md) beschrieben. Die folgenden WLAN/BLE-Details beziehen sich auf den veröffentlichten 0.9.4-Stand.
+
 > Ausführliche Doku zu Version 0.9.4 (Stand 19.10.2026). Die kurze Übersicht steht in der [README](../README.md).
 
 > **Aktueller Stand (0.9.4):** offenes WLAN `DisAHRsterRadio-XXXXXX` → `http://192.168.4.1`, MeshCore-App per Bluetooth mit PIN-Kopplung (die PIN zeigt das Display nur während der Kopplung an; eigene PIN in der App setzbar), Brett (Room-Server) mit dem öffentlichen Gast-Passwort `hello` (sendet die Weboberfläche automatisch). Volle Einstellungen in der MeshCore-App über PIN-Bluetooth; in der Weboberfläche Knotenname, Funkprofil, Kanäle und Verlauf löschen ohne Anmeldung (jede Person im offenen WLAN kann das). Das Display am Gerät zeigt das Ahrtal-Bild mit Schriftzug, die Akku-Zeile und den Knopf „Advert senden“. [Zugang auf einen Blick](#zugang-auf-einen-blick) · [Zugang, Update und Abnahme](OFFENER_ZUGANG.md)

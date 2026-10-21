@@ -2,6 +2,27 @@
 
 <img src="logo/disahrsterradio-display.png" width="420" alt="DisAHRsterRadio – MeshCore-Funknetz fürs Ahrtal">
 
+## 0.9.5 in Vorbereitung: T-Deck direkt bedienen
+
+**Noch kein Release und keine Freigabe der neuen Touch-Oberfläche.** Die bereits getesteten Eingabefixes aus PR #42 bleiben erhalten; die neue Oberfläche aus [Draft-PR #43](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/pull/43) wartet auf deine Geräteabnahme.
+
+<p>
+<img src="docs/images/standalone-test6/vorschau-hauptmenue.png" width="320" alt="Standalone 0.9.5: sechs große Menükacheln">
+<img src="docs/images/standalone-test6/vorschau-chat.png" width="320" alt="Standalone 0.9.5: Chat mit eigenem großen Senden-Button">
+<img src="docs/images/standalone-test6/vorschau-meldung.png" width="320" alt="Standalone 0.9.5: Schnellmeldung mit Auswahl für Vorlage, Ort und Ziel">
+</p>
+
+<sub>Echte 320 × 240 Layouts aus dem Firmware-Code mit Demodaten. Keine Hardwarefotos. [Alle neuen Vorschauen](docs/STANDALONE_VORSCHAU.md).</sub>
+
+- **Touch:** große getrennte Flächen, wischbare Listen, feste Zurück-Navigation und verschiebbare Karte.
+- **Senden:** eigener Button; Wischen oder Wegziehen löst keine Nachricht aus. Tastatur und Trackball bleiben vollständig nutzbar.
+- **GPS:** Kalibrierung dauerhaft gespeichert; Heimersheim Mitte ohne Fix ist nur Kartenansicht, niemals gesendete Eigenposition.
+- **Varianten:** Standalone für T-Deck Plus ohne WLAN/Web, mit MeshCore-Bluetooth. Der bisherige WLAN/BLE-Betrieb und die T-Watch S3 bleiben getrennte Varianten.
+
+[Touch-Bedienung](docs/STANDALONE_TOUCH.md) · [0.9.5-Abnahme und Release-Entwurf](docs/RELEASE-0.9.5.md) · [Standalone-Testpakete im PR](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/pull/43)
+
+## Veröffentlicht: 0.9.4 (WLAN und Bluetooth)
+
 **DisAHRsterRadio mit MeshCore fürs Ahrtal: Weboberfläche MeshAhrtal im offenen WLAN und gleichzeitig die offizielle MeshCore-App per Bluetooth – Chat, Brett und Offlinekarten ohne Internet.**
 
 <p>
@@ -34,7 +55,7 @@ Flyer (A5): [Druck-PDF mit QR-Codes](docs/flyer/DisAHRsterRadio-MeshCore-Flyer.p
 - **Gerät:** Status, Kontakte, Knotenname, feste Deutschland-Funkprofile, Kanäle – ohne Anmeldung
 - **Akku am Display:** Ladestand und Spannung; T-Watch zusätzlich USB-/Ladestatus. Verbrauch und Restlaufzeit sind gekennzeichnete Schätzungen.
 
-Nachrichten, Kontakte und Einstellungen laufen **nur über die Weboberfläche und die MeshCore-App** – nicht am Gerät selbst.
+Im veröffentlichten **0.9.4-WLAN/BLE-Build** laufen Nachrichten, Kontakte und Einstellungen über Weboberfläche und MeshCore-App. Der **0.9.5-Standalone-Kandidat für T-Deck Plus** bietet zusätzlich lokale Bedienung; seine Abnahme steht aus.
 
 ## Unterstützte Geräte
 
@@ -45,7 +66,7 @@ Nachrichten, Kontakte und Einstellungen laufen **nur über die Weboberfläche un
 
 Jedes Paket enthält `…-factory.bin` (komplett an **0x0**), `…-firmware.bin` (Update an **0x10000**), die Einzelteile, `SHA256SUMS`, Flash-/RAM-Berichte und eine deutsche `ANLEITUNG.md`.
 
-## Anzeige am Gerät
+## Anzeige am Gerät im veröffentlichten 0.9.4-WLAN/BLE-Build
 
 <img src="docs/images/anzeige-tdeck-0.9.4.png" width="320" alt="T-Deck Plus: Ahrtal-Bild, Akku-Zeile und Knopf Advert senden"> <img src="docs/images/anzeige-twatch-0.9.4.png" width="240" alt="T-Watch S3: Ahrtal-Bild, Akku-Zeile und Knopf Advert senden">
 
@@ -117,15 +138,9 @@ Alle Demos sind simuliert.
 
 ## Standalone-Testversion für T-Deck Plus
 
-Die zusätzliche Variante `LilyGo_TDeck_standalone` übernimmt ab test5 die Oberfläche des
-DisAHRsterRadio-Standalone: vollständiges Bootmotiv, Touch-Kalibrierung und die Reiter
-CHAT/HILFE/BRETT/KARTE/SETUP. Sie verwendet MeshCore mit PIN-Bluetooth und enthält kein WLAN/Web.
-Die Firmware ist als **[experimentelles Prerelease `standalone-test5`](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/standalone-test5)** erhältlich, **noch ohne Geräteabnahme**; nicht im stabilen Web-Flasher. Bedienung und Flash-Hinweise: [Standalone](docs/STANDALONE.md). Prüfprogramm und offener Status: [Hardware-Abnahmeprotokoll](docs/STANDALONE-ABNAHME.md) · [Issue #40](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/issues/40).
-Die obige Tastenbeschreibung gilt weiterhin für den normalen 0.9.4-Release.
+Die neue Touch-Oberfläche wird als `v1.18.0-dar0.9.5-standalone-test6` zur Abnahme vorbereitet. Der Nutzer hat den vorherigen Fixstand aus [PR #42](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/pull/42) am Gerät als lauffähig mit Nachrichtenempfang bestätigt. Dieses Feedback ist keine Abnahme der neuen Touch-Oberfläche.
 
-## Für 0.9.5 vorgemerkt
-
-[T-Deck: Schnellmeldungsansicht wie auf dem Handy, mit Position senden und Tastatur](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/issues/33). Als zweite Geräteseite mit denselben Vorlagen, Text-, Orts- und Zielauswahl wie in der Weboberfläche geplant. In 0.9.4 bleibt die Tastatur ohne Funktion.
+Die alte [Prerelease-Datei standalone-test5](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/standalone-test5) bleibt Historie und wird nicht als neuer Kandidat ausgegeben. Der stabile Web-Flasher bleibt unverändert bei v0.9.4. [Bedienung](docs/STANDALONE_TOUCH.md) · [Abnahme für 0.9.5](docs/RELEASE-0.9.5.md) · [früheres test5-Prüfprotokoll](docs/STANDALONE-ABNAHME.md).
 
 ## Lizenz
 

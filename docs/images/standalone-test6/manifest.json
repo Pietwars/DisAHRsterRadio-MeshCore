@@ -1,0 +1,147 @@
+{
+  "version": "0.9.5",
+  "firmware": "v1.18.0-dar0.9.5-standalone-test6",
+  "kind": "real-layout-demo-data",
+  "hardware_approved": false,
+  "images": [
+    {
+      "file": "vorschau-bootlogo.png",
+      "caption": "Bootmotiv",
+      "width": 320,
+      "height": 240,
+      "sha256": "45c8ec45c97e34d28fb0314c3d0ec2edc7741cd3ac465696e320492c74337736"
+    },
+    {
+      "file": "vorschau-brett-liste.png",
+      "caption": "Bretter / Room-Server",
+      "width": 320,
+      "height": 240,
+      "sha256": "73d5ba778c8ab39e1620f441b730a578f3418adc4d52ae49387ec9d77dc0dbea"
+    },
+    {
+      "file": "vorschau-brett.png",
+      "caption": "Brett: Beitreten und Aushang",
+      "width": 320,
+      "height": 240,
+      "sha256": "5065e2a1da6d81ea928ee0e11e9ab830d11e2b642e74a89d9dd5e99d9c850e55"
+    },
+    {
+      "file": "vorschau-chat-direkt.png",
+      "caption": "Direktnachrichten",
+      "width": 320,
+      "height": 240,
+      "sha256": "744d8068344e15ebc73605e4f18bef7fe7cb9e6f23001ad92ae7bdcbabf90edb"
+    },
+    {
+      "file": "vorschau-chat-liste.png",
+      "caption": "Chat: Kanaele und Kontakte",
+      "width": 320,
+      "height": 240,
+      "sha256": "20549b01934bd94242a4faa7644d191ef2b20c9521417bf3fae68bcd938a1ff2"
+    },
+    {
+      "file": "vorschau-chat.png",
+      "caption": "Chat mit Senden-Button",
+      "width": 320,
+      "height": 240,
+      "sha256": "2ac600ba79d13d70b5b59e30fbb46b059837db6f81107a9e835474c5762d94d4"
+    },
+    {
+      "file": "vorschau-geraet-weiter.png",
+      "caption": "Weitere Geraeteaktionen",
+      "width": 320,
+      "height": 240,
+      "sha256": "c03805e846a43b1f5231cf90c11324c652fb53d8c3a3c5112bc77d0d4a9ffb9e"
+    },
+    {
+      "file": "vorschau-geraet.png",
+      "caption": "Geraeteaktionen",
+      "width": 320,
+      "height": 240,
+      "sha256": "24eeda2464f38697067be2a26dc3a53b7092bea205234ec330e55a0689c31919"
+    },
+    {
+      "file": "vorschau-geraeteinfo.png",
+      "caption": "Geraeteinfo und Akku",
+      "width": 320,
+      "height": 240,
+      "sha256": "177c18b21e1b4708af4d71a67abab581343e16e34213cde6e67a99bdb1505d0f"
+    },
+    {
+      "file": "vorschau-hauptmenue.png",
+      "caption": "Hauptmenue",
+      "width": 320,
+      "height": 240,
+      "sha256": "f201d0e1a7c93987a8875ffdeaf639e6eb758f57911123bfd6e3ba4717b19caf"
+    },
+    {
+      "file": "vorschau-karte-detail.png",
+      "caption": "Karte: Detail",
+      "width": 320,
+      "height": 240,
+      "sha256": "90e0458b94604e05ad37e4a44332dc9b6fe4ac0a34d664319b0a970c4da9243f"
+    },
+    {
+      "file": "vorschau-karte.png",
+      "caption": "Offlinekarte",
+      "width": 320,
+      "height": 240,
+      "sha256": "1f7822239ebe14a090ea21a3140bf8c5ab2c0874d8a30b7a29367ab35f85f024"
+    },
+    {
+      "file": "vorschau-meldung.png",
+      "caption": "Schnellmeldung",
+      "width": 320,
+      "height": 240,
+      "sha256": "ea8b5e9a3215a6275b88ca7290b03cf041aa6b71eb61305c74f4ff446a22ba11"
+    },
+    {
+      "file": "vorschau-ort-auswahl.png",
+      "caption": "Ort waehlen",
+      "width": 320,
+      "height": 240,
+      "sha256": "8fb966449836f47f207452773a0aa8067008109be0c01f3db8b14cbc8dcd277e"
+    },
+    {
+      "file": "vorschau-standort.png",
+      "caption": "GPS und Standortfreigabe",
+      "width": 320,
+      "height": 240,
+      "sha256": "2a915f0f471c08b747239008d973ca3f99ae3777df164b366861e7dfc2525e9e"
+    },
+    {
+      "file": "vorschau-vorlagen-weiter.png",
+      "caption": "Vorlagen: weiterblaettern",
+      "width": 320,
+      "height": 240,
+      "sha256": "3636db23ae136d98790a960bd7ab6351793bc4e669ff589387b1dcdfd6c9e209"
+    },
+    {
+      "file": "vorschau-vorlagen.png",
+      "caption": "Vorlagen waehlen",
+      "width": 320,
+      "height": 240,
+      "sha256": "9ad176f1652272f9e0bf5567320297e09e723a7eb35fafa8abc6590da9cc7cf6"
+    },
+    {
+      "file": "vorschau-ziel-auswahl.png",
+      "caption": "Empfaenger waehlen",
+      "width": 320,
+      "height": 240,
+      "sha256": "940890a90dfe28fa7bc9c4f7ed3959e28811a354631bb809814df5cc3b62e492"
+    }
+  ],
+  "sources": {
+    "examples/companion_radio/ui-brand/StandaloneUI.cpp": "2b52e3042c7242d8999eef9930b4e53c0f8ad3bc1308429db4bfab0304636d77",
+    "examples/companion_radio/ui-brand/StandaloneUI.h": "69037b42607caa9bb8a52584025fc7b23cbe94f3b062c0f4c17b3f9ae5cab92b",
+    "examples/companion_radio/ui-brand/TDeckQuickPage.cpp": "fe059711f41062c58f6eda4bd91bfc52c9683b309a9ac5338722359b9226ed56",
+    "examples/companion_radio/ui-brand/TDeckQuickPage.h": "14d14495dc4548d3ae7f27810c4a854f1ed0f12bfd842e9c6ab5550bf2d0ab5f",
+    "examples/companion_radio/ui-brand/TouchLayout.h": "dd8bd68c5706bcc48fb7f6feb8c036f76e1cceff4c6070ac964c1201ddbaddaa",
+    "examples/companion_radio/ui-brand/Theme.h": "4182ba726654c4195ee872e539933f6f32da09981434ea1b520419dd27fabc3e",
+    "examples/companion_radio/ui-brand/Widgets.h": "91d002c132068e6981fff48d19ed299a99812f781615a2aecaea09c9db436948",
+    "examples/companion_radio/ui-brand/MapView.h": "d4180b171568fe5a808b4cbfbda7e6b6b626573aa04c3690305794f18dc21c20",
+    "tools/standalone_preview.cpp": "17d405f80c50aed4ea3910a0aa81f82b72fb0ca9ee7bb0a4f9b723bb4ab24eb1",
+    "tests/ui_fakes/FakeApi.h": "92ad124aca07d19bcb9f4980bc8ca28364b4e2f3326aac2b4c850b12ef3058e5",
+    "platformio.standalone.ini": "1b0a98bf99f1dba580b1afa56ba65ae6b18026ab68c1cc18dea5330ee5d61091"
+  }
+}
