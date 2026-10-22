@@ -28,3 +28,23 @@ In `examples/companion_radio/main.cpp` wird bei `ENABLE_USB_INTERFACE` der `Ardu
 **Offener Prüfpunkt:** Für die konkrete T-Deck-Plus-Build-Konfiguration muss `ENABLE_USB_INTERFACE` anhand der vollständig aufgelösten PlatformIO-Umgebung nachgewiesen werden. Erst dann darf USB-Konfiguration als verfügbar gelten. Rescue-CLI ist kein Ersatz für ein gesichertes Normalbetriebs-Protokoll.
 
 **Sicherheitswarnung:** Über USB können im bestehenden Companion-Protokoll auch sensible Kommandos erreichbar sein. USB physisch kontrollieren; keine automatische Freigabe über WLAN oder ungekoppeltes BLE.
+
+## T-Deck Plus: geprüfte Build-Vererbung
+
+- `platformio.devices.ini`: `[env:dar_LilyGo_TDeck_wifi]` erbt von `env:LilyGo_TDeck_companion_radio_ble`.
+- `platformio.standalone.ini`: `[env:LilyGo_TDeck_standalone]` erbt **ebenfalls** von `env:LilyGo_TDeck_companion_radio_ble`. Die Standalone-Variante entfernt WebFrontend und Webserver-Abhängigkeiten, nicht ausdrücklich USB.
+- `main.cpp`: Nur bei gesetztem `ENABLE_USB_INTERFACE` wird die USB-Companion-Schnittstelle registriert.
+
+**Noch nicht nachgewiesen:** Der geerbte `LilyGo_TDeck_companion_radio_ble`-Abschnitt wurde noch nicht aufgelöst. Deshalb folgt aus der gemeinsamen Vererbung allein **nicht**, dass USB in beiden Targets aktiv ist.
+
+### Reproduzierbare lokale Prüfung
+
+Mit installiertem PlatformIO im Repository:
+
+```powershell
+pio project config --environment dar_LilyGo_TDeck_wifi
+pio project config --environment LilyGo_TDeck_standalone
+pio run -e LilyGo_TDeck_standalone
+```
+
+Die effektiven `build_flags` und `build_unflags` einschließlich `ENABLE_USB_INTERFACE` kontrollieren. Die beiden `pio project config`-Aufrufe sind **kein** Ersatz für eine vollständige Präprozessor-/Buildprüfung; sie zeigen Konfiguration, aber keine Hardwarefunktion. Danach USB-Companion-Verbindung am realen Gerät testen. **Nicht flashen, bevor der Build erfolgreich und das richtige Boardprofil bestätigt ist.**
