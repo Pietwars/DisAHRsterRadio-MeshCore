@@ -39,6 +39,43 @@ class DisasterPortal : public LocalCompanion {
   ClientBudget clientBudgets[8]{};
   unsigned long txAirMs=0, rxAirMs=0, txBudgetMs=0;
   WebServer http{80};
+  // 0.9.6: privileged API uses an operator PIN provisioned via USB serial on first boot.
+  disaster::AdminSession adminSession;
+  uint8_t adminSalt[16]{}, adminDigest[32]{};
+  bool adminReady=false;
+  static void hashPin(const uint8_t salt[16], const String& pin, uint8_t out[32]) {
+    uint8_t input[24];
+    memcpy(input,salt,16); memcpy(input+16,pin.c_str(),8);
+    DAR_SHA256(input,sizeof(input),out,0);
+    memset(input,0,sizeof(input));
+  }
+  void loadAdmin() {
+    Preferences p; p.begin("dar-admin",false);
+    adminReady=p.getBytesLength("salt")==16 && p.getBytesLength("digest")==32;
+    if(adminReady){p.getBytes("salt",adminSalt,16);p.getBytes("digest",adminDigest,32);}
+    else {
+      for(auto &b:adminSalt)b=(uint8_t)esp_random();
+      uint32_t a=esp_random()%100000000, b=esp_random()%100000000;
+      char buf[17]; snprintf(buf,sizeof(buf),"%08lu%08lu",(unsigned long)a,(unsigned long)b);
+      String pin(buf);
+      hashPin(adminSalt,pin,adminDigest);
+      bool saved=p.putBytes("salt",adminSalt,16)==16 && p.putBytes("digest",adminDigest,32)==32;
+      adminReady=saved;
+      if(saved)Serial.printf("[ADMIN] Einmalige Einrichtungs-PIN (nur USB/seriell): %s\\n",buf);
+      else Serial.println("[ADMIN] Speichern fehlgeschlagen; Einstellungen gesperrt");
+      memset(buf,0,sizeof(buf));
+    }
+    p.end();
+  }
+  bool requireAdmin() {
+    if(!permitted())return false;
+    if(!adminReady){http.send(503,"text/plain","Admin-Einrichtung nicht verfuegbar");return false;}
+    if(!adminSession.valid(http.header("X-Disaster-Admin"),millis())){
+      http.send(403,"text/plain","Admin-Anmeldung erforderlich");return false;
+    }
+    return true;
+  }
+
   unsigned long heapLog=0;
   bool apOk=false; unsigned long apRetry=0, apPrint=0;
   DNSServer dns;
@@ -109,6 +146,7 @@ public:
   }
   void begin() {
     beginHistory();
+    loadAdmin();
     Preferences prefs; prefs.begin("disaster",false);
     // Remove old AP credentials and the former web-admin password (removed in 0.9.1) on upgrade.
     prefs.remove("ap-pass");prefs.remove("admin-salt");prefs.remove("admin-hash");
@@ -122,7 +160,7 @@ public:
     apOk=startAP();
     dns.start(53,"*",WiFi.softAPIP());
     Serial.printf("\nWLAN: %s\nOffenes WLAN - kein Passwort\nBrowser: http://192.168.4.1\n",apName.c_str());
-    const char *headers[]={"X-Disaster-Request","X-Disaster-Client"}; http.collectHeaders(headers,2);
+    const char *headers[]={"X-Disaster-Request","X-Disaster-Client","X-Disaster-Admin"}; http.collectHeaders(headers,3);
     http.on("/",HTTP_GET,[this](){
       http.sendHeader("Content-Security-Policy","default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'");
       http.sendHeader("X-Content-Type-Options","nosniff");
@@ -138,6 +176,23 @@ public:
       http.on(path.c_str(),HTTP_GET,[this,mp](){http.sendHeader("Content-Encoding","gzip");http.sendHeader("Cache-Control","max-age=86400");http.send_P(200,"application/json",(const char*)mp->data,mp->len);});
     }
 #endif
+    http.on("/api/admin-login",HTTP_POST,[this](){
+      if(!permitted())return;
+      if(!adminReady){http.send(503,"text/plain","Admin nicht eingerichtet");return;}
+      uint32_t now=millis();
+      if(adminSession.locked(now)){http.send(429,"text/plain","Bitte eine Minute warten");return;}
+      String pin=http.arg("pin");
+      uint8_t digest[32]{}; bool valid=pin.length()==16;
+      if(valid){for(char c:pin)if(c<'0'||c>'9')valid=false;}
+      if(valid)hashPin(adminSalt,pin,digest);
+      uint8_t diff=0;for(size_t i=0;i<32;++i)diff|=(digest[i]^adminDigest[i]);
+      memset(digest,0,sizeof(digest));
+      if(!valid||diff){adminSession.failed(now);http.send(403,"text/plain","PIN ungueltig");return;}
+      char token[33];for(int i=0;i<16;++i)snprintf(token+i*2,3,"%02x",(unsigned)(esp_random()&255));
+      adminSession.issue(token,now);
+      http.send(200,"text/plain",token);
+      memset(token,0,sizeof(token));
+    });
     http.on("/api/position",HTTP_POST,[this](){
       if(!room())return;
       long lat=strtol(http.arg("lat").c_str(),nullptr,10),lon=strtol(http.arg("lon").c_str(),nullptr,10);
@@ -170,7 +225,7 @@ public:
     http.on("/api/history",HTTP_GET,[this](){history();});
     // Verlauf loeschen ohne Anmeldung (Peter, 0.9.1): jeder im offenen WLAN darf das.
     http.on("/api/history-wipe",HTTP_POST,[this](){
-      if(!room())return;
+      if(!requireAdmin())return;if(busy()){http.send(409,"text/plain","Knoten beschaeftigt");return;}
       if(active||pendingLen){http.send(409,"text/plain","Knoten beschaeftigt. Bitte erneut versuchen.");return;}
       if(SPIFFS.exists("/dr-history.bin")&&!SPIFFS.remove("/dr-history.bin")){storageOK=false;http.send(500,"text/plain","Verlauf konnte nicht geloescht werden");return;}
       storageOK=true;http.send(200,"text/plain","Lokaler Verlauf geloescht. Schluessel und optionales SD-Archiv bleiben.");
@@ -242,7 +297,7 @@ public:
     });
     // Knotenname ohne Adminanmeldung (Peter, 0.9.1); gleiche Pruefung wie bisher.
     http.on("/api/name",HTTP_POST,[this](){
-      if(!room())return;String name=http.arg("name");
+      if(!requireAdmin())return;if(busy()){http.send(409,"text/plain","Knoten beschaeftigt");return;}String name=http.arg("name");
       if(name.length()<1||name.length()>24||hasNull(name)){http.send(400,"text/plain","Name: 1 bis 24 UTF-8-Bytes");return;}
       uint8_t p[26]={8};memcpy(p+1,name.c_str(),name.length());accept(p,name.length()+1);
     });
@@ -254,7 +309,7 @@ public:
     });
     // Kanaele anlegen/aendern ohne Anmeldung (Peter, 0.9.1).
     http.on("/api/channel",HTTP_POST,[this](){
-      if(!room())return;String slot=http.arg("slot"),name=http.arg("name"),key=http.arg("key");
+      if(!requireAdmin())return;if(busy()){http.send(409,"text/plain","Knoten beschaeftigt");return;}String slot=http.arg("slot"),name=http.arg("name"),key=http.arg("key");
       if(slot.length()!=1||slot[0]<'0'||slot[0]>'7'||name.length()<1||name.length()>24||hasNull(name)||key.length()!=32){http.send(400,"text/plain","Kanalangaben pruefen");return;}
       uint8_t p[50]={32,(uint8_t)(slot[0]-'0')};memcpy(p+2,name.c_str(),name.length());
       for(int i=0;i<16;i++){int a=nibble(key[2*i]),b=nibble(key[2*i+1]);if(a<0||b<0){http.send(400,"text/plain","Schluessel muss Hex sein");return;}p[34+i]=(a<<4)|b;}
@@ -262,7 +317,7 @@ public:
     });
     // Funkprofil ohne Adminanmeldung (Peter, 0.9.1): nur die festen Deutschland-Profile aus dePreset().
     http.on("/api/radio",HTTP_POST,[this](){
-      if(!room())return;
+      if(!requireAdmin())return;if(busy()){http.send(409,"text/plain","Knoten beschaeftigt");return;}
       disaster::RadioPreset preset;
       if(!disaster::dePreset(http.arg("preset").c_str(),preset)){http.send(400,"text/plain","Unbekanntes Deutschland-Funkprofil");return;}
       uint8_t p[12]={11};memcpy(p+1,&preset.freq,4);memcpy(p+5,&preset.bw,4);p[9]=preset.sf;p[10]=preset.cr;p[11]=0;accept(p,12);
