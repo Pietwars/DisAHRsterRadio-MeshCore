@@ -183,7 +183,7 @@ public:
       if(adminSession.locked(now)){http.send(429,"text/plain","Bitte eine Minute warten");return;}
       String pin=http.arg("pin");
       uint8_t digest[32]{}; bool valid=pin.length()==16;
-      if(valid){for(char c:pin)if(c<'0'||c>'9')valid=false;}
+      if(valid){for(size_t i=0;i<pin.length();++i){const char c=pin[i];if(c<'0'||c>'9')valid=false;}}
       if(valid)hashPin(adminSalt,pin,digest);
       uint8_t diff=0;for(size_t i=0;i<32;++i)diff|=(digest[i]^adminDigest[i]);
       memset(digest,0,sizeof(digest));
