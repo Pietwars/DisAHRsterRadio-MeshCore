@@ -10,7 +10,8 @@ namespace mesh {
 
 #define MAX_RX_DELAY_MILLIS        32000  // 32 seconds
 #define MIN_TX_BUDGET_RESERVE_MS   100    // min budget (ms) required before allowing next TX
-#define MIN_TX_BUDGET_AIRTIME_DIV  2      // require at least 1/N of estimated airtime as budget before TX
+#define TX_BUDGET_AIRTIME_MARGIN_NUM  3  // require 150% of max-packet airtime before TX
+#define TX_BUDGET_AIRTIME_MARGIN_DEN  2
 
 #ifndef NOISE_FLOOR_CALIB_INTERVAL
   #define NOISE_FLOOR_CALIB_INTERVAL   2000     // 2 seconds
@@ -281,10 +282,13 @@ void Dispatcher::checkSend() {
   updateTxBudget();
   
   uint32_t est_airtime = _radio->getEstAirtimeFor(MAX_TRANS_UNIT);
-  if (tx_budget_ms < est_airtime / MIN_TX_BUDGET_AIRTIME_DIV) {
+  // Reserve a conservative full-packet margin, not half a packet.
+  // This guards against a TX consuming more airtime than remains in the budget.
+  uint32_t required_airtime = (uint32_t)(((uint64_t)est_airtime * TX_BUDGET_AIRTIME_MARGIN_NUM + TX_BUDGET_AIRTIME_MARGIN_DEN - 1) / TX_BUDGET_AIRTIME_MARGIN_DEN);
+  if (tx_budget_ms < required_airtime) {
     budget_diagnostics.set(true, uint32_t(_ms->getMillis()));
     float duty_cycle = 1.0f / (1.0f + getAirtimeBudgetFactor());
-    unsigned long needed = est_airtime / MIN_TX_BUDGET_AIRTIME_DIV - tx_budget_ms;
+    unsigned long needed = required_airtime - tx_budget_ms;
     next_tx_time = futureMillis((unsigned long)(needed / duty_cycle));
     return;
   }
