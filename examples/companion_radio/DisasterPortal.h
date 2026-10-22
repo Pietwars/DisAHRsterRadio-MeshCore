@@ -19,13 +19,6 @@
 #endif
 #include "PortalAssets.h"
 #include "AdminSession.h"  // nur noch dePreset(); Web-Admin entfernt (0.9.1)
-#include <mbedtls/sha256.h>
-#include <mbedtls/version.h>
-#if MBEDTLS_VERSION_MAJOR >= 3
-#define DAR_SHA256 mbedtls_sha256
-#else
-#define DAR_SHA256 mbedtls_sha256_ret
-#endif
 
 // A single local companion owns the protocol. HTTP clients share its history.
 // Raw, arbitrary companion commands and private keys are never exposed to HTTP.
@@ -39,35 +32,6 @@ class DisasterPortal : public LocalCompanion {
   ClientBudget clientBudgets[8]{};
   unsigned long txAirMs=0, rxAirMs=0, txBudgetMs=0;
   WebServer http{80};
-  // 0.9.6: privileged API uses an operator PIN provisioned via USB serial on first boot.
-  disaster::AdminSession adminSession;
-  uint8_t adminSalt[16]{}, adminDigest[32]{};
-  bool adminReady=false;
-  static void hashPin(const uint8_t salt[16], const String& pin, uint8_t out[32]) {
-    // The setup PIN is 16 digits. Hash all digits, not only the first eight.
-    uint8_t input[32];
-    memcpy(input,salt,16); memcpy(input+16,pin.c_str(),16);
-    DAR_SHA256(input,sizeof(input),out,0);
-    memset(input,0,sizeof(input));
-  }
-  void loadAdmin() {
-    Preferences p; p.begin("dar-admin",false);
-    adminReady=p.getBytesLength("salt")==16 && p.getBytesLength("digest")==32;
-    if(adminReady){p.getBytes("salt",adminSalt,16);p.getBytes("digest",adminDigest,32);}
-    else {
-      for(auto &b:adminSalt)b=(uint8_t)esp_random();
-      uint32_t a=esp_random()%100000000, b=esp_random()%100000000;
-      char buf[17]; snprintf(buf,sizeof(buf),"%08lu%08lu",(unsigned long)a,(unsigned long)b);
-      String pin(buf);
-      hashPin(adminSalt,pin,adminDigest);
-      bool saved=p.putBytes("salt",adminSalt,16)==16 && p.putBytes("digest",adminDigest,32)==32;
-      adminReady=saved;
-      if(saved)Serial.printf("[ADMIN] Einmalige Einrichtungs-PIN (nur USB/seriell): %s\\n",buf);
-      else Serial.println("[ADMIN] Speichern fehlgeschlagen; Einstellungen gesperrt");
-      memset(buf,0,sizeof(buf));
-    }
-    p.end();
-  }
   bool requireAdmin() {
     if(!permitted())return false;
     // Fail closed until a secure local provisioning channel is implemented.
@@ -145,7 +109,6 @@ public:
   }
   void begin() {
     beginHistory();
-    loadAdmin();
     Preferences prefs; prefs.begin("disaster",false);
     // Remove old AP credentials and the former web-admin password (removed in 0.9.1) on upgrade.
     prefs.remove("ap-pass");prefs.remove("admin-salt");prefs.remove("admin-hash");
