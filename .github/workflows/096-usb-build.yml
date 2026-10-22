@@ -1,0 +1,50 @@
+name: 0.9.6 USB T-Deck Build Check
+on:
+  push:
+    branches:
+      - dev/096-security-duty-sos
+    paths:
+      - '.github/workflows/096-usb-build.yml'
+      - 'platformio.devices.ini'
+      - 'platformio.standalone.ini'
+      - 'variants/**'
+      - 'examples/companion_radio/**'
+      - 'src/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: usb-096-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  tdeck-usb:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: [dar_LilyGo_TDeck_wifi, LilyGo_TDeck_standalone]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned PlatformIO
+        run: python -m pip install platformio==6.2.0
+      - name: Assert USB flag in selected target
+        shell: bash
+        run: |
+          python - <<'PY'
+          import configparser
+          import os
+          target = os.environ["TARGET"]
+          file = "platformio.standalone.ini" if target == "LilyGo_TDeck_standalone" else "platformio.devices.ini"
+          config = configparser.ConfigParser(interpolation=None, strict=False)
+          config.read(file)
+          flags = config[f"env:{target}"]["build_flags"]
+          assert "-D ENABLE_USB_INTERFACE" in flags.splitlines(), f"USB flag missing in {target}"
+          print(f"{target}: USB build flag present")
+          PY
+        env:
+          TARGET: ${{ matrix.environment }}
+      - name: Compile firmware (no flashing, no release)
+        run: pio run -e ${{ matrix.environment }}
