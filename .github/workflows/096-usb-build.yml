@@ -46,5 +46,21 @@ jobs:
           PY
         env:
           TARGET: ${{ matrix.environment }}
+      - name: Check USB registration and Bluetooth inheritance
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import configparser
+          board = configparser.ConfigParser(interpolation=None)
+          board.read("variants/lilygo_tdeck/platformio.ini")
+          ble_flags = board["env:LilyGo_TDeck_companion_radio_ble"]["build_flags"]
+          assert "-D BLE_PIN_CODE=123456" in ble_flags.splitlines(), "Expected BLE build inheritance changed; review security"
+          main = Path("examples/companion_radio/main.cpp").read_text()
+          assert "#if defined(ENABLE_USB_INTERFACE)" in main
+          assert "interface_manager.addInterface(InterfaceType::USB, &usb_serial_interface);" in main
+          assert "interface_manager.addInterface(InterfaceType::Bluetooth, &bluetooth_interface);" in main
+          print("USB registration and BLE code paths present; hardware behavior NOT verified")
+          PY
       - name: Compile firmware (no flashing, no release)
         run: pio run -e ${{ matrix.environment }}
