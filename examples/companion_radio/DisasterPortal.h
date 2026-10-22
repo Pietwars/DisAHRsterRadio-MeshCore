@@ -70,15 +70,9 @@ class DisasterPortal : public LocalCompanion {
   }
   bool requireAdmin() {
     if(!permitted())return false;
-    // No privileged changes over the unauthenticated open WLAN.
+    // Fail closed until a secure local provisioning channel is implemented.
     http.send(403,"text/plain","Einstellungen nur ueber sicheren lokalen Kanal");
     return false;
-    if(!adminReady){http.send(503,"text/plain","Admin-Einrichtung nicht verfuegbar");return false;}
-    String sessionToken=http.header("X-Disaster-Admin");
-    if(!adminSession.valid(sessionToken.c_str(),millis())){
-      http.send(403,"text/plain","Admin-Anmeldung erforderlich");return false;
-    }
-    return true;
   }
 
   unsigned long heapLog=0;
@@ -183,25 +177,8 @@ public:
 #endif
     http.on("/api/admin-login",HTTP_POST,[this](){
       if(!permitted())return;
-      // Fail closed: an open HTTP access point cannot protect PINs or bearer
-      // tokens against nearby listeners. Keep guest chat available, but do
-      // not expose privileged login until a secure provisioning path exists.
+      // Never accept PINs or issue bearer tokens over the open HTTP portal.
       http.send(503,"text/plain","Admin-Anmeldung ueber offenes WLAN deaktiviert");
-      return;
-      if(!adminReady){http.send(503,"text/plain","Admin nicht eingerichtet");return;}
-      uint32_t now=millis();
-      if(adminSession.locked(now)){http.send(429,"text/plain","Bitte eine Minute warten");return;}
-      String pin=http.arg("pin");
-      uint8_t digest[32]{}; bool valid=pin.length()==16;
-      if(valid){for(size_t i=0;i<pin.length();++i){const char c=pin[i];if(c<'0'||c>'9')valid=false;}}
-      if(valid)hashPin(adminSalt,pin,digest);
-      uint8_t diff=0;for(size_t i=0;i<32;++i)diff|=(digest[i]^adminDigest[i]);
-      memset(digest,0,sizeof(digest));
-      if(!valid||diff){adminSession.failed(now);http.send(403,"text/plain","PIN ungueltig");return;}
-      char token[33];for(int i=0;i<16;++i)snprintf(token+i*2,3,"%02x",(unsigned)(esp_random()&255));
-      adminSession.issue(token,now);
-      http.send(200,"text/plain",token);
-      memset(token,0,sizeof(token));
     });
     http.on("/api/position",HTTP_POST,[this](){
       if(!room())return;
