@@ -2208,8 +2208,17 @@ bool MyMesh::handleCommand(const char* command, uint32_t sender_timestamp, char*
 
   if (memcmp(command, "set pin ", 8) == 0) {
     // "set pin <6 Ziffern>": saved now, active after reboot (phone must re-pair).
-    uint32_t pin = (uint32_t)strtoul(&command[8], nullptr, 10);
-    if (!disaster::validBlePin(pin)) { strcpy(reply, "> PIN muss 6 Ziffern haben (100000-999999)"); return true; }
+    // Accept exactly six decimal digits; strtoul alone accepts trailing text
+    // and signs, which could silently store a different PIN than requested.
+    const char* digits = &command[8];
+    bool pin_format_ok = strlen(digits) == 6;
+    if (pin_format_ok) {
+      for (size_t i = 0; i < 6; ++i) {
+        if (digits[i] < '0' || digits[i] > '9') { pin_format_ok = false; break; }
+      }
+    }
+    uint32_t pin = pin_format_ok ? (uint32_t)strtoul(digits, nullptr, 10) : 0;
+    if (!pin_format_ok || !disaster::validBlePin(pin)) { strcpy(reply, "> PIN muss 6 Ziffern haben (100000-999999)"); return true; }
     _prefs.ble_pin = pin;
     savePrefs();
     strcpy(reply, "> Bluetooth-PIN gespeichert; aktiv nach Neustart, Handy neu koppeln");
