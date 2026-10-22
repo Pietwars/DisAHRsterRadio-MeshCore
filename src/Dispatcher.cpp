@@ -336,7 +336,21 @@ void Dispatcher::checkSend() {
     } else {
       memcpy(&raw[len], outbound->payload, outbound->payload_len); len += outbound->payload_len;
 
-      uint32_t max_airtime = _radio->getEstAirtimeFor(len)*3/2;
+      // Check the actual serialized packet size before starting the radio.
+      // A packet is never transmitted against an insufficient airtime budget.
+      uint32_t packet_airtime = _radio->getEstAirtimeFor(len);
+      uint32_t max_airtime = (uint32_t)(((uint64_t)packet_airtime * 3 + 1) / 2);
+      if (tx_budget_ms < max_airtime) {
+        uint32_t now = _ms->getMillis();
+        float duty_cycle = 1.0f / (1.0f + getAirtimeBudgetFactor());
+        uint32_t needed = max_airtime - tx_budget_ms;
+        unsigned long wait_ms = (unsigned long)(needed / duty_cycle) + 1;
+        _mgr->queueOutbound(outbound, 0, futureMillis(wait_ms));
+        outbound = NULL;
+        budget_diagnostics.set(true, uint32_t(now));
+        next_tx_time = futureMillis(wait_ms);
+        return;
+      }
       outbound_start = _ms->getMillis();
       bool success = _radio->startSendRaw(raw, len);
       if (!success) {
