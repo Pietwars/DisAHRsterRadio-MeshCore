@@ -1,4 +1,4 @@
-name: 0.9.6 USB T-Deck Build Check
+name: 0.9.6 T-Deck Local Companion Build Check
 on:
   push:
     branches:
@@ -30,7 +30,7 @@ jobs:
           python-version: '3.12'
       - name: Install pinned PlatformIO
         run: python -m pip install platformio==6.2.0
-      - name: Assert USB flag in selected target
+      - name: Assert local Companion ownership in selected target
         shell: bash
         run: |
           python - <<'PY'
@@ -41,12 +41,12 @@ jobs:
           config = configparser.ConfigParser(interpolation=None, strict=False)
           config.read(file)
           flags = config[f"env:{target}"]["build_flags"]
-          assert "-D ENABLE_USB_INTERFACE" in flags.splitlines(), f"USB flag missing in {target}"
-          print(f"{target}: USB build flag present")
+          assert "-D ENABLE_USB_INTERFACE" not in flags.splitlines(), f"USB conflicts with LocalCompanion in {target}"
+          print(f"{target}: no conflicting USB interface flag")
           PY
         env:
           TARGET: ${{ matrix.environment }}
-      - name: Check USB registration and Bluetooth inheritance
+      - name: Check LocalCompanion ownership and Bluetooth inheritance
         shell: bash
         run: |
           python - <<'PY'
@@ -60,7 +60,7 @@ jobs:
           assert "#if defined(ENABLE_USB_INTERFACE)" in main
           assert "interface_manager.addInterface(InterfaceType::USB, &usb_serial_interface);" in main
           assert "interface_manager.addInterface(InterfaceType::Bluetooth, &bluetooth_interface);" in main
-          print("USB registration and BLE code paths present; hardware behavior NOT verified")
+          print("USB and BLE registration code paths exist; USB disabled in local-client targets")
           PY
       - name: Compile firmware (no flashing, no release)
         run: pio run -e ${{ matrix.environment }}
