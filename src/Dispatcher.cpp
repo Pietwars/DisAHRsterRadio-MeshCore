@@ -283,8 +283,11 @@ void Dispatcher::checkSend() {
   
   uint32_t est_airtime = _radio->getEstAirtimeFor(MAX_TRANS_UNIT);
   // Reserve a conservative full-packet margin, not half a packet.
-  // This guards against a TX consuming more airtime than remains in the budget.
-  uint32_t required_airtime = (uint32_t)(((uint64_t)est_airtime * TX_BUDGET_AIRTIME_MARGIN_NUM + TX_BUDGET_AIRTIME_MARGIN_DEN - 1) / TX_BUDGET_AIRTIME_MARGIN_DEN);
+  // Cap the reserve at the maximum available budget to avoid permanent TX starvation
+  // for very slow radio profiles. Such profiles still need hardware/regulatory review.
+  uint64_t reserve64 = ((uint64_t)est_airtime * TX_BUDGET_AIRTIME_MARGIN_NUM + TX_BUDGET_AIRTIME_MARGIN_DEN - 1) / TX_BUDGET_AIRTIME_MARGIN_DEN;
+  uint32_t max_budget = (uint32_t)((uint64_t)getDutyCycleWindowMs() * 1.0f / (1.0f + getAirtimeBudgetFactor()));
+  uint32_t required_airtime = (uint32_t)(reserve64 > max_budget ? max_budget : reserve64);
   if (tx_budget_ms < required_airtime) {
     budget_diagnostics.set(true, uint32_t(_ms->getMillis()));
     float duty_cycle = 1.0f / (1.0f + getAirtimeBudgetFactor());
