@@ -20,3 +20,11 @@ Die Firmware besitzt bereits den MeshCore-Companion-Kommandoweg. `examples/compa
 6. BLE-Härtung und Standalone-Berechtigungen separat abnehmen.
 
 **Nicht erledigt:** Verifikation des tatsächlichen USB-Kommandoroutings auf dem T-Deck Plus, Build, Hardwaretests und Prüfung des Bluetooth-Pairings. Kein Merge, Tag oder Release ohne explizite Freigabe.
+
+## Ergebnis Codeprüfung: USB-Companion ≠ Rescue-CLI
+
+In `examples/companion_radio/main.cpp` wird bei `ENABLE_USB_INTERFACE` der `ArduinoSerialInterface` an `InterfaceType::USB` gebunden. In `MyMesh::loop()` wird im Normalbetrieb `checkSerialInterface()` aufgerufen. Die Klartext-Kommandos `get name`, `set name`, `set pin` werden dagegen durch `checkCLIRescueCmd()` nur im **Rescue-Modus** verarbeitet (Sonderfall: RP2040-WiFi ohne USB-Interface). Ein normales USB-Terminal darf daher **nicht** als funktionierende Klartext-CLI beschrieben werden. Für den Normalbetrieb ist ein kompatibler Companion-Client mit gerahmten Kommandos nötig.
+
+**Offener Prüfpunkt:** Für die konkrete T-Deck-Plus-Build-Konfiguration muss `ENABLE_USB_INTERFACE` anhand der vollständig aufgelösten PlatformIO-Umgebung nachgewiesen werden. Erst dann darf USB-Konfiguration als verfügbar gelten. Rescue-CLI ist kein Ersatz für ein gesichertes Normalbetriebs-Protokoll.
+
+**Sicherheitswarnung:** Über USB können im bestehenden Companion-Protokoll auch sensible Kommandos erreichbar sein. USB physisch kontrollieren; keine automatische Freigabe über WLAN oder ungekoppeltes BLE.
