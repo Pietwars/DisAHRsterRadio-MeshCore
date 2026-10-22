@@ -70,6 +70,9 @@ class DisasterPortal : public LocalCompanion {
   }
   bool requireAdmin() {
     if(!permitted())return false;
+    // No privileged changes over the unauthenticated open WLAN.
+    http.send(403,"text/plain","Einstellungen nur ueber sicheren lokalen Kanal");
+    return false;
     if(!adminReady){http.send(503,"text/plain","Admin-Einrichtung nicht verfuegbar");return false;}
     String sessionToken=http.header("X-Disaster-Admin");
     if(!adminSession.valid(sessionToken.c_str(),millis())){
@@ -180,6 +183,11 @@ public:
 #endif
     http.on("/api/admin-login",HTTP_POST,[this](){
       if(!permitted())return;
+      // Fail closed: an open HTTP access point cannot protect PINs or bearer
+      // tokens against nearby listeners. Keep guest chat available, but do
+      // not expose privileged login until a secure provisioning path exists.
+      http.send(503,"text/plain","Admin-Anmeldung ueber offenes WLAN deaktiviert");
+      return;
       if(!adminReady){http.send(503,"text/plain","Admin nicht eingerichtet");return;}
       uint32_t now=millis();
       if(adminSession.locked(now)){http.send(429,"text/plain","Bitte eine Minute warten");return;}
