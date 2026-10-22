@@ -35,13 +35,13 @@ for route in ("name", "channel", "radio", "history-wipe"):
 check("allowClientSend()" in route_body("send"), "message sending remains rate-limited")
 check("uint8_t input[32];" in portal and "memcpy(input+16,pin.c_str(),16);" in portal,
       "setup PIN hash includes all 16 digits")
-check('sessionToken.c_str()' in portal, "session validation receives a C string")
+check('sessionToken.c_str()' not in portal, "unused HTTP session-token validation is removed")
 check('http.send(403,"text/plain","Einstellungen nur ueber sicheren lokalen Kanal");' in portal,
       "privileged HTTP settings fail closed")
 check('http.send(503,"text/plain","Admin-Anmeldung ueber offenes WLAN deaktiviert");' in portal,
       "open-WLAN PIN login is disabled")
-check("adminSession.valid(" in portal, "privileged requests retain session validation for future secure transport")
-check("adminSession.locked(" in portal, "login lockout is present")
+check("adminSession.valid(" not in portal, "open HTTP portal has no session authentication bypass")
+check("adminSession.issue(" not in portal, "open HTTP portal never issues bearer tokens")
 check("#define DAR_MESH_POLICY 1" in policy, "DAR mesh policy is defined")
 check("return 9.0f" in mesh, "DAR airtime factor is fixed at 9")
 check("required_airtime" in dispatcher, "scheduler checks TX budget")
