@@ -33,6 +33,9 @@ for route in ("name", "channel", "radio", "history-wipe"):
     check("requireAdmin()" in route_body(route), f"/api/{route} is admin-gated")
 
 check("allowClientSend()" in route_body("send"), "message sending remains rate-limited")
+check("uint8_t input[32];" in portal and "memcpy(input+16,pin.c_str(),16);" in portal,
+      "setup PIN hash includes all 16 digits")
+check('sessionToken.c_str()' in portal, "session validation receives a C string")
 check("adminSession.valid(" in portal, "privileged requests check session")
 check("adminSession.locked(" in portal, "login lockout is present")
 check("#define DAR_MESH_POLICY 1" in policy, "DAR mesh policy is defined")
