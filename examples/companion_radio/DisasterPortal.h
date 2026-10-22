@@ -44,8 +44,9 @@ class DisasterPortal : public LocalCompanion {
   uint8_t adminSalt[16]{}, adminDigest[32]{};
   bool adminReady=false;
   static void hashPin(const uint8_t salt[16], const String& pin, uint8_t out[32]) {
-    uint8_t input[24];
-    memcpy(input,salt,16); memcpy(input+16,pin.c_str(),8);
+    // The setup PIN is 16 digits. Hash all digits, not only the first eight.
+    uint8_t input[32];
+    memcpy(input,salt,16); memcpy(input+16,pin.c_str(),16);
     DAR_SHA256(input,sizeof(input),out,0);
     memset(input,0,sizeof(input));
   }
@@ -70,7 +71,8 @@ class DisasterPortal : public LocalCompanion {
   bool requireAdmin() {
     if(!permitted())return false;
     if(!adminReady){http.send(503,"text/plain","Admin-Einrichtung nicht verfuegbar");return false;}
-    if(!adminSession.valid(http.header("X-Disaster-Admin"),millis())){
+    String sessionToken=http.header("X-Disaster-Admin");
+    if(!adminSession.valid(sessionToken.c_str(),millis())){
       http.send(403,"text/plain","Admin-Anmeldung erforderlich");return false;
     }
     return true;
