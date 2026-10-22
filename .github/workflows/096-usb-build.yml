@@ -64,3 +64,28 @@ jobs:
           PY
       - name: Compile firmware (no flashing, no release)
         run: pio run -e ${{ matrix.environment }}
+      - name: Collect test firmware binaries
+        if: success()
+        shell: bash
+        env:
+          TARGET: ${{ matrix.environment }}
+        run: |
+          set -euo pipefail
+          build_dir=".pio/build/$TARGET"
+          test -s "$build_dir/firmware.bin"
+          mkdir -p "firmware-test/$TARGET"
+          cp "$build_dir/firmware.bin" "firmware-test/$TARGET/firmware.bin"
+          for file in bootloader.bin partitions.bin boot_app0.bin; do
+            if [ -s "$build_dir/$file" ]; then
+              cp "$build_dir/$file" "firmware-test/$TARGET/$file"
+            fi
+          done
+          printf 'DisAHRsterRadio 0.9.6 TEST ONLY\nTarget: %s\nCommit: %s\nNot hardware-tested; no release.\n' "$TARGET" "$GITHUB_SHA" > "firmware-test/$TARGET/README.txt"
+      - name: Upload test firmware artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: DisAHRsterRadio-096-TEST-${{ matrix.environment }}
+          path: firmware-test/${{ matrix.environment }}/
+          if-no-files-found: error
+          retention-days: 14
