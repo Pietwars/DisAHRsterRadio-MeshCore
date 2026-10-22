@@ -36,7 +36,11 @@ check("allowClientSend()" in route_body("send"), "message sending remains rate-l
 check("uint8_t input[32];" in portal and "memcpy(input+16,pin.c_str(),16);" in portal,
       "setup PIN hash includes all 16 digits")
 check('sessionToken.c_str()' in portal, "session validation receives a C string")
-check("adminSession.valid(" in portal, "privileged requests check session")
+check('http.send(403,"text/plain","Einstellungen nur ueber sicheren lokalen Kanal");' in portal,
+      "privileged HTTP settings fail closed")
+check('http.send(503,"text/plain","Admin-Anmeldung ueber offenes WLAN deaktiviert");' in portal,
+      "open-WLAN PIN login is disabled")
+check("adminSession.valid(" in portal, "privileged requests retain session validation for future secure transport")
 check("adminSession.locked(" in portal, "login lockout is present")
 check("#define DAR_MESH_POLICY 1" in policy, "DAR mesh policy is defined")
 check("return 9.0f" in mesh, "DAR airtime factor is fixed at 9")
@@ -44,7 +48,7 @@ check("required_airtime" in dispatcher, "scheduler checks TX budget")
 check("TX_BUDGET_AIRTIME_MARGIN_NUM" in dispatcher, "TX reserve margin is present")
 
 # Explicitly record known unresolved blockers, without giving a false pass.
-print("UNVERIFIED: Web PIN/session travel over open HTTP; not secure for deployment")
+print("BLOCKED: privileged web operations and PIN login intentionally disabled on open HTTP")
 print("UNVERIFIED: Embedded web UI login integration")
 print("UNVERIFIED: PlatformIO compilation and hardware tests")
 print("UNVERIFIED: Airtime enforcement for exact serialized packet lengths")
