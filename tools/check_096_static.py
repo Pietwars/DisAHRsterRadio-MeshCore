@@ -33,8 +33,10 @@ for route in ("name", "channel", "radio", "history-wipe"):
     check("requireAdmin()" in route_body(route), f"/api/{route} is admin-gated")
 
 check("allowClientSend()" in route_body("send"), "message sending remains rate-limited")
-check("uint8_t input[32];" in portal and "memcpy(input+16,pin.c_str(),16);" in portal,
-      "setup PIN hash includes all 16 digits")
+check("loadAdmin()" not in portal and "hashPin(" not in portal,
+      "unused PIN provisioning is absent from open portal")
+check('"dar-admin"' not in portal and "adminDigest" not in portal,
+      "open portal does not create or load PIN hashes")
 check('sessionToken.c_str()' not in portal, "unused HTTP session-token validation is removed")
 check('http.send(403,"text/plain","Einstellungen nur ueber sicheren lokalen Kanal");' in portal,
       "privileged HTTP settings fail closed")
@@ -49,7 +51,7 @@ check("TX_BUDGET_AIRTIME_MARGIN_NUM" in dispatcher, "TX reserve margin is presen
 
 # Explicitly record known unresolved blockers, without giving a false pass.
 print("BLOCKED: privileged web operations and PIN login intentionally disabled on open HTTP")
-print("UNVERIFIED: Embedded web UI login integration")
+print("BLOCKED: privileged settings require a separate secure local provisioning channel")
 print("UNVERIFIED: PlatformIO compilation and hardware tests")
 print("UNVERIFIED: Airtime enforcement for exact serialized packet lengths")
 print("STATIC CHECKS PASSED (limited scope)")
