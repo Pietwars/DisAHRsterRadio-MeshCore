@@ -106,6 +106,12 @@ check("case BLE_PIN_EDIT:\\n      return true; // PIN entry accepts keyboard onl
       "PIN editor ignores unrelated touch actions")
 check("back(); // Clear both PIN buffers before any tab navigation." in ui_page,
       "switching tabs cancels and clears PIN entry")
+# Chat and board navigation must not produce invalid indices for empty lists.
+check("if (n == 0) { top = 0; sel = 0; return false; }" in ui_page,
+      "empty chat/board list swipes keep selection and scroll at zero")
+check("if (sel >= n) sel = n - 1;" in ui_page,
+      "chat/board selection stays within current target count")
+
 # Explicitly record known unresolved blockers, without giving a false pass.
 print("BLOCKED: privileged web operations and PIN login intentionally disabled on open HTTP")
 print("BLOCKED: privileged settings require a separate secure local provisioning channel")
