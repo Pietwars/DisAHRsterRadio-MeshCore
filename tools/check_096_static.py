@@ -129,6 +129,17 @@ check("(client->permissions & PERM_ACL_ROLE_MASK) == PERM_ACL_GUEST" in room_pos
 check("if (!is_retry)" in room_posts,
       "room post retries do not duplicate stored messages")
 
+room_header = (ROOT / "examples/simple_room_server/MyMesh.h").read_text(encoding="utf-8")
+check("room_post_budgets[MAX_CLIENTS]" in room_header,
+      "room post budgets are bounded by authenticated ACL slots")
+check("roomPostAllowed(room_post_budgets[i], millis())" in room_posts and
+      "addPost(client, (const char *)&data[5]);" in room_posts,
+      "disaster room checks the posting budget before storing messages")
+check("if (!is_retry)" in room_posts and "#ifdef DISASTER_ROOM" in room_posts,
+      "room budget does not charge message retries and is scoped to disaster room")
+check("budget.count >= 6" in room_access and "600000UL" in room_access and "15000UL" in room_access,
+      "room post policy limits each client to six posts per ten minutes with 15-second spacing")
+
 # Local PIN editor regression checks (source-level only; hardware pairing remains unverified).
 frontend = (ROOT / "examples/companion_radio/StandaloneFrontend.cpp").read_text(encoding="utf-8")
 check("bool changeBlePin(uint32_t pin" in frontend,
