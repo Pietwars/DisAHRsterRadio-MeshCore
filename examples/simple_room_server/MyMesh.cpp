@@ -494,7 +494,17 @@ void MyMesh::onPeerDataRecv(mesh::Packet *packet, uint8_t type, int sender_idx, 
           send_ack = false; // no ACK
         } else {
           if (!is_retry) {
+#ifdef DISASTER_ROOM
+            // The slot belongs to an authenticated ACL client. Keep the budget
+            // independent of the sender-controlled message timestamp.
+            if (disaster::roomPostAllowed(room_post_budgets[i], millis())) {
+              addPost(client, (const char *)&data[5]);
+            } else {
+              MESH_DEBUG_PRINTLN("room.post: rate limit exceeded for ACL slot %d", i);
+            }
+#else
             addPost(client, (const char *)&data[5]);
+#endif
           }
           temp[5] = 0; // no reply (ACK is enough)
           send_ack = true;
