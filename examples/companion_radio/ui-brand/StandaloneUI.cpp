@@ -451,11 +451,13 @@ bool UI::swipeList(int dy) {
     dev::Target list[MAX_LIST];
     int n = int(buildList(page, list, MAX_LIST));
     int &top = listTop[page], &sel = listSel[page];
+    if (n == 0) { top = 0; sel = 0; return false; }
     top += step;
     if (top > n - LIST_ROWS) top = n - LIST_ROWS;
     if (top < 0) top = 0;
     if (sel < top) sel = top;
     if (sel >= top + LIST_ROWS) sel = top + LIST_ROWS - 1;
+    if (sel >= n) sel = n - 1;
   } else if (page == DEVICE) {
     devTop += step;
     if (devTop > (DEVICE_BUTTONS > LIST_ROWS ? DEVICE_BUTTONS - LIST_ROWS : 0)) devTop = DEVICE_BUTTONS > LIST_ROWS ? DEVICE_BUTTONS - LIST_ROWS : 0;
