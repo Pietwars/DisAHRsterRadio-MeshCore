@@ -51,6 +51,7 @@ public:
   virtual bool advert(char *status, size_t size) = 0;               // flood advert (with position if shared)
   virtual bool refresh() = 0;                                      // re-read contacts
   virtual void info(Info &out) const = 0;
+  virtual bool changeBlePin(uint32_t pin, char *status, size_t size) { (void)pin; (void)status; (void)size; return false; }
   virtual bool saveConfig(char *status, size_t size) = 0;          // settings to SD (no PINs, no keys)
   virtual int mapIndex() const = 0;
   virtual void setMapIndex(int index) = 0;
