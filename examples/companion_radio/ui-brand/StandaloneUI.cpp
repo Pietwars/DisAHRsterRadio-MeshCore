@@ -170,8 +170,12 @@ void UI::sendCompose() {
     else setStatus("Zuerst Text eingeben");
     dirty = FULL; return;
   }
+  if (!conv[0]) {
+    setStatus("Kein Chat ausgewaehlt", 8000);
+    dirty = FULL; return;
+  }
   bool ok = api->send(conv, compose, st, sizeof(st));
-  setStatus(st, ok ? 15000 : 8000);
+  setStatus(st[0] ? st : (ok ? "Nachricht uebergeben" : "Senden fehlgeschlagen"), ok ? 15000 : 8000);
   if (ok) { compose[0] = 0; scroll = 0; }
   dirty = FULL;
 }
