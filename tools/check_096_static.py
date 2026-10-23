@@ -16,6 +16,8 @@ policy = (ROOT / "examples/companion_radio/DarBuild.h").read_text(encoding="utf-
 page = (ROOT / "web/index.html").read_text(encoding="utf-8")
 access = (ROOT / "examples/companion_radio/OpenAccess.h").read_text(encoding="utf-8")
 main = (ROOT / "examples/companion_radio/main.cpp").read_text(encoding="utf-8")
+ui_task = (ROOT / "examples/companion_radio/ui-brand/UITask.cpp").read_text(encoding="utf-8")
+ui_page = (ROOT / "examples/companion_radio/ui-brand/StandaloneUI.cpp").read_text(encoding="utf-8")
 
 def check(ok: bool, message: str) -> None:
     if not ok:
@@ -68,6 +70,20 @@ check('Serial.printf("[BLE] Bluetooth-PIN %06lu' not in main,
       "BLE PIN is not printed to serial logs")
 check("disaster::validBlePin(pin)" in main,
       "existing valid user-configured BLE PIN is preserved")
+
+# The existing T-Deck pairing overlay already displays the actual active PIN.
+# Keep it scoped to pairing rather than exposing a permanent PIN in Device Info.
+check("bool pairing = ble_pairing_active();" in ui_task,
+      "T-Deck observes active Bluetooth pairing state")
+check('snprintf(pin, sizeof(pin), "%06lu", (unsigned long)the_mesh.getBLEPin())' in ui_task,
+      "pairing overlay displays the actual configured BLE PIN")
+check("if (!_pairing) { _sui.render(d); return; }" in ui_task,
+      "PIN overlay is not shown during ordinary standalone navigation")
+check("if (pairing) wake();" in ui_task,
+      "display wakes for Bluetooth pairing")
+device_info = ui_page.split("void UI::drawDeviceInfo(", 1)[1].split("void UI::render(", 1)[0]
+check("getBLEPin()" not in device_info,
+      "Device Info does not reveal Bluetooth PIN digits")
 
 # Explicitly record known unresolved blockers, without giving a false pass.
 print("BLOCKED: privileged web operations and PIN login intentionally disabled on open HTTP")
