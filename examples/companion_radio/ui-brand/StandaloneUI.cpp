@@ -212,7 +212,12 @@ bool UI::key(uint8_t k) {
         blePinConfirm = true;
       } else {
         char st[96] = "";
-        if (strcmp(blePinFirst, blePinDraft)) setStatus("PINs stimmen nicht ueberein");
+        if (strcmp(blePinFirst, blePinDraft)) {
+          memset(blePinDraft, 0, sizeof(blePinDraft));
+          memset(blePinFirst, 0, sizeof(blePinFirst));
+          blePinConfirm = false;
+          setStatus("PINs verschieden. Bitte neu eingeben");
+        }
         else if (api->changeBlePin(uint32_t(atoi(blePinDraft)), st, sizeof(st))) {
           back(); setStatus(st);
         } else setStatus(st[0] ? st : "PIN konnte nicht gespeichert werden");
