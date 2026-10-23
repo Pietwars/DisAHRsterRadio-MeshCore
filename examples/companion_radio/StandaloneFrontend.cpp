@@ -267,6 +267,16 @@ public:
     o.txFlood = the_mesh.getNumSentFlood(); o.txDirect = the_mesh.getNumSentDirect();
     o.rxFlood = the_mesh.getNumRecvFlood(); o.rxDirect = the_mesh.getNumRecvDirect();
   }
+  bool changeBlePin(uint32_t pin, char *status, size_t size) override {
+    if (!disaster::validBlePin(pin) || bluetooth_interface.isConnected()) {
+      snprintf(status, size, "PIN ungueltig oder Bluetooth verbunden");
+      return false;
+    }
+    the_mesh.getNodePrefs()->ble_pin = pin;
+    the_mesh.savePrefs();
+    snprintf(status, size, "PIN gespeichert. Neustart erforderlich");
+    return true;
+  }
   bool saveConfig(char *status, size_t size) override { return ::saveConfig(status, size); }
   int mapIndex() const override { return map_index; }
   void setMapIndex(int i) override { map_index = i; nvs.putInt("map", i); }
