@@ -62,6 +62,8 @@ jobs:
           assert "interface_manager.addInterface(InterfaceType::Bluetooth, &bluetooth_interface);" in main
           print("USB and BLE registration code paths exist; USB disabled in local-client targets")
           PY
+      - name: Run 0.9.6 security regression checks
+        run: python tools/check_096_static.py
       - name: Compile firmware (no flashing, no release)
         run: pio run -e ${{ matrix.environment }}
       - name: Collect test firmware binaries
