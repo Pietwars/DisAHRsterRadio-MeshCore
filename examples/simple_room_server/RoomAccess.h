@@ -42,6 +42,29 @@ inline bool roomGuestPrefs(char *guest_password, size_t len, uint8_t &allow_read
   return changed;
 }
 
+// Simple per-client posting budget. Timestamp is the receiver's monotonic
+// millis() clock; callers keep one state per authenticated room client.
+// The first accepted post starts a ten-minute window. Retries must not call this.
+struct RoomPostBudget {
+  uint32_t window_start_ms = 0;
+  uint32_t last_post_ms = 0;
+  uint8_t count = 0;
+  bool started = false;
+};
+inline bool roomPostAllowed(RoomPostBudget &budget, uint32_t now) {
+  if (!budget.started || uint32_t(now - budget.window_start_ms) >= 600000UL) {
+    budget.window_start_ms = now;
+    budget.last_post_ms = 0;
+    budget.count = 0;
+    budget.started = true;
+  }
+  if (budget.count && uint32_t(now - budget.last_post_ms) < 15000UL) return false;
+  if (budget.count >= 6) return false;
+  budget.last_post_ms = now;
+  ++budget.count;
+  return true;
+}
+
 // CLI-Befehle, die das oeffentliche Gast-Passwort aendern oder den Gast-Lesezugriff abschalten
 // wuerden. Liefert die Antwort fuer gesperrte Befehle, sonst nullptr.
 inline const char *roomCliBlocked(const char *command) {
