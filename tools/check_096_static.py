@@ -104,6 +104,9 @@ check('memset(blePinFirst, 0, sizeof(blePinFirst));' in ui_page,
 
 check("case BLE_PIN_EDIT:" in ui_page and re.search(r"case BLE_PIN_EDIT:\s*return true;\s*// PIN entry accepts keyboard only", ui_page) is not None,
       "PIN editor ignores unrelated touch actions")
+check("Never retain a rejected PIN or its confirmation in the UI buffers." in ui_page and
+      re.search(r"else \\{\\s*// Never retain a rejected PIN.*?memset\\(blePinDraft, 0, sizeof\\(blePinDraft\\)\\);.*?memset\\(blePinFirst, 0, sizeof\\(blePinFirst\\)\\);.*?blePinConfirm = false;", ui_page, re.S) is not None,
+      "rejected PIN updates clear both local input buffers")
 check("back(); // Clear both PIN buffers before any tab navigation." in ui_page,
       "switching tabs cancels and clears PIN entry")
 # Chat and board navigation must not produce invalid indices for empty lists.
