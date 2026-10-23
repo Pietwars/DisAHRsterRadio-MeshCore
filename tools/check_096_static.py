@@ -61,6 +61,14 @@ check("if (bluetooth && blePin != 0) return true;" not in permission,
       "configured BLE PIN cannot grant privileged companion commands")
 check("validBlePin(uint32_t pin)" in access and "effectiveBlePin(uint32_t saved)" in access,
       "six-digit BLE pairing PIN handling remains present")
+# Guard the public allowlist itself: privileged commands must never leak into BLE/guest WLAN.
+public_body = access.split("inline bool publicCompanionCommand(", 1)[1].split("default: return false;", 1)[0]
+public_cases = {int(value) for value in re.findall(r"case\\s+(\\d+)\\s*:", public_body)}
+privileged_cases = {8, 11, 19, 24, 25, 32, 36, 51}
+check(not (public_cases & privileged_cases),
+      "public BLE/WLAN allowlist excludes name/radio changes, key management, reboot and reset")
+check("default: return false;" in access.split("inline bool publicCompanionCommand(", 1)[1].split("inline bool allowCompanionCommand(", 1)[0],
+      "unknown companion commands remain denied by default")
 check("allowCompanionCommand(cmd_frame[0]" in mesh,
       "companion command dispatcher still enforces access policy")
 
