@@ -448,7 +448,7 @@ bool UI::swipeList(int dy) {
     if (sel >= top + LIST_ROWS) sel = top + LIST_ROWS - 1;
   } else if (page == DEVICE) {
     devTop += step;
-    if (devTop > DEVICE_BUTTONS - LIST_ROWS) devTop = DEVICE_BUTTONS - LIST_ROWS;
+    if (devTop > (DEVICE_BUTTONS > LIST_ROWS ? DEVICE_BUTTONS - LIST_ROWS : 0)) devTop = DEVICE_BUTTONS > LIST_ROWS ? DEVICE_BUTTONS - LIST_ROWS : 0;
     if (devTop < 0) devTop = 0;
     if (devSel < devTop) devSel = devTop;
     if (devSel >= devTop + LIST_ROWS) devSel = devTop + LIST_ROWS - 1;
