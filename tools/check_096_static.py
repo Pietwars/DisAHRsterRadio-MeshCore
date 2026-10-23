@@ -72,8 +72,9 @@ check("validBlePin(uint32_t pin)" in access and "effectiveBlePin(uint32_t saved)
       "six-digit BLE pairing PIN handling remains present")
 # Guard the public allowlist itself: privileged commands must never leak into BLE/guest WLAN.
 public_body = access.split("inline bool publicCompanionCommand(", 1)[1].split("default: return false;", 1)[0]
-public_cases = {int(value) for value in re.findall(r"case\\s+(\\d+)\\s*:", public_body)}
+public_cases = {int(value) for value in re.findall(r"case\s+(\d+)\s*:", public_body)}
 privileged_cases = {8, 11, 19, 24, 25, 32, 36, 51}
+check(len(public_cases) >= 20, "public command allowlist is actually parsed (non-vacuous)")
 check(not (public_cases & privileged_cases),
       "public BLE/WLAN allowlist excludes name/radio changes, key management, reboot and reset")
 check("default: return false;" in access.split("inline bool publicCompanionCommand(", 1)[1].split("inline bool allowCompanionCommand(", 1)[0],
@@ -101,6 +102,16 @@ check("if (pairing) wake();" in ui_task,
 device_info = ui_page.split("void UI::drawDeviceInfo(", 1)[1].split("void UI::render(", 1)[0]
 check("getBLEPin()" not in device_info,
       "Device Info does not reveal Bluetooth PIN digits")
+
+# Room-server guest must never inherit moderator/admin rights.
+room_access = (ROOT / "examples/simple_room_server/RoomAccess.h").read_text(encoding="utf-8")
+check('ROOM_PERM_READ_WRITE = 2' in room_access and 'ROOM_PERM_ADMIN = 3' in room_access,
+      "room guest writer and administrator permissions remain distinct")
+check('strcmp(given, admin) == 0) return ROOM_PERM_ADMIN;' in room_access and
+      'strcmp(given, guest) == 0) return ROOM_PERM_READ_WRITE;' in room_access,
+      "room login grants admin rights only for matching admin password")
+check('return ROOM_PERM_GUEST;' in room_access,
+      "unknown room credentials default to read-only guest")
 
 # Local PIN editor regression checks (source-level only; hardware pairing remains unverified).
 frontend = (ROOT / "examples/companion_radio/StandaloneFrontend.cpp").read_text(encoding="utf-8")
