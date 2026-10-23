@@ -30,6 +30,9 @@ class DisasterPortal : public LocalCompanion {
   int txQueuePackets=0;
   struct ClientBudget { char id[16]; uint32_t lastMs=0, windowStart=0; uint8_t count=0; bool used=false; };
   ClientBudget clientBudgets[8]{};
+  // Aggregate budget is independent of caller-controlled X-Disaster-Client IDs.
+  uint32_t globalWindowStart=0, globalLastMs=0;
+  uint8_t globalSendCount=0;
   unsigned long txAirMs=0, rxAirMs=0, txBudgetMs=0;
   WebServer http{80};
   bool requireAdmin() {
@@ -73,6 +76,18 @@ class DisasterPortal : public LocalCompanion {
     if(b.lastMs&&uint32_t(now-b.lastMs)<15000){http.send(429,"text/plain","Dieses Handy muss 15 Sekunden warten");return false;}
     if(!b.windowStart||uint32_t(now-b.windowStart)>=600000){b.windowStart=now;b.count=0;}
     if(b.count>=6){http.send(429,"text/plain","Sendebudget dieses Handys erschoepft: 6 Nachrichten in 10 Minuten");return false;}
+    // Client IDs are advisory, not authentication: rotating IDs must not evade
+    // the aggregate portal cap. Apply it to all HTTP send/advert/outbox paths.
+    if(globalLastMs && uint32_t(now-globalLastMs)<2000){
+      http.send(429,"text/plain","Funkportal: zwei Sekunden globale Sendepause");return false;
+    }
+    if(!globalWindowStart || uint32_t(now-globalWindowStart)>=600000){
+      globalWindowStart=now;globalSendCount=0;
+    }
+    if(globalSendCount>=24){
+      http.send(429,"text/plain","Funkportal: globales Sendebudget erschoepft");return false;
+    }
+    globalLastMs=now;++globalSendCount;
     b.lastMs=now;b.count++;return true;
   }
   bool room() {
