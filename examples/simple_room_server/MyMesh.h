@@ -20,6 +20,9 @@
 #include <helpers/CommonCLI.h>
 #include <helpers/StatsFormatHelper.h>
 #include <helpers/ClientACL.h>
+#ifdef DISASTER_ROOM
+#include "RoomAccess.h"
+#endif
 #include <helpers/RegionMap.h>
 #include <helpers/RoutingPolicy.h>
 #include <RTClib.h>
@@ -105,6 +108,10 @@ class MyMesh : public mesh::Mesh, public CommonCLICallbacks {
   TransportKeyStore key_store;
   RegionMap region_map, temp_map;
   ClientACL acl;
+#ifdef DISASTER_ROOM
+  // Bounded per-client posting budget, indexed by ACL slot.
+  disaster::RoomPostBudget room_post_budgets[MAX_CLIENTS]{};
+#endif
   CommonCLI _cli;
   unsigned long dirty_contacts_expiry;
   uint8_t reply_data[MAX_PACKET_PAYLOAD];
