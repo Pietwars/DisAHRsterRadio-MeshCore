@@ -20,6 +20,7 @@ const char *title(Page p) {
     case LOCATION: return "Standort";
     case DEVICE_INFO:
       return "Info";
+    case BLE_PIN_EDIT: return "Bluetooth-PIN";
     case DEVICE: return "Ger\xc3\xa4t";
     default:
       return "Men\xc3\xbc";
@@ -28,7 +29,7 @@ const char *title(Page p) {
 constexpr int LIST_TOP = touchui::CONTENT, ROW_H = touchui::ROW, HINT_Y = H - 9;
 constexpr int COMPOSE_Y = touchui::COMPOSE_Y, COMPOSE_H = touchui::COMPOSE_H;
 constexpr int LIST_ROWS = touchui::VISIBLE_ROWS; // 10
-constexpr int DEVICE_BUTTONS = 7;                // plus saved touch calibration
+constexpr int DEVICE_BUTTONS = 8;                // plus saved touch calibration
 }
 
 int mapIndexForKey(const char *key) {
@@ -114,6 +115,12 @@ bool UI::back() {
 #endif
   }
   switch (page) {
+  case BLE_PIN_EDIT:
+    memset(blePinDraft, 0, sizeof(blePinDraft));
+    memset(blePinFirst, 0, sizeof(blePinFirst));
+    blePinConfirm = false;
+    open(DEVICE);
+    return true;
   case DEVICE_INFO:
     open(DEVICE);
     return true;
@@ -191,6 +198,28 @@ bool UI::key(uint8_t k) {
   if (k == 127) k = K_BACKSPACE;
   if (k == K_BACK) return back();                   // ALT+Backspace (UITask) / Esc: one level back, everywhere
   Redraw before = dirty;
+  if (page == BLE_PIN_EDIT) {
+    size_t n = strlen(blePinDraft);
+    if (k == K_BACKSPACE) {
+      if (n) blePinDraft[n - 1] = 0;
+      else return back();
+    } else if (k >= '0' && k <= '9' && n < 6) {
+      blePinDraft[n] = char(k); blePinDraft[n + 1] = 0;
+    } else if (k == K_ENTER && n == 6) {
+      if (!blePinConfirm) {
+        memcpy(blePinFirst, blePinDraft, sizeof(blePinFirst));
+        memset(blePinDraft, 0, sizeof(blePinDraft));
+        blePinConfirm = true;
+      } else {
+        char st[96] = "";
+        if (strcmp(blePinFirst, blePinDraft)) setStatus("PINs stimmen nicht ueberein");
+        else if (api->changeBlePin(uint32_t(atoi(blePinDraft)), st, sizeof(st))) {
+          back(); setStatus(st);
+        } else setStatus(st[0] ? st : "PIN konnte nicht gespeichert werden");
+      }
+    }
+    dirty = FULL; return true;
+  }
   if (page == CHAT_VIEW || page == BOARD_VIEW) {
     size_t n = strlen(compose);
     if (k == K_ENTER) sendCompose();
@@ -300,6 +329,12 @@ bool UI::click() {
     case DEVICE_INFO:
       return back();
     case DEVICE:
+      if (devSel == 7) {
+        memset(blePinDraft, 0, sizeof(blePinDraft));
+        memset(blePinFirst, 0, sizeof(blePinFirst));
+        blePinConfirm = false;
+        open(BLE_PIN_EDIT); return true;
+      }
       if (devSel == 6) {
         open(DEVICE_INFO);
         return true;
@@ -792,7 +827,7 @@ void UI::drawDevice(DisplayDriver *d) {
   const char *buttons[DEVICE_BUTTONS] = { "Kontakte neu lesen", "Bekanntgabe senden",
                                           "Display aus",        "Auf SD speichern",
                                           "Touch kalibrieren",  "Standort / GPS / Teilen",
-                                          "Geraeteinfo / Akku" };
+                                          "Geraeteinfo / Akku", "Bluetooth-PIN aendern" };
   for (int row = 0; row < LIST_ROWS && devTop + row < DEVICE_BUTTONS; ++row) {
     int i = devTop + row;
     auto r = touchui::row(row);
@@ -842,6 +877,17 @@ void UI::drawDeviceInfo(DisplayDriver *d) {
   drawHint(d);
 }
 
+void UI::drawBlePinEdit(DisplayDriver *d) {
+  ui::text(d, 8, NAV_H + 20, TEXT, blePinConfirm ? "Neue PIN bestaetigen" : "Neue Bluetooth-PIN", 24);
+  char masked[8] = "______";
+  size_t n = strlen(blePinDraft);
+  for (size_t i = 0; i < n && i < 6; ++i) masked[i] = '*';
+  ui::text(d, 8, NAV_H + 65, TEXT, masked, 12, 2);
+  ui::text(d, 8, NAV_H + 105, MUTED, "6 Ziffern, Enter: weiter", 30);
+  ui::text(d, 8, NAV_H + 125, MUTED, "ALT+Backspace: abbrechen", 30);
+  drawHint(d);
+}
+
 void UI::render(DisplayDriver *d) {
   ++touchRevision;
   dirty = NONE;
@@ -860,6 +906,7 @@ void UI::render(DisplayDriver *d) {
     case MAP: drawMap(d); break;
     case LOCATION: drawLocation(d); break;
     case DEVICE: drawDevice(d); break;
+    case BLE_PIN_EDIT: drawBlePinEdit(d); break;
     case DEVICE_INFO:
       drawDeviceInfo(d);
       break;
