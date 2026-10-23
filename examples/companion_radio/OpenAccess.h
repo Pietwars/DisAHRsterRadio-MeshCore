@@ -58,12 +58,12 @@ inline bool publicCompanionCommand(uint8_t cmd) {
     default: return false;
   }
 }
-// TEST pin123456 (test/091-ble-voll): a PIN-paired Bluetooth link is trusted like USB, so the
-// MeshCore app gets every companion command (stock MeshCore behaviour). Open WiFi/Ethernet
-// clients keep the restricted public list; without PIN, Bluetooth stays restricted too.
+// A configured BLE passkey is NOT proof that the current link authenticated.
+// Treat every public transport (including BLE) as untrusted for privileged commands.
+// A future privileged BLE path requires verified per-connection authentication state.
 inline bool allowCompanionCommand(uint8_t cmd, bool publicTransport, bool bluetooth, uint32_t blePin) {
-  if (!publicTransport || publicCompanionCommand(cmd)) return true;
-  if (bluetooth && blePin != 0) return true;
-  return false;
+  (void)bluetooth;
+  (void)blePin;
+  return !publicTransport || publicCompanionCommand(cmd);
 }
 }
