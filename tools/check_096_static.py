@@ -113,6 +113,22 @@ check('strcmp(given, admin) == 0) return ROOM_PERM_ADMIN;' in room_access and
 check('return ROOM_PERM_GUEST;' in room_access,
       "unknown room credentials default to read-only guest")
 
+# Room moderation must be restricted at the actual packet dispatch point,
+# not just in the login helper.
+room_mesh = (ROOT / "examples/simple_room_server/MyMesh.cpp").read_text(encoding="utf-8")
+room_rx = room_mesh.split("void MyMesh::onPeerDataRecv(", 1)[1].split("bool MyMesh::onPeerPathRecv(", 1)[0]
+room_commands = room_rx.split("if (flags == TXT_TYPE_CLI_DATA || flags == TXT_TYPE_CLI_COMMAND)", 1)[1].split("} else { // TXT_TYPE_PLAIN", 1)[0]
+check("if (client->isAdmin())" in room_commands and "handleCommand(sender_timestamp" in room_commands,
+      "room moderation commands require administrator role at packet dispatch")
+check("send_ack = false; // and no ACK" in room_commands,
+      "non-admin room moderation commands are rejected without acknowledgment")
+room_posts = room_rx.split("} else { // TXT_TYPE_PLAIN", 1)[1].split("uint32_t delay_millis;", 1)[0]
+check("(client->permissions & PERM_ACL_ROLE_MASK) == PERM_ACL_GUEST" in room_posts and
+      "addPost(client, (const char *)&data[5]);" in room_posts,
+      "read-only room guests cannot publish posts")
+check("if (!is_retry)" in room_posts,
+      "room post retries do not duplicate stored messages")
+
 # Local PIN editor regression checks (source-level only; hardware pairing remains unverified).
 frontend = (ROOT / "examples/companion_radio/StandaloneFrontend.cpp").read_text(encoding="utf-8")
 check("bool changeBlePin(uint32_t pin" in frontend,
