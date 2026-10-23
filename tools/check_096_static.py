@@ -85,6 +85,23 @@ device_info = ui_page.split("void UI::drawDeviceInfo(", 1)[1].split("void UI::re
 check("getBLEPin()" not in device_info,
       "Device Info does not reveal Bluetooth PIN digits")
 
+# Local PIN editor regression checks (source-level only; hardware pairing remains unverified).
+frontend = (ROOT / "examples/companion_radio/StandaloneFrontend.cpp").read_text(encoding="utf-8")
+check("bool changeBlePin(uint32_t pin" in frontend,
+      "standalone frontend implements local PIN persistence")
+check("disaster::validBlePin(pin)" in frontend and "bluetooth_interface.isConnected()" in frontend,
+      "PIN updates validate six digits and refuse active Bluetooth sessions")
+check("getNodePrefs()->ble_pin = pin;" in frontend and "the_mesh.savePrefs();" in frontend,
+      "local PIN change saves to persistent node preferences")
+check("Neustart erforderlich" in frontend,
+      "PIN change instructs restart before use")
+check("case BLE_PIN_EDIT:" in ui_page and "api->changeBlePin(" in ui_page,
+      "T-Deck PIN editor is wired to the local API")
+check("strcmp(blePinFirst, blePinDraft)" in ui_page,
+      "PIN editor requires matching confirmation")
+check('memset(blePinFirst, 0, sizeof(blePinFirst));' in ui_page,
+      "PIN editor clears confirmation buffer on cancel or mismatch")
+
 # Explicitly record known unresolved blockers, without giving a false pass.
 print("BLOCKED: privileged web operations and PIN login intentionally disabled on open HTTP")
 print("BLOCKED: privileged settings require a separate secure local provisioning channel")
