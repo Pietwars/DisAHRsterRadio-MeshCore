@@ -878,13 +878,13 @@ void UI::drawDeviceInfo(DisplayDriver *d) {
 }
 
 void UI::drawBlePinEdit(DisplayDriver *d) {
-  ui::text(d, 8, NAV_H + 20, TEXT, blePinConfirm ? "Neue PIN bestaetigen" : "Neue Bluetooth-PIN", 24);
+  ui::text(d, 8, NAV_H + 20, TEXT, blePinConfirm ? "Neue PIN bestaetigen" : "Neue Bluetooth-PIN");
   char masked[8] = "______";
   size_t n = strlen(blePinDraft);
   for (size_t i = 0; i < n && i < 6; ++i) masked[i] = '*';
-  ui::text(d, 8, NAV_H + 65, TEXT, masked, 12, 2);
-  ui::text(d, 8, NAV_H + 105, MUTED, "6 Ziffern, Enter: weiter", 30);
-  ui::text(d, 8, NAV_H + 125, MUTED, "ALT+Backspace: abbrechen", 30);
+  ui::text(d, 8, NAV_H + 65, TEXT, masked);
+  ui::text(d, 8, NAV_H + 105, MUTED, "6 Ziffern, Enter: weiter");
+  ui::text(d, 8, NAV_H + 125, MUTED, "ALT+Backspace: abbrechen");
   drawHint(d);
 }
 
