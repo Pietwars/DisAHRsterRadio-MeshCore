@@ -15,6 +15,7 @@ mesh = (ROOT / "examples/companion_radio/MyMesh.cpp").read_text(encoding="utf-8"
 policy = (ROOT / "examples/companion_radio/DarBuild.h").read_text(encoding="utf-8")
 page = (ROOT / "web/index.html").read_text(encoding="utf-8")
 access = (ROOT / "examples/companion_radio/OpenAccess.h").read_text(encoding="utf-8")
+main = (ROOT / "examples/companion_radio/main.cpp").read_text(encoding="utf-8")
 
 def check(ok: bool, message: str) -> None:
     if not ok:
@@ -60,6 +61,13 @@ check("validBlePin(uint32_t pin)" in access and "effectiveBlePin(uint32_t saved)
       "six-digit BLE pairing PIN handling remains present")
 check("allowCompanionCommand(cmd_frame[0]" in mesh,
       "companion command dispatcher still enforces access policy")
+
+check("esp_random() % 900000UL" in main, "ESP32 provisions a per-device BLE PIN")
+check("the_mesh.savePrefs();" in main, "BLE PIN is persisted in device preferences")
+check('Serial.printf("[BLE] Bluetooth-PIN %06lu' not in main,
+      "BLE PIN is not printed to serial logs")
+check("disaster::validBlePin(pin)" in main,
+      "existing valid user-configured BLE PIN is preserved")
 
 # Explicitly record known unresolved blockers, without giving a false pass.
 print("BLOCKED: privileged web operations and PIN login intentionally disabled on open HTTP")
