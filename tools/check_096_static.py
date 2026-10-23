@@ -112,6 +112,14 @@ check("if (n == 0) { top = 0; sel = 0; return false; }" in ui_page,
 check("if (sel >= n) sel = n - 1;" in ui_page,
       "chat/board selection stays within current target count")
 
+# Chat sending must fail safely without silently clearing a draft.
+check('if (!conv[0]) {' in ui_page and 'setStatus("Kein Chat ausgewaehlt", 8000);' in ui_page,
+      "chat send requires an explicit destination")
+check('if (ok) { compose[0] = 0; scroll = 0; }' in ui_page,
+      "chat draft is cleared only after successful API handoff")
+check('"Nachricht uebergeben" : "Senden fehlgeschlagen"' in ui_page,
+      "chat send displays a fallback result when API returns no status")
+
 # Explicitly record known unresolved blockers, without giving a false pass.
 print("BLOCKED: privileged web operations and PIN login intentionally disabled on open HTTP")
 print("BLOCKED: privileged settings require a separate secure local provisioning channel")
