@@ -331,6 +331,8 @@ bool UI::click() {
       else { api->advert(st, sizeof(st)); setStatus(st); }
       dirty = FULL; return true;
     }
+    case BLE_PIN_EDIT:
+      return true; // PIN entry accepts keyboard only; ignore other touch clicks.
     case DEVICE_INFO:
       return back();
     case DEVICE:
@@ -385,11 +387,11 @@ bool UI::tap(int x, int y) {
   const int target = touchTarget(x, y);
   if (target < 0) return false;
   if (target >= 100 && target < 105) {
-    if (page == BLE_PIN_EDIT) {
-      back(); // Clear both transient PIN buffers before leaving via a tab.
-    }
     const Page tabs[] = { CHAT_LIST, QUICK, BOARD_LIST, MAP, DEVICE };
     Page next = tabs[target - 100];
+    if (page == BLE_PIN_EDIT) {
+      back(); // Clear both PIN buffers before any tab navigation.
+    }
     if ((next == CHAT_LIST && page == CHAT_VIEW) || (next == BOARD_LIST && page == BOARD_VIEW)) return back();
     if (page != next) open(next);
     return true;
