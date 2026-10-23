@@ -224,7 +224,13 @@ bool UI::key(uint8_t k) {
         }
         else if (api->changeBlePin(uint32_t(atoi(blePinDraft)), st, sizeof(st))) {
           back(); setStatus(st);
-        } else setStatus(st[0] ? st : "PIN konnte nicht gespeichert werden");
+        } else {
+          // Never retain a rejected PIN or its confirmation in the UI buffers.
+          memset(blePinDraft, 0, sizeof(blePinDraft));
+          memset(blePinFirst, 0, sizeof(blePinFirst));
+          blePinConfirm = false;
+          setStatus(st[0] ? st : "PIN konnte nicht gespeichert werden");
+        }
       }
     }
     dirty = FULL; return true;
