@@ -54,7 +54,7 @@ check("required_airtime" in dispatcher, "scheduler checks TX budget")
 check("TX_BUDGET_AIRTIME_MARGIN_NUM" in dispatcher, "TX reserve margin is present")
 
 # Public transports must never become privileged merely because a BLE PIN is configured.
-permission = access.split("inline bool allowCompanionCommand(", 1)[1].split("\\n}", 1)[0]
+permission = access.split("inline bool allowCompanionCommand(", 1)[1].split("\n}", 1)[0]
 check("return !publicTransport || publicCompanionCommand(cmd);" in permission,
       "BLE and open WLAN have the same explicit public-command allowlist")
 check("if (bluetooth && blePin != 0) return true;" not in permission,
@@ -68,8 +68,8 @@ check("esp_random() % 900000UL" in main, "ESP32 provisions a per-device BLE PIN"
 check("the_mesh.savePrefs();" in main, "BLE PIN is persisted in device preferences")
 check('Serial.printf("[BLE] Bluetooth-PIN %06lu' not in main,
       "BLE PIN is not printed to serial logs")
-check("disaster::validBlePin(pin)" in main,
-      "existing valid user-configured BLE PIN is preserved")
+check("disaster::needsBlePinProvisioning(pin)" in main,
+      "ESP32 migrates invalid and shared test PINs")
 
 # The existing T-Deck pairing overlay already displays the actual active PIN.
 # Keep it scoped to pairing rather than exposing a permanent PIN in Device Info.
@@ -102,7 +102,7 @@ check("strcmp(blePinFirst, blePinDraft)" in ui_page,
 check('memset(blePinFirst, 0, sizeof(blePinFirst));' in ui_page,
       "PIN editor clears confirmation buffer on cancel or mismatch")
 
-check("case BLE_PIN_EDIT:" in ui_page and re.search(r"case BLE_PIN_EDIT:\\s*return true;\\s*// PIN entry accepts keyboard only", ui_page) is not None,
+check("case BLE_PIN_EDIT:" in ui_page and re.search(r"case BLE_PIN_EDIT:\s*return true;\s*// PIN entry accepts keyboard only", ui_page) is not None,
       "PIN editor ignores unrelated touch actions")
 check("back(); // Clear both PIN buffers before any tab navigation." in ui_page,
       "switching tabs cancels and clears PIN entry")
@@ -124,5 +124,5 @@ check('"Nachricht uebergeben" : "Senden fehlgeschlagen"' in ui_page,
 print("BLOCKED: privileged web operations and PIN login intentionally disabled on open HTTP")
 print("BLOCKED: privileged settings require a separate secure local provisioning channel")
 print("UNVERIFIED: PlatformIO compilation and hardware tests")
-print("UNVERIFIED: Airtime enforcement for exact serialized packet lengths")
+print("UNVERIFIED: physical RF airtime and regional/profile compliance")
 print("STATIC CHECKS PASSED (limited scope)")

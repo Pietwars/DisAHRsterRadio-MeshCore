@@ -122,7 +122,7 @@ public:
     apOk=startAP();
     dns.start(53,"*",WiFi.softAPIP());
     Serial.printf("\nWLAN: %s\nOffenes WLAN - kein Passwort\nBrowser: http://192.168.4.1\n",apName.c_str());
-    const char *headers[]={"X-Disaster-Request","X-Disaster-Client","X-Disaster-Admin"}; http.collectHeaders(headers,3);
+    const char *headers[]={"X-Disaster-Request","X-Disaster-Client"}; http.collectHeaders(headers,2);
     http.on("/",HTTP_GET,[this](){
       http.sendHeader("Content-Security-Policy","default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'");
       http.sendHeader("X-Content-Type-Options","nosniff");

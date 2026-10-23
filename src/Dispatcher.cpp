@@ -38,18 +38,31 @@ float Dispatcher::getAirtimeBudgetFactor() const {
 
 void Dispatcher::updateTxBudget() {
   unsigned long now = _ms->getMillis();
-  unsigned long elapsed = now - last_budget_update;
+  uint32_t elapsed = uint32_t(now) - uint32_t(last_budget_update);
 
   float duty_cycle = 1.0f / (1.0f + getAirtimeBudgetFactor());
   unsigned long max_budget = (unsigned long)(getDutyCycleWindowMs() * duty_cycle);
   unsigned long refill = (unsigned long)(elapsed * duty_cycle);
   
   if (refill > 0) {
-    tx_budget_ms += refill;
-    if (tx_budget_ms > max_budget) {
-      tx_budget_ms = max_budget;
-    }
+    uint64_t available = uint64_t(tx_budget_ms) + refill;
+    tx_budget_ms = available > max_budget ? max_budget : (unsigned long)available;
     last_budget_update = now;
+  }
+}
+
+// Account the entire interval until completion/abort. This is conservative elapsed
+// TX time, not a calibrated RF measurement; timeout time must not disappear.
+void Dispatcher::accountTxAirtime() {
+  uint32_t elapsed = uint32_t(_ms->getMillis()) - uint32_t(outbound_start);
+  total_air_time += elapsed;
+  updateTxBudget();
+  tx_budget_ms = elapsed >= tx_budget_ms ? 0 : tx_budget_ms - elapsed;
+  if (tx_budget_ms < MIN_TX_BUDGET_RESERVE_MS) {
+    float duty_cycle = 1.0f / (1.0f + getAirtimeBudgetFactor());
+    next_tx_time = futureMillis((unsigned long)ceilf((MIN_TX_BUDGET_RESERVE_MS - tx_budget_ms) / duty_cycle));
+  } else {
+    next_tx_time = _ms->getMillis();
   }
 }
 
@@ -86,28 +99,10 @@ void Dispatcher::loop() {
 
   if (outbound) {  // waiting for outbound send to be completed
     if (_radio->isSendComplete()) {
-      long t = _ms->getMillis() - outbound_start;
-      total_air_time += t;
-      //Serial.print("  airtime="); Serial.println(t);
-
-      updateTxBudget();
-
-      if (t > tx_budget_ms) {
-        tx_budget_ms = 0;
-      } else {
-        tx_budget_ms -= t;
-      }
-
-      if (tx_budget_ms < MIN_TX_BUDGET_RESERVE_MS) {
-        float duty_cycle = 1.0f / (1.0f + getAirtimeBudgetFactor());
-        unsigned long needed = MIN_TX_BUDGET_RESERVE_MS - tx_budget_ms;
-        next_tx_time = futureMillis((unsigned long)(needed / duty_cycle));
-      } else {
-        next_tx_time = _ms->getMillis();
-      }
+      accountTxAirtime();
 
       _radio->onSendFinished();
-      logTx(outbound, 2 + outbound->getPathByteLen() + outbound->payload_len);
+      logTx(outbound, outbound->getRawLength());
       if (outbound->isRouteFlood()) {
         n_sent_flood++;
       } else {
@@ -118,8 +113,10 @@ void Dispatcher::loop() {
     } else if (millisHasNowPassed(outbound_expiry)) {
       MESH_DEBUG_PRINTLN("%s Dispatcher::loop(): WARNING: outbound packed send timed out!", getLogDateTime());
 
+      // A missing TX-done interrupt does not mean the radio was silent.
+      accountTxAirtime();
       _radio->onSendFinished();
-      logTxFail(outbound, 2 + outbound->getPathByteLen() + outbound->payload_len);
+      logTxFail(outbound, outbound->getRawLength());
 
       releasePacket(outbound);  // return to pool
       outbound = NULL;
@@ -148,6 +145,7 @@ void Dispatcher::loop() {
 }
 
 bool Dispatcher::tryParsePacket(Packet* pkt, const uint8_t* raw, int len) {
+  if (pkt == NULL || raw == NULL || len < 2 || len > MAX_TRANS_UNIT) return false;
   int i = 0;
 
   pkt->header = raw[i++];
@@ -157,6 +155,7 @@ bool Dispatcher::tryParsePacket(Packet* pkt, const uint8_t* raw, int len) {
   }
 
   if (pkt->hasTransportCodes()) {
+    if (len < 6) return false;
     memcpy(&pkt->transport_codes[0], &raw[i], 2); i += 2;
     memcpy(&pkt->transport_codes[1], &raw[i], 2); i += 2;
   } else {
@@ -281,13 +280,18 @@ void Dispatcher::checkSend() {
   
   updateTxBudget();
   
-  uint32_t est_airtime = _radio->getEstAirtimeFor(MAX_TRANS_UNIT);
-  // Reserve a conservative full-packet margin, not half a packet.
-  // Cap the reserve at the maximum available budget to avoid permanent TX starvation
-  // for very slow radio profiles. Such profiles still need hardware/regulatory review.
+  Packet* candidate = _mgr->peekNextOutbound(uint32_t(_ms->getMillis()));
+  if (candidate == NULL) return;
+  uint32_t est_airtime = _radio->getEstAirtimeFor(candidate->getRawLength());
+  // Inspect the exact wire length, including transport codes, without dequeueing.
   uint64_t reserve64 = ((uint64_t)est_airtime * TX_BUDGET_AIRTIME_MARGIN_NUM + TX_BUDGET_AIRTIME_MARGIN_DEN - 1) / TX_BUDGET_AIRTIME_MARGIN_DEN;
   uint32_t max_budget = (uint32_t)((uint64_t)getDutyCycleWindowMs() * 1.0f / (1.0f + getAirtimeBudgetFactor()));
-  uint32_t required_airtime = (uint32_t)(reserve64 > max_budget ? max_budget : reserve64);
+  if (reserve64 > max_budget) {
+    // Unsupported packet/profile: never shrink the required reserve to force TX.
+    budget_diagnostics.set(true, uint32_t(_ms->getMillis()));
+    return;
+  }
+  uint32_t required_airtime = uint32_t(reserve64);
   if (tx_budget_ms < required_airtime) {
     budget_diagnostics.set(true, uint32_t(_ms->getMillis()));
     float duty_cycle = 1.0f / (1.0f + getAirtimeBudgetFactor());
@@ -392,11 +396,11 @@ void Dispatcher::sendPacket(Packet* packet, uint8_t priority, uint32_t delay_mil
 // Utility function -- handles the case where millis() wraps around back to zero
 //   2's complement arithmetic will handle any unsigned subtraction up to HALF the word size (32-bits in this case)
 bool Dispatcher::millisHasNowPassed(unsigned long timestamp) const {
-  return (long)(_ms->getMillis() - timestamp) > 0;
+  return int32_t(uint32_t(_ms->getMillis()) - uint32_t(timestamp)) >= 0;
 }
 
 unsigned long Dispatcher::futureMillis(int millis_from_now) const {
-  return _ms->getMillis() + millis_from_now;
+  return uint32_t(uint32_t(_ms->getMillis()) + uint32_t(millis_from_now));
 }
 
 }

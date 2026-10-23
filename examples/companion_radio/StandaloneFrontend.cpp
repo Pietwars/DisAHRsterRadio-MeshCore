@@ -268,7 +268,7 @@ public:
     o.rxFlood = the_mesh.getNumRecvFlood(); o.rxDirect = the_mesh.getNumRecvDirect();
   }
   bool changeBlePin(uint32_t pin, char *status, size_t size) override {
-    if (!disaster::validBlePin(pin) || bluetooth_interface.isConnected()) {
+    if (!disaster::validBlePin(pin) || disaster::needsBlePinProvisioning(pin) || bluetooth_interface.isConnected()) {
       snprintf(status, size, "PIN ungueltig oder Bluetooth verbunden");
       return false;
     }

@@ -10,6 +10,15 @@ on:
       - 'variants/**'
       - 'examples/companion_radio/**'
       - 'src/**'
+      - 'tools/**'
+      - 'tests/**'
+      - 'test/**'
+      - 'web/**'
+      - 'platformio*.ini'
+      - 'lib/**'
+      - 'include/**'
+      - 'arch/**'
+      - 'boards/**'
   workflow_dispatch:
 permissions:
   contents: read
@@ -64,6 +73,8 @@ jobs:
           PY
       - name: Run 0.9.6 security regression checks
         run: python tools/check_096_static.py
+      - name: Run host regression suite
+        run: python tools/run_096_host_tests.py
       - name: Compile firmware (no flashing, no release)
         run: pio run -e ${{ matrix.environment }}
       - name: Collect test firmware binaries
@@ -83,6 +94,7 @@ jobs:
             fi
           done
           printf 'DisAHRsterRadio 0.9.6 TEST ONLY\nTarget: %s\nCommit: %s\nNot hardware-tested; no release.\n' "$TARGET" "$GITHUB_SHA" > "firmware-test/$TARGET/README.txt"
+          (cd "firmware-test/$TARGET" && sha256sum *.bin > SHA256SUMS)
       - name: Upload test firmware artifact
         if: success()
         uses: actions/upload-artifact@v4

@@ -204,15 +204,20 @@ void setup() {
   #error "need to define filesystem"
 #endif
 
-// Keep the existing user-configured PIN. On ESP32, first boot with no valid PIN
+// Keep valid non-default user PINs. On ESP32, an invalid or shared test PIN
 // provisions a per-device six-digit PIN instead of the shared test passkey.
 // The PIN is never printed to logs. Provisioning/recovery UX still needs hardware review.
 #if defined(BLE_PIN_CODE)
   {
     uint32_t pin = the_mesh.getNodePrefs()->ble_pin;
-    if (!disaster::validBlePin(pin)) {
 #if defined(ESP32)
-      pin = 100000UL + (esp_random() % 900000UL);
+    if (disaster::needsBlePinProvisioning(pin)) {
+#else
+    if (!disaster::validBlePin(pin)) {
+#endif
+#if defined(ESP32)
+      do { pin = 100000UL + (esp_random() % 900000UL); }
+      while (disaster::needsBlePinProvisioning(pin));
 #else
       pin = disaster::effectiveBlePin(pin); // legacy fallback on non-ESP32 boards
 #endif

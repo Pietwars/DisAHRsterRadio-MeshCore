@@ -211,7 +211,23 @@ static void testMapAndSettings() {
   assert(!u.gesture(10, 250, 10, 200));
 }
 
+static void testPinEditor() {
+  api = FakeApi(); sui::UI u; start(u); tab(u, 4);
+  // Device list: move to Bluetooth PIN, then use keyboard entry only.
+  for (int i=0;i<7;++i) u.move(0,1);
+  u.click(); assert(u.current()==sui::BLE_PIN_EDIT);
+  type(u,"654321"); tap(u,200,140); assert(api.pinChanges==0);
+  u.key('\n');type(u,"654320");u.key('\n');assert(api.pinChanges==0);
+  type(u,"654321");u.key('\n');type(u,"654321");u.key('\n');
+  assert(api.pinChanges==1&&api.changedPin==654321&&u.current()==sui::DEVICE);
+  u.click();assert(u.current()==sui::BLE_PIN_EDIT);
+  type(u,"654321");u.key('\n');tab(u,0); // cancellation must clear confirmation
+  tab(u,4);u.click();assert(u.current()==sui::BLE_PIN_EDIT);
+  type(u,"654321");u.key('\n');assert(api.pinChanges==1);
+}
+
 int main() {
+  testPinEditor();
   testReleaseAndLists();
   testQuickPickers();
   testMapAndSettings();

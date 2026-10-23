@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prüft die Web-Portal-Grenzen (0.9.1): kein Web-Admin mehr; Funkprofil, Name, Kanäle, Verlauf löschen ohne Anmeldung."""
+"""0.9.6: privileged HTTP routes fail closed; public messaging remains available."""
 import re
 from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
@@ -16,11 +16,11 @@ for gone in ('adminAllowed', 'adminRoom', 'AdminSession admin', 'X-Disaster-Admi
     assert gone not in src, gone
 # Ohne Anmeldung: Funkprofil (nur dePreset), Knotenname (1-24 Bytes), Kanäle, Verlauf löschen
 radio = handler('/api/radio')
-assert 'if(!room())return;' in radio and 'disaster::dePreset(' in radio
+assert 'if(!requireAdmin())return;' in radio and 'disaster::dePreset(' in radio
 name = handler('/api/name')
-assert 'if(!room())return;' in name and 'name.length()<1||name.length()>24||hasNull(name)' in name
-assert 'if(!room())return;' in handler('/api/channel')
-assert 'if(!room())return;' in handler('/api/history-wipe')
+assert 'if(!requireAdmin())return;' in name and 'name.length()<1||name.length()>24||hasNull(name)' in name
+assert 'if(!requireAdmin())return;' in handler('/api/channel')
+assert 'if(!requireAdmin())return;' in handler('/api/history-wipe')
 # Weboberfläche: kein Admin-Bereich, alle Bedienelemente im Reiter Gerät
 for gone in ('id="admin"', 'id="apass"', 'id="alogin"', 'id="admbtn"', 'adminToken', 'X-Disaster-Admin', 'admin/'):
     assert gone not in html, gone

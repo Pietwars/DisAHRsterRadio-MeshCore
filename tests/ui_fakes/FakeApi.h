@@ -50,6 +50,11 @@ struct FakeApi : dev::Api {
       std::vector<uint8_t> a = {0x82}; put32(a, tag); record(a);
     }
   }
+  int pinChanges = 0; uint32_t changedPin = 0;
+  bool changeBlePin(uint32_t pin, char *status, size_t size) override {
+    ++pinChanges; changedPin = pin;
+    snprintf(status, size, "PIN gespeichert. Neustart erforderlich"); return true;
+  }
   bool ready() const override { return isReady; }
   unsigned targetCount() const override { return unsigned(targets.size()); }
   bool target(unsigned i, dev::Target &o) const override {

@@ -91,6 +91,7 @@ public:
   virtual void free(Packet* packet) = 0;
 
   virtual void queueOutbound(Packet* packet, uint8_t priority, uint32_t scheduled_for) = 0;
+  virtual Packet* peekNextOutbound(uint32_t now) = 0; // inspect without changing priority/schedule
   virtual Packet* getNextOutbound(uint32_t now) = 0;    // by priority
   virtual int getOutboundCount(uint32_t now) const = 0;
   virtual int getOutboundTotal() const = 0;
@@ -133,6 +134,7 @@ class Dispatcher {
 
   void processRecvPacket(Packet* pkt);
   void updateTxBudget();
+  void accountTxAirtime();
 
 protected:
   PacketManager* _mgr;

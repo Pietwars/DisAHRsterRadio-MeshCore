@@ -1,4 +1,12 @@
-# Sichere lokale Konfiguration über USB (v0.9.6)
+# Lokale Konfiguration / USB-Prüfstand (v0.9.6)
+
+> **Korrektur zum aktuellen Entwicklungsstand:** In `dar_LilyGo_TDeck_wifi`
+> und `LilyGo_TDeck_standalone` ist USB-Companion wegen LocalCompanion nicht
+> aktiviert. USB-Konfiguration ist dort **nicht verfügbar**. BLE gewährt auch
+> mit gültiger PIN nur öffentliche Kommandos. ESP32 migriert inzwischen die
+> Standard-PIN 123456. Die folgenden älteren Untersuchungsnotizen sind keine
+> Funktionszusage; maßgeblich ist `096-SECURITY-RADIO-ACCEPTANCE.md`.
+
 
 **Status: Entwicklungsdokument, keine Hardware-Abnahme.** Gilt für die Companion-Firmware. Die Standalone-Variante muss getrennt geprüft werden.
 

@@ -2,7 +2,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-// TEST pin123456: fixed Bluetooth passkey for this test build (0 = Just Works without PIN).
+// Legacy non-ESP32 fallback. ESP32 boot provisioning replaces the shared test PIN.
 #ifndef DISASTER_BLE_PIN
 #define DISASTER_BLE_PIN 123456
 #endif
@@ -11,6 +11,7 @@ namespace disaster {
 // Bluetooth PIN: any 6-digit value 100000..999999 (set via app CMD_SET_DEVICE_PIN or CLI "set pin").
 // 0 or anything else falls back to the default DISASTER_BLE_PIN, so Bluetooth always needs a PIN.
 inline bool validBlePin(uint32_t pin) { return pin >= 100000 && pin <= 999999; }
+inline bool needsBlePinProvisioning(uint32_t pin) { return !validBlePin(pin) || pin == 123456; }
 inline uint32_t effectiveBlePin(uint32_t saved) { return validBlePin(saved) ? saved : (uint32_t)DISASTER_BLE_PIN; }
 // Validate received bytes before any dispatcher access (including memcmp).
 inline size_t companionMinimumLength(uint8_t cmd) {
@@ -44,7 +45,7 @@ inline bool validCompanionLength(const uint8_t* frame,size_t len,size_t capacity
   return frame && len && len<=capacity && len>=companionMinimumLength(frame[0]);
 }
 // Open Bluetooth/network clients can communicate and inspect status. Configuration,
-// raw packets, signing, private-key export and CLI require USB or web-admin.
+// raw packets, signing, private-key export and CLI require a trusted local transport.
 // Unknown/new commands are denied until explicitly reviewed here.
 inline bool publicCompanionCommand(uint8_t cmd) {
   switch(cmd) {
