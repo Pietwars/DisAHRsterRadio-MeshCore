@@ -102,6 +102,10 @@ check("strcmp(blePinFirst, blePinDraft)" in ui_page,
 check('memset(blePinFirst, 0, sizeof(blePinFirst));' in ui_page,
       "PIN editor clears confirmation buffer on cancel or mismatch")
 
+check("case BLE_PIN_EDIT:\\n      return true; // PIN entry accepts keyboard only" in ui_page,
+      "PIN editor ignores unrelated touch actions")
+check("back(); // Clear both PIN buffers before any tab navigation." in ui_page,
+      "switching tabs cancels and clears PIN entry")
 # Explicitly record known unresolved blockers, without giving a false pass.
 print("BLOCKED: privileged web operations and PIN login intentionally disabled on open HTTP")
 print("BLOCKED: privileged settings require a separate secure local provisioning channel")
