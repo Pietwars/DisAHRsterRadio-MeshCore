@@ -204,20 +204,25 @@ void setup() {
   #error "need to define filesystem"
 #endif
 
-// Bluetooth always pairs with a 6-digit PIN: the saved one (set in the app) or the default DISASTER_BLE_PIN.
+// Keep the existing user-configured PIN. On ESP32, first boot with no valid PIN
+// provisions a per-device six-digit PIN instead of the shared test passkey.
+// The PIN is never printed to logs. Provisioning/recovery UX still needs hardware review.
+#if defined(BLE_PIN_CODE)
   {
-    uint32_t pin = disaster::effectiveBlePin(the_mesh.getNodePrefs()->ble_pin);
-    if (the_mesh.getNodePrefs()->ble_pin != pin) {
+    uint32_t pin = the_mesh.getNodePrefs()->ble_pin;
+    if (!disaster::validBlePin(pin)) {
+#if defined(ESP32)
+      pin = 100000UL + (esp_random() % 900000UL);
+#else
+      pin = disaster::effectiveBlePin(pin); // legacy fallback on non-ESP32 boards
+#endif
       the_mesh.getNodePrefs()->ble_pin = pin;
       the_mesh.savePrefs();
+      Serial.println("[BLE] Device-specific PIN provisioned; use local trusted setup to retrieve/change it");
     }
     the_mesh.setBLEPin(pin);
   }
-#if defined(BLE_PIN_CODE)
-  if (the_mesh.getBLEPin() == DISASTER_BLE_PIN)
-    Serial.printf("[BLE] Bluetooth-PIN %06lu (Standard); volle MeshCore-App ueber PIN-Bluetooth\n", (unsigned long)DISASTER_BLE_PIN);
-  else
-    Serial.println("[BLE] Bluetooth mit eigener PIN (in der App gesetzt); volle MeshCore-App ueber PIN-Bluetooth");
+  Serial.println("[BLE] Six-digit PIN enabled; privileged commands remain restricted on public BLE");
 #endif
 
 // add bluetooth interface
