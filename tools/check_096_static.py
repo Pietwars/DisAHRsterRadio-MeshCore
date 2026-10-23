@@ -37,6 +37,15 @@ for route in ("name", "channel", "radio", "history-wipe"):
     check("requireAdmin()" in route_body(route), f"/api/{route} is admin-gated")
 
 check("allowClientSend()" in route_body("send"), "message sending remains rate-limited")
+check("uint32_t globalWindowStart=0, globalLastMs=0;" in portal and
+      "uint8_t globalSendCount=0;" in portal,
+      "portal has a shared send budget independent of client identifiers")
+check("globalSendCount>=24" in portal and "now-globalLastMs)<2000" in portal,
+      "portal enforces aggregate ten-minute cap and minimum spacing")
+check("globalLastMs=now;++globalSendCount;" in portal,
+      "accepted sends consume the shared budget")
+check("allowClientSend()" in route_body("outbox") and "allowClientSend()" in route_body("advert"),
+      "outbox and advert endpoints also use the shared budget")
 check("loadAdmin()" not in portal and "hashPin(" not in portal,
       "unused PIN provisioning is absent from open portal")
 check('"dar-admin"' not in portal and "adminDigest" not in portal,
