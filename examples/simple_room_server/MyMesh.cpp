@@ -497,6 +497,14 @@ void MyMesh::onPeerDataRecv(mesh::Packet *packet, uint8_t type, int sender_idx, 
 #ifdef DISASTER_ROOM
             // The slot belongs to an authenticated ACL client. Keep the budget
             // independent of the sender-controlled message timestamp.
+            // ACL slots can be recycled: only reset a budget when its owner
+            // identity changes, never on a normal re-login of the same client.
+            if (!room_budget_owned[i] ||
+                memcmp(room_budget_owners[i].pub_key, client->id.pub_key, PUB_KEY_SIZE) != 0) {
+              room_post_budgets[i] = disaster::RoomPostBudget{};
+              room_budget_owners[i] = client->id;
+              room_budget_owned[i] = true;
+            }
             if (disaster::roomPostAllowed(room_post_budgets[i], millis())) {
               addPost(client, (const char *)&data[5]);
             } else {
