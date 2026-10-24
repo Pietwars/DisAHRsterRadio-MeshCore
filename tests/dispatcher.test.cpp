@@ -11,11 +11,12 @@ struct Clock : mesh::MillisecondClock {
 struct Radio : mesh::Radio {
   bool complete=false, startOK=true, busy=false;
   int starts=0, finishes=0, length=0, estimatedLength=0;
-  uint32_t estimate=100;
+  uint32_t estimate=100, startDelay=0;
+  Clock* clock=nullptr;
   int recvRaw(uint8_t*,int) override { return 0; }
   uint32_t getEstAirtimeFor(int n) override { estimatedLength=n;return estimate; }
   float packetScore(float,int) override { return 0; }
-  bool startSendRaw(const uint8_t*,int n) override { ++starts;length=n;return startOK; }
+  bool startSendRaw(const uint8_t*,int n) override { ++starts;length=n;if(clock) clock->now=uint32_t(clock->now+startDelay);return startOK; }
   bool isSendComplete() override { return complete; }
   void onSendFinished() override { ++finishes; }
   bool isInRecvMode() const override { return true; }
@@ -96,6 +97,31 @@ int main() {
     assert(radio.starts==2&&edge.getRemainingTxBudget()==2);
     radio.complete=true; ++clock.now; edge.loop();
     assert(edge.getTotalAirTime()==1001&&edgePool.getFreeCount()==2);
+  }
+  // A failed radio start may still spend time in the driver. Charge that
+  // uncertain interval, including clock wrap, without reporting a sent packet.
+  {
+    static StaticPoolPacketManager failPool(2);
+    Clock clock; clock.now=0xfffffff0UL;
+    Radio radio; radio.clock=&clock; radio.startDelay=200; radio.startOK=false;
+    Dispatcher failed(radio,clock,failPool); failed.begin();
+    auto packet=failed.obtainNewPacket(); assert(packet);
+    packet->header=ROUTE_TYPE_FLOOD; packet->payload_len=10;
+    failed.sendPacket(packet,0); failed.loop();
+    assert(failed.failed==1&&failed.success==0&&failed.getNumSentFlood()==0);
+    assert(failed.getTotalAirTime()==200&&failed.getRemainingTxBudget()==800);
+    assert(failPool.getFreeCount()==2&&radio.finishes==0);
+    // Repeated failures consume the same shared budget, even at top priority.
+    radio.startDelay=1200;
+    packet=failed.obtainNewPacket(); assert(packet);
+    packet->header=ROUTE_TYPE_FLOOD; packet->payload_len=10;
+    failed.sendPacket(packet,0); failed.loop();
+    assert(failed.failed==2&&failed.getRemainingTxBudget()==0);
+    packet=failed.obtainNewPacket(); assert(packet);
+    packet->header=ROUTE_TYPE_FLOOD; packet->payload_len=10;
+    failed.sendPacket(packet,0); failed.loop();
+    assert(radio.starts==2&&failed.isTxBudgetWaiting());
+    assert(failPool.getOutboundTotal()==1&&failPool.getFreeCount()==1);
   }
   // Real TX timeout and budget subtraction across the embedded 32-bit clock wrap.
   {

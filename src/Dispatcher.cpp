@@ -349,6 +349,9 @@ void Dispatcher::checkSend() {
       if (!success) {
         MESH_DEBUG_PRINTLN("%s Dispatcher::loop(): ERROR: send start failed!", getLogDateTime());
 
+        // A failed start can still spend time in the radio driver. Charge the
+        // uncertain interval; driver failure cleanup already belongs to Radio.
+        accountTxAirtime();
         logTxFail(outbound, outbound->getRawLength());
   
         releasePacket(outbound);  // return to pool
