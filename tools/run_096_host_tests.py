@@ -29,7 +29,8 @@ for i,line in enumerate(workflow):
         blocks.append('\n'.join(body))
 assert blocks, 'No existing regression commands found'
 for block in blocks:
-    run(['bash', '-euo', 'pipefail', '-c', block])
+    with tempfile.TemporaryDirectory(prefix='dar-host-') as host_tmp:
+        run(['bash', '-euo', 'pipefail', '-c', block.replace('/tmp/', host_tmp + '/')])
 with tempfile.TemporaryDirectory(prefix='dar096-') as tmp:
     profile_binary=Path(tmp)/'dar-radio-policy'
     run(['g++','-std=c++11','-Wall','-Wextra','-Werror',

@@ -20,7 +20,7 @@ def load():
     if not re.fullmatch(r'\d+\.\d+\.\d+(-(alpha|beta|rc|dev|test)[0-9.]*)?', d.get('VERSION', '')):
         sys.exit('VERSION: ungültige oder fehlende Zeile VERSION=x.y.z[-alpha|-beta|-rc|-dev|-test]')
     # STANDALONE: eigener Stand des T-Deck-Plus-Standalone-Testbuilds (Issue #35), unabhängig von den Web-Builds
-    if not re.fullmatch(r'\d+\.\d+\.\d+', d.get('STANDALONE', '')):
+    if not re.fullmatch(r'\d+\.\d+\.\d+(-(alpha|beta|rc|dev|test)[0-9.]*)?', d.get('STANDALONE', '')):
         sys.exit('VERSION: ungültige oder fehlende Zeile STANDALONE=x.y.z')
     return d
 

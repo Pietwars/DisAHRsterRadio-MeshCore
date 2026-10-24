@@ -1,8 +1,6 @@
-# Standalone 0.9.5: alle neuen Vorschauen
+# Standalone 0.9.6-rc1: aktuelle Vorschauen
 
-**Release 0.9.5: Standalone-Test mit neuer Touch-UI am 21.10.2026 vom Nutzer als erfolgreich bestätigt.** Einzelprüfungen und geflashter Commit/SHA sind nicht vollständig dokumentiert. Echte Firmware-Layouts mit Demodaten.
-
-[Bedienung](STANDALONE_TOUCH.md) · [Release und Hardwarestatus](RELEASE-0.9.5.md)
+Echte Firmware-Layouts mit Demodaten. Hardwareabnahme dieser Version offen. [Bedienung](STANDALONE_TOUCH.md) · [Release-Status](RELEASE-0.9.6.md)
 
 ## Bootmotiv
 
@@ -76,3 +74,6 @@
 
 ![Empfaenger waehlen](images/standalone-test6/vorschau-ziel-auswahl.png)
 
+## Privat: gespeicherte Kontakte
+
+![Privat: gespeicherte Kontakte](images/standalone-test6/vorschau-privat-liste.png)

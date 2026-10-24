@@ -9,22 +9,26 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 REPO = 'Pietwars/DisAHRsterRadio-MeshCore'
-GERAETE = [('tdeck', 'LILYGO T-Deck Plus', 'LilyGo_TDeck'), ('twatch', 'LILYGO T-Watch S3', 'LilyGo_TWatchS3')]
+GERAETE = [('tdeck', 'LILYGO T-Deck Plus', 'LilyGo_TDeck'), ('twatch', 'LILYGO T-Watch S3', 'LilyGo_TWatchS3'), ('tdeck-standalone', 'LILYGO T-Deck Plus Standalone', 'LilyGo_TDeck_standalone-test6')]
 
 def main(zips):
+    assert len(zips) == len(GERAETE), "Drei Pakete erforderlich: T-Deck WLAN, T-Watch, T-Deck Standalone"
     devs = []
+    versions = set()
     for (gid, label, dev), z in zip(GERAETE, zips):
         name = Path(z).stem
-        m = re.fullmatch(r'DisAHRsterRadio-MeshCore-(\d+\.\d+\.\d+)-' + dev, name)
+        m = re.fullmatch(r'DisAHRsterRadio-MeshCore-(\d+\.\d+\.\d+(?:-(?:alpha|beta|rc|dev|test)[0-9.]*)?)-' + dev, name)
         assert m, f'{z}: Paketname passt nicht zu {dev}'
         ver = m.group(1)
+        versions.add(ver)
+        assert len(versions) == 1, "Paketversionen unterscheiden sich"
         zf = zipfile.ZipFile(z)
         sums = dict(reversed(l.split(None, 1)) for l in zf.read(f'{name}/SHA256SUMS').decode().splitlines() if l.strip())
         files = {}
         for art, suf, out in (('neu', 'factory', f'{gid}-neu-factory.bin'), ('update', 'firmware', f'{gid}-update-firmware.bin')):
-            member = f'{name}/{name}-{suf}.bin'
+            member = f'{name}/{suf}.bin' if gid == 'tdeck-standalone' else f'{name}/{name}-{suf}.bin'
             sha = hashlib.sha256(zf.read(member)).hexdigest()
-            assert sums[f'./{name}-{suf}.bin'] == sha, f'{member}: SHA256SUMS im Paket passt nicht'
+            assert sums.get(member.split('/', 1)[1], sums.get('./' + member.split('/', 1)[1])) == sha, f'{member}: SHA256SUMS im Paket passt nicht'
             files[art] = {'member': member, 'sha256': sha, 'out': out}
         def manifest(art, part, erase):
             return {'name': f'DisAHRsterRadio-MeshCore {ver} · {label} · ' + ('Update' if art == 'update' else 'Neuinstallation'),
@@ -40,7 +44,7 @@ def main(zips):
         for art, f in d['files'].items(): print(d['id'], art, f['member'].split('/')[-1], f['sha256'])
 
 def html(cfg, ver):
-    hardware_hint = ('Akku-Anzeige der Testversion 0.9.4-test vom Nutzer erfolgreich erprobt; eine vollständige Hardwareabnahme der finalen Release-Dateien ist nicht dokumentiert.' if ver == '0.9.4' else f'Version {ver} ist noch nicht auf echter Hardware getestet (getestet wurde 0.9.2).')
+    hardware_hint = f'Pre-Release {ver}: Hardwareabnahme offen, einschließlich Privatchat/Bluetooth-Parallelbetrieb und Update mit Datenerhalt.'
     rel = f"https://github.com/{cfg['repo']}/releases/tag/{cfg['tag']}"
     karten = []
     for d in cfg['devices']:
@@ -93,7 +97,7 @@ li{{margin:4px 0}}
 </style></head><body><main>
 <h1>Dis<span>AHR</span>sterRadio MeshCore</h1>
 <p><b>Web-Flasher · Version {ver} · LILYGO T-Deck Plus und LILYGO T-Watch S3</b> (ESP32-S3)</p>
-<p>Pro Gerät gibt es zwei Wege: <b>Update</b> (Standard, Einstellungen bleiben) und <b>Neuinstallation</b> (löscht alles). Nur das passende Gerät anschließen und den Knopf für genau dieses Gerät verwenden.</p>
+<p>Pro Gerät gibt es zwei Wege: <b>Update</b> (Standard, Einstellungen bleiben) und <b>Neuinstallation</b> (löscht alles). T-Deck: WLAN/BLE oder Standalone bewusst wählen. Nur das passende Gerät anschließen und den Knopf für genau dieses Gerät verwenden.</p>
 {chr(10).join(karten)}
 <h2>Kein Port zu sehen?</h2>
 <ul><li>Anderes USB-Kabel probieren (viele Kabel laden nur).</li>

@@ -58,3 +58,7 @@ reale Layout, sind aber keine Fotos des Geraets. Die Firmwarekennung lautet
 Am Geraet bitte pruefen: Fingergenauigkeit nach Kalibrierung, Wischen langer
 Listen, Kartenbewegung, Abbrechen von Sende-Gesten, Empfang waehrend Touchkontakt,
 Erhalt der Kalibrierung nach Neustart sowie Tastatur-/Trackballbedienung.
+
+## Privatchat ab 0.9.6-rc1
+
+Oben **Privat** öffnen, einen gespeicherten persönlichen Kontakt wählen und die Nachricht mit der beschrifteten Sendeaktion verschicken. **Chat** enthält nur Kanäle. Kontakte werden aus dem maßgeblichen MeshCore-Speicher geladen. Beim ersten Öffnen des neuen Privatverlaufs werden ältere Direktnachrichten ausgeblendet; Kontakte und gemeinsamer Verlauf bleiben erhalten. Die Anzeige einer Übergabe ist keine menschliche Empfangsbestätigung. Hardwaretest und Parallelbetrieb mit der App sind offen.

@@ -42,7 +42,7 @@ def check():
     outs = {}
     for d, mfile, m, files, art in jobs():
         parts = [p for b in m['builds'] for p in b['parts']]
-        assert re.fullmatch(r'v\d+\.\d+\.\d+', d['tag']), 'tag'
+        assert re.fullmatch(r'v\d+\.\d+\.\d+(?:-(?:alpha|beta|rc|dev|test)[0-9.]*)?', d['tag']), 'tag'
         assert m['version'] == d['tag'][1:], 'Manifest-Version passt nicht zum Tag'
         assert [b['chipFamily'] for b in m['builds']] == ['ESP32-S3'], 'nur ESP32-S3-Geräte'
         for f in files:
@@ -51,13 +51,13 @@ def check():
             assert f['sha256'] in html, f'SHA-256 von {f["out"]} fehlt in index.html'
         if art in (None, 'neu'):
             assert parts == [{'path': files[0]['out'], 'offset': 0}], 'Neuinstallation: factory.bin muss an 0x0'
-            assert files[0].get('member', '').endswith('-factory.bin') or art is None, 'Neuinstallation braucht factory.bin'
+            assert files[0].get('member', '').endswith(('-factory.bin', '/factory.bin')) or art is None, 'Neuinstallation braucht factory.bin'
             if art == 'neu':
                 assert m.get('new_install_prompt_erase') is False, 'Neuinstallation muss immer löschen (prompt_erase false)'
         else:
             assert art == 'update', f'unbekannte Art {art}'
             assert parts == [{'path': files[0]['out'], 'offset': 0x10000}], 'Update: nur firmware.bin an 0x10000'
-            assert files[0]['member'].endswith('-firmware.bin'), 'Update braucht firmware.bin'
+            assert files[0]['member'].endswith(('-firmware.bin', '/firmware.bin')), 'Update braucht firmware.bin'
             assert m.get('new_install_prompt_erase') is True, 'Update: Löschen nur auf Nachfrage (prompt_erase true)'
             assert 'spiffs' not in json.dumps(m), 'Update darf spiffs (Identität, Kontakte) nicht schreiben'
         if art: assert m.get('new_install_improv_wait_time') == 0, 'Firmware ohne Improv: new_install_improv_wait_time 0'

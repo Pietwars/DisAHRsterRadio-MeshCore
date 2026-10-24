@@ -57,7 +57,8 @@ int main(int argc, char **argv) {
   u.key(sui::K_BACK); page(u, d, "hauptmenue");   // main menu after the logo
   u.click(); page(u, d, "chat-liste");
   u.click(); type(u, "Bin in 10 Min. mit Kanistern da"); page(u, d, "chat");
-  u.key(sui::K_BACK); u.move(0, 1); u.move(0, 1); u.click(); page(u, d, "chat-direkt");
+  u.tap(290, 12); page(u, d, "privat-liste");
+  u.click(); type(u, "Bin gleich da"); page(u, d, "chat-direkt");
   entry(u, 1); u.key('3'); type(u, "Ibuprofen"); page(u, d, "meldung");
   u.tap(30, 80);
   page(u, d, "vorlagen");

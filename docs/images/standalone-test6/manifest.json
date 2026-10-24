@@ -1,6 +1,6 @@
 {
-  "version": "0.9.5",
-  "firmware": "v1.18.0-dar0.9.5-standalone-test6",
+  "version": "0.9.6-rc1",
+  "firmware": "v1.18.0-dar0.9.6-rc1-standalone-test6",
   "kind": "real-layout-demo-data",
   "hardware_approved": false,
   "images": [
@@ -9,139 +9,146 @@
       "caption": "Bootmotiv",
       "width": 320,
       "height": 240,
-      "sha256": "45c8ec45c97e34d28fb0314c3d0ec2edc7741cd3ac465696e320492c74337736"
+      "sha256": "593a8c883b8f3899760dba0bc51cc13a2b5954d1b7c2c4389445bb8de5b0bd4d"
     },
     {
       "file": "vorschau-brett-liste.png",
       "caption": "Bretter / Room-Server",
       "width": 320,
       "height": 240,
-      "sha256": "92a3c0a4fe01477d6b20177f5afdc1f6de600a41df5531b086fcd21b86559706"
+      "sha256": "c2ff2e7e9b2142501866498518ac95569d7469abbbeff0b592d8ed884fb06b99"
     },
     {
       "file": "vorschau-brett.png",
       "caption": "Brett: Beitreten und Aushang",
       "width": 320,
       "height": 240,
-      "sha256": "5065e2a1da6d81ea928ee0e11e9ab830d11e2b642e74a89d9dd5e99d9c850e55"
+      "sha256": "927bc76e2910ef7e050aa947732ebf84bead7833cdc976ca46c1bb693ada6242"
     },
     {
       "file": "vorschau-chat-direkt.png",
       "caption": "Direktnachrichten",
       "width": 320,
       "height": 240,
-      "sha256": "744d8068344e15ebc73605e4f18bef7fe7cb9e6f23001ad92ae7bdcbabf90edb"
+      "sha256": "f2feb5b6205db848e6b956a646dc4648e339e028779aed22ef38a6fef503fe17"
     },
     {
       "file": "vorschau-chat-liste.png",
       "caption": "Chat: Kanaele und Kontakte",
       "width": 320,
       "height": 240,
-      "sha256": "9cc98cdcea7fb281ea2718f46b65413ac08e0c18ce050a99f82e81b071e4ece5"
+      "sha256": "a2c1e84b11c94e5393b2522af073198406617ba2b41e1ad9a5d1d989f2d69653"
     },
     {
       "file": "vorschau-chat.png",
       "caption": "Chat mit Senden-Button",
       "width": 320,
       "height": 240,
-      "sha256": "2ac600ba79d13d70b5b59e30fbb46b059837db6f81107a9e835474c5762d94d4"
+      "sha256": "dd12117e10e9101c914ddbebd2ceec6f73a36671a6a49087ad6821f8f4081616"
     },
     {
       "file": "vorschau-geraet-weiter.png",
       "caption": "Weitere Geraeteaktionen",
       "width": 320,
       "height": 240,
-      "sha256": "7ec87a752a7accb859d6438cdcc8022dc39a41126800e74b71464e36005058f7"
+      "sha256": "4a3224d24f1d791e56cbc6bbfbdbd0a198efa6eea97f4e987b1d6e33ffe92426"
     },
     {
       "file": "vorschau-geraet.png",
       "caption": "Geraeteaktionen",
       "width": 320,
       "height": 240,
-      "sha256": "7261379ccbc40dc4ebcfaefccb829063ccff650987916142f1a7073d39f67757"
+      "sha256": "2c0659f46778d13d7a3c0146c491ff00b6d565c4c90a60cd12bcaacf94e90296"
     },
     {
       "file": "vorschau-geraeteinfo.png",
       "caption": "Geraeteinfo und Akku",
       "width": 320,
       "height": 240,
-      "sha256": "177c18b21e1b4708af4d71a67abab581343e16e34213cde6e67a99bdb1505d0f"
+      "sha256": "decd51d4adc80190e4cd0abf7776c1e0fca1a006c1f2c09bb3cbcbb2e150bc17"
     },
     {
       "file": "vorschau-hauptmenue.png",
       "caption": "Hauptmenue",
       "width": 320,
       "height": 240,
-      "sha256": "f201d0e1a7c93987a8875ffdeaf639e6eb758f57911123bfd6e3ba4717b19caf"
+      "sha256": "0a291ad2f263d0f892e920ca8dd99e3139430302fea40b832fbbf9a492927bfa"
     },
     {
       "file": "vorschau-karte-detail.png",
       "caption": "Karte: Detail",
       "width": 320,
       "height": 240,
-      "sha256": "90e0458b94604e05ad37e4a44332dc9b6fe4ac0a34d664319b0a970c4da9243f"
+      "sha256": "0c1eb5052eb0c373a483661e117d7e8640fb0fee5fa34f17138cf309703fb8fb"
     },
     {
       "file": "vorschau-karte.png",
       "caption": "Offlinekarte",
       "width": 320,
       "height": 240,
-      "sha256": "1f7822239ebe14a090ea21a3140bf8c5ab2c0874d8a30b7a29367ab35f85f024"
+      "sha256": "cbada1267a38739ceb5268a9f8eb01bff29550f47b216e65157b14b8cc45b0fb"
     },
     {
       "file": "vorschau-meldung.png",
       "caption": "Schnellmeldung",
       "width": 320,
       "height": 240,
-      "sha256": "ea8b5e9a3215a6275b88ca7290b03cf041aa6b71eb61305c74f4ff446a22ba11"
+      "sha256": "c12bef63497ed5f652d07ed8f9a7dcc9c4939acd256142060639d46471e787cf"
     },
     {
       "file": "vorschau-ort-auswahl.png",
       "caption": "Ort waehlen",
       "width": 320,
       "height": 240,
-      "sha256": "d926316c1813af49fa9907f39b6718456a351646a2c18d975ad19fbf5dcdd4b4"
+      "sha256": "ee780aa97c9f8309e0e4bf16d602e76ac061b0b157eabd2e92e0c0cb57d31e05"
     },
     {
       "file": "vorschau-standort.png",
       "caption": "GPS und Standortfreigabe",
       "width": 320,
       "height": 240,
-      "sha256": "7da8aa4aff55a4c953e12a8caa04d3c18e349c725de12e1f71b3d9f55a289e1a"
+      "sha256": "bf24e9c7d2f6b4cb551aa7daaf7a833a654f5326265b1a16c9dfb2b5f045cb17"
     },
     {
       "file": "vorschau-vorlagen-weiter.png",
       "caption": "Vorlagen: weiterblaettern",
       "width": 320,
       "height": 240,
-      "sha256": "123c921d64cd5a31b00eb206d9da034f35e150dfe4e81c9cf36a1d37244d7f4f"
+      "sha256": "d10666df50270ce21dc50e6765fa166549daf6fd48cd341e6cbb777187278ea9"
     },
     {
       "file": "vorschau-vorlagen.png",
       "caption": "Vorlagen waehlen",
       "width": 320,
       "height": 240,
-      "sha256": "aa22c814f3f975267180e74015ba60cd89fdbdfdee6a0d8a259ee98c63c3c5f3"
+      "sha256": "b4b9f16844981a4dd63c81158de8614a6c5a6d1ae85d598b9b61774cdb0c550c"
     },
     {
       "file": "vorschau-ziel-auswahl.png",
       "caption": "Empfaenger waehlen",
       "width": 320,
       "height": 240,
-      "sha256": "2fb2c0eaca2f0b621f60a45e45cce780affd8fd2ba173decd5025a13b3a33348"
+      "sha256": "ad189ca759950845cd47ec80bdcb34edfc7c9b14bf66453f19a295a6a5cc9f04"
+    },
+    {
+      "file": "vorschau-privat-liste.png",
+      "caption": "Privat: gespeicherte Kontakte",
+      "width": 320,
+      "height": 240,
+      "sha256": "5006ae0baf70dea31f5b384ac60ce74982a7f2ac500f16ceaeea7db9fc28a3f3"
     }
   ],
   "sources": {
-    "examples/companion_radio/ui-brand/StandaloneUI.cpp": "c729faa467fc7089b187099b5649a820befb2bc597431abf713a52dbed447765",
-    "examples/companion_radio/ui-brand/StandaloneUI.h": "36b47b10895446708572f5e76f0f3e3a0fa2653b872f441943fd015cae7412c3",
+    "examples/companion_radio/ui-brand/StandaloneUI.cpp": "92a5e475d1bb9167aabb6965b61368fdb72f0dcdff1ef3dbf8278a3534d5c2dc",
+    "examples/companion_radio/ui-brand/StandaloneUI.h": "0e8377b69c68313741199c845156e51aca6af97bd15226aa405b9d49995a7fc7",
     "examples/companion_radio/ui-brand/TDeckQuickPage.cpp": "c2d7f6c17f0e507d82a55c9e349d81d6c9288688739a8d49ad5fd039ad91e2b0",
     "examples/companion_radio/ui-brand/TDeckQuickPage.h": "ffabfd314fd59f6fb8c1c99e6d8d35598a397852154e05af4a821398e0a3bb83",
     "examples/companion_radio/ui-brand/TouchLayout.h": "dd8bd68c5706bcc48fb7f6feb8c036f76e1cceff4c6070ac964c1201ddbaddaa",
-    "examples/companion_radio/ui-brand/Theme.h": "343d2a6fa9cbaa2fe679faee67627ea73b886f86274bc39a5e71a8f98e937130",
-    "examples/companion_radio/ui-brand/Widgets.h": "a11841c38f259bc226691aabd44b19f6fcdef2bdac21e63ed29c371fc94a2288",
+    "examples/companion_radio/ui-brand/Theme.h": "b180057fd1d25a73bf39a734200498b9c8f86003b133237850c8ca8147d1d21b",
+    "examples/companion_radio/ui-brand/Widgets.h": "f8d3b77977273272aa98f869b948851a82906e6fb913f8c47aa33d615effa497",
     "examples/companion_radio/ui-brand/MapView.h": "240f32b7b56cf555543ba9cb7bfdb43fbfd3f828df2bcbf404e9cd4ff11e107a",
-    "tools/standalone_preview.cpp": "137d2a622fd4677119dc1fa485e5ea499a50f2c62975ea32a0ce4ffee262aff2",
-    "tests/ui_fakes/FakeApi.h": "07086d036b8403dc1e3e50bad5ee6a21c6587702ec25c27c9e03d0bb78e33bff",
-    "platformio.standalone.ini": "2ce7aab3a6886d1f0a45d48a67fe63cfa8158f5f516afbe766d25d6a0696c430"
+    "tools/standalone_preview.cpp": "c8cadcb30809552fb84ff25e62fa74edc0d0f1f104886ed42a0623fa90c5f28e",
+    "tests/ui_fakes/FakeApi.h": "c1d6940c99edcfb0a648dcfa994bdd6933e8a3323264e37d52fe1c98795c72ab",
+    "platformio.standalone.ini": "2b65472a10b35351ce8b134563be71f27befbb96bb5c29c9163a758628250833"
   }
 }

@@ -23,12 +23,12 @@ def main():
             raise ValueError('Falsche Displayabmessungen: ' + item['file'])
         if hashlib.sha256(image).hexdigest() != item['sha256']:
             raise ValueError('Vorschaubild hat sich geaendert: ' + item['file'])
-    if len(manifest['images']) != 18:
-        raise ValueError('Die vollstaendige Galerie hat 18 unterschiedliche Ansichten')
+    if len(manifest['images']) != 19:
+        raise ValueError('Die vollstaendige Galerie hat 19 unterschiedliche Ansichten')
     readme = (ROOT / 'README.md').read_text(encoding='utf-8')
-    if '0.9.5' not in readme or 'Hardwareabnahme' not in readme:
+    if manifest['version'] not in readme or 'Hardwareabnahme' not in readme:
         raise ValueError('README muss Version und Hardwarestatus nennen')
-    print('18 aktuelle 320x240-Layouts, Quellen und Kandidatenkennzeichnung geprueft')
+    print('19 aktuelle 320x240-Layouts, Quellen und Kandidatenkennzeichnung geprueft')
 
 
 if __name__ == '__main__':

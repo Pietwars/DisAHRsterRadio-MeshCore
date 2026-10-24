@@ -20,6 +20,7 @@ on:
       - 'include/**'
       - 'arch/**'
       - 'boards/**'
+  pull_request:
   workflow_dispatch:
 permissions:
   contents: read

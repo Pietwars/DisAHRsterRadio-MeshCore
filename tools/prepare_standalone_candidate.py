@@ -112,14 +112,14 @@ nennt die zu testenden Bytes, Factory-Offsets und den CI-Commit.
 Nach dem Start ggf. Touch kalibrieren. Bedienung: BEDIENUNG.md.
 Bitte Wischen/Abbrechen von Sende-Gesten, Tastatur/Trackball, Empfang/Versand,
 GPS-Freigabe und Kalibrierung nach Neustart pruefen. Ergebnis und Firmware-SHA256
-anhand docs/RELEASE-0.9.5.md dokumentieren. Erst danach ausdrueckliche Freigabe.
+anhand docs/RELEASE-0.9.6.md dokumentieren. Erst danach ausdrueckliche Freigabe.
 
 Vorschauen: echte Layouts mit simulierten Daten, keine Hardwarefotos.
 Kein zertifiziertes Notrufsystem. In Lebensgefahr 112.
 '''
     files['ANLEITUNG.md'] = guide.encode()
     if args.release:
-        files['ANLEITUNG.md'] = guide.replace('Testpaket fuer die Abnahme', 'Release 0.9.5: Standalone (experimentell)').replace('Noch kein Release, Hardwareabnahme OFFEN.', 'Veroeffentlichung vom Projektbetreiber am 21.10.2026 beauftragt. Vollstaendige Hardwareabnahme OFFEN.').replace('Erst danach ausdrueckliche Freigabe.', 'Die Veroeffentlichungsfreigabe ersetzt diese Hardwarepruefungen nicht.').encode()
+        files['ANLEITUNG.md'] = guide.replace('Testpaket fuer die Abnahme', f'Pre-Release {version}: Standalone (experimentell)').replace('Noch kein Release, Hardwareabnahme OFFEN.', 'Veroeffentlichung vom Projektbetreiber beauftragt. Vollstaendige Hardwareabnahme OFFEN.').replace('Erst danach ausdrueckliche Freigabe.', 'Die Veroeffentlichungsfreigabe ersetzt diese Hardwarepruefungen nicht.').encode()
     for png in sorted((args.build_dir / 'touch-preview').glob('*.png')):
         files['vorschau/' + png.name] = png.read_bytes()
     files['SHA256SUMS'] = ''.join(hashlib.sha256(data).hexdigest() + '  ' + path + '\n'

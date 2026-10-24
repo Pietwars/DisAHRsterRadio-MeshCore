@@ -1,5 +1,14 @@
 # Änderungen
 
+## 0.9.6-rc1 – öffentlicher Pre-Release (24.10.2026)
+
+- Standalone: eigener Tab Privat für gespeicherte persönliche Kontakte, getrennt von Kanal-Chat; maßgebliche Kontakte direkt aus MeshCore, ohne zusätzliche 64-Kontakte-Grenze.
+- Privater Verlauf startet bei der ersten Nutzung leer; Kontakte und gemeinsamer Verlauf werden nicht gelöscht. Sendeaktionen prüfen den aktuell gespeicherten Kontakt.
+- Sicherheitsänderungen: privilegierte Aktionen im offenen Webportal gesperrt; lokale PIN-/Namenseingabe und SD-Konfigurationsvorschau. Authentifizierte BLE-Einstellungen im Standalone erhalten.
+- Standalone: ursprüngliche MeshCore-Funk-/Sendepolitik, EU Narrow als Vorgabe bei frischen Einstellungen. WLAN/BLE: zusätzliche konservative DAR-Zeitfenster und Neustartschutz.
+- Versionskennung, aktuelle Firmware-Layout-Vorschauen, Geräteanleitungen und Web-Flasher für dieselben geprüften Pakete vorbereitet.
+- Grenzen: keine vollständige SOS-Zustandsmaschine, keine dokumentierte Hardwareabnahme dieser Version, keine Behauptung gemessener HF-/Funkregelkonformität. Privatchat/BLE-Parallelbetrieb, Migration und Recovery bleiben Gerätetests. Siehe docs/RELEASE-0.9.6.md.
+
 ## 0.9.5 · 21.10.2026 · Release
 
 - T-Deck Plus Standalone: fingerfreundliche Touch-Oberfläche mit Kachelmenü, größeren Tabs, scrollbaren Kontakt-/Einstellungslisten und eigener Geräteinfo.
