@@ -21,4 +21,4 @@ Vollständige SOS-Zustandsmaschine, vollständiges Recovery und signierte Update
 
 Nur die ausdrücklich passende Variante wählen. Update: firmware.bin an 0x10000 ohne Löschen; Factory-Abbild an 0x0 nach vollständigem Löschen (Datenverlust). Vorher Identität, Kontakte und Einstellungen sichern. Prüfsummen und Speicherberichte befinden sich in den Release-ZIPs, Standalone enthält zusätzlich candidate.json mit Commit und Firmware-SHA-256.
 
-Die Vorschauen zeigen aktuelle Firmware-Layouts mit Demodaten, keine Hardwareaufnahmen. Vorherige positive Tests von 0.9.5 gelten nicht als Abnahme dieser Version. Hosttests und alle drei Firmware-Builds sind Veröffentlichungsvoraussetzung im Workflow.
+Die Vorschauen zeigen aktuelle Firmware-Layouts mit Demodaten, keine Hardwareaufnahmen. Vorherige positive Tests von 0.9.5 gelten nicht als Abnahme dieser Version. Hosttests und alle drei Firmware-Builds werden vor der Veröffentlichungsentscheidung separat geprüft. Der bestehende Release-Workflow selbst bleibt unverändert.

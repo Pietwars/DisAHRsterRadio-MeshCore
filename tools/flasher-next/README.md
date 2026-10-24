@@ -1,7 +1,7 @@
 # Web-Flasher: Konfiguration fürs nächste Release vorbereiten
 
-Hier wird die Web-Flasher-Konfiguration für ein neues Release vorbereitet; live ist immer `docs/flasher/` (nach dem Release 0.9.4, identisch mit diesem Ordner).
-LILYGO T-Deck Plus und LILYGO T-Watch S3, je zwei Wege:
+Hier wird die Web-Flasher-Konfiguration für ein neues Release vorbereitet; live ist immer `docs/flasher/` (bis zur Aktivierung weiterhin 0.9.4).
+LILYGO T-Deck Plus WLAN/BLE, LILYGO T-Watch S3 und LILYGO T-Deck Plus Standalone, je zwei Wege:
 
 | Knopf | Manifest | schreibt | Löschen |
 |---|---|---|---|
@@ -17,7 +17,7 @@ und prüft beide gegen die SHA-256-Werte in `flasher.json` (auch auf der Seite a
 
 Neu schreiben nach einem Neubau (Werte aus den getesteten Paketen):
 
-    python3 tools/flasher-next/aktualisieren.py <…-LilyGo_TDeck.zip> <…-LilyGo_TWatchS3.zip>
+    python3 tools/flasher-next/aktualisieren.py <…-LilyGo_TDeck.zip> <…-LilyGo_TWatchS3.zip> <…-LilyGo_TDeck_standalone-test6.zip>
     python3 tools/flasher_fetch.py --cfg tools/flasher-next --check
 
 Aktivieren (nach Veröffentlichung und Prüfung der Release-Pakete): `cp tools/flasher-next/flasher.json tools/flasher-next/index.html docs/flasher/`.
