@@ -14,9 +14,11 @@ eine implementierte Teilfunktion schließt ihren Gesamtblock nicht automatisch.
 | TX-Mehrverbrauch als Schuld erhalten, Null-Schätzung sperren, lange Fristen begrenzen | `26bafefa`, gezielter Hosttest mit UndefinedBehaviorSanitizer; beide CI-Targets mit Hosttests erfolgreich, Run 40053580325 | Keine HF-/Hardwarefreigabe |
 
 Die reine Fensterlogik wurde mit `1800bb4f` eingeführt; beide CI-Targets inklusive
-Hosttests waren erfolgreich (Run 40054930489). Die nachfolgende Integration in
-Scheduler, ESP32-NVS und Anzeigen ist in [096-TX-WINDOW.md](096-TX-WINDOW.md)
-beschrieben; ihr eigener Buildnachweis ist separat zu prüfen.
+Hosttests waren erfolgreich (Run 40054930489). Integration in Scheduler, ESP32-NVS
+und Anzeigen: `08b29150`, beide CI-Targets mit vollständigen Hosttests erfolgreich
+(Run 40055694072). Verhalten und Grenzen: [096-TX-WINDOW.md](096-TX-WINDOW.md).
+Ein nachfolgender UI-Fix aktualisiert die angezeigte Restminute bzw. den Sperrgrund
+auch ohne neue Bedienaktion; dessen eigener finaler CI-Stand ist separat zu prüfen.
 
 ## Reihenfolge und offene Ergebnisse
 

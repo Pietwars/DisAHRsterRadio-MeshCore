@@ -571,6 +571,12 @@ bool UI::tick(uint32_t ms) {
 #endif
   if (int32_t(ms - nextPoll) < 0) return dirty != NONE;
   nextPoll = ms + 250;
+  if (page == DEVICE_INFO) {
+    dev::Info info; api->info(info);
+    uint32_t guardSig = ((info.txStartupWaitSeconds + 59) / 60) * 4u +
+                        (info.txStorageBlocked ? 2u : 0u) + (info.txBudgetWaiting ? 1u : 0u);
+    if (guardSig != lastTxGuardSig) { lastTxGuardSig = guardSig; dirty = FULL; }
+  }
   if (page == MAP && mapFollow) {
     dev::Gps g=api->gps();
     if (g.receiverOn && g.fresh && (g.lat!=followLat || g.lon!=followLon)) {

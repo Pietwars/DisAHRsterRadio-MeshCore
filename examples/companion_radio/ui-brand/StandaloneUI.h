@@ -83,6 +83,7 @@ private:
   int listSel[PAGE_COUNT] = {0}, listTop[PAGE_COUNT] = {0};
   int locSel = 0, devSel = 0, devTop = 0, scroll = 0;
   uint32_t touchRevision = 0;
+  uint32_t lastTxGuardSig = UINT32_MAX;
   int touchTarget(int x, int y) const;
   bool swipeList(int dy);
   char conv[14] = "c0", convName[40] = "";
