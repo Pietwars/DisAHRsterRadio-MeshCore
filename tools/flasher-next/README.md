@@ -23,3 +23,7 @@ Neu schreiben nach einem Neubau (Werte aus den getesteten Paketen):
 Aktivieren (nach Veröffentlichung und Prüfung der Release-Pakete): `cp tools/flasher-next/flasher.json tools/flasher-next/index.html docs/flasher/`.
 Wichtig: Das neue Release muss existieren, **bevor** die Konfiguration nach main übernommen wird – sonst findet der Pages-Lauf die ZIPs nicht
 (dann nach dem Release `gh workflow run pages.yml` erneut starten).
+
+## Vorbereiteter Kandidat 0.9.6-rc1
+
+Die Konfiguration in diesem Ordner enthält die tatsächlichen Firmware-/Factory-SHA-256-Werte der drei erfolgreich geprüften ZIPs aus [Release-Probelauf 40075542323](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/actions/runs/40075542323). Alle sechs Manifestvarianten sind geprüft. `docs/flasher/` bleibt bis zur öffentlichen Veröffentlichung unverändert. Vor der Aktivierung anhand der tatsächlich veröffentlichten Dateien erneut erzeugen und prüfen; ein Neubau kann andere Bytes und Prüfsummen ergeben.

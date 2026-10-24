@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Schreibt flasher.json und index.html des vorbereiteten Web-Flashers neu (SHA-256 aus den getesteten Paketen).
 
-Aufruf: python3 tools/flasher-next/aktualisieren.py <Paket-T-Deck.zip> <Paket-T-Watch.zip>
+Aufruf: python3 tools/flasher-next/aktualisieren.py <Paket-T-Deck.zip> <Paket-T-Watch.zip> <Paket-Standalone.zip>
 Danach: python3 tools/flasher_fetch.py --cfg tools/flasher-next --check
 """
 import hashlib, json, re, sys, zipfile
@@ -116,5 +116,5 @@ li{{margin:4px 0}}
 '''
 
 if __name__ == '__main__':
-    if len(sys.argv) != 3: sys.exit(__doc__)
+    if len(sys.argv) != 4: sys.exit(__doc__)
     main(sys.argv[1:])

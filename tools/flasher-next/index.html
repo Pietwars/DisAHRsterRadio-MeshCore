@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>DisAHRsterRadio-MeshCore · Web-Flasher 0.9.4 (T-Deck Plus, T-Watch S3)</title>
+<title>DisAHRsterRadio-MeshCore · Web-Flasher 0.9.6-rc1 (T-Deck Plus, T-Watch S3)</title>
 <script type="module" src="https://unpkg.com/esp-web-tools@10.4.0/dist/web/install-button.js?module"></script>
 <style>
 body{margin:0;background:#07130f;color:#e8f0e4;font:16px/1.5 system-ui,"Noto Sans",sans-serif}
@@ -17,8 +17,8 @@ esp-web-install-button button[slot=activate]{border:0;border-radius:10px;padding
 li{margin:4px 0}
 </style></head><body><main>
 <h1>Dis<span>AHR</span>sterRadio MeshCore</h1>
-<p><b>Web-Flasher · Version 0.9.4 · LILYGO T-Deck Plus und LILYGO T-Watch S3</b> (ESP32-S3)</p>
-<p>Pro Gerät gibt es zwei Wege: <b>Update</b> (Standard, Einstellungen bleiben) und <b>Neuinstallation</b> (löscht alles). Nur das passende Gerät anschließen und den Knopf für genau dieses Gerät verwenden.</p>
+<p><b>Web-Flasher · Version 0.9.6-rc1 · LILYGO T-Deck Plus und LILYGO T-Watch S3</b> (ESP32-S3)</p>
+<p>Pro Gerät gibt es zwei Wege: <b>Update</b> (Standard, Einstellungen bleiben) und <b>Neuinstallation</b> (löscht alles). T-Deck: WLAN/BLE oder Standalone bewusst wählen. Nur das passende Gerät anschließen und den Knopf für genau dieses Gerät verwenden.</p>
 <div class="card">
 <h2>LILYGO T-Deck Plus</h2>
 <p>Antenne anschrauben. T-Deck Plus per USB-C-<b>Daten</b>kabel an den Computer, einschalten. Dann in <b>Chrome oder Edge am Computer</b> einen der beiden Knöpfe wählen, Port wählen (meist „USB JTAG/serial debug unit“ bzw. <code>usbmodem</code>/<code>ttyACM</code>), warten bis „Installation complete“, Gerät neu starten.</p>
@@ -27,11 +27,11 @@ li{margin:4px 0}
 <p>Für Geräte, auf denen schon DisAHRsterRadio-MeshCore 0.9.x läuft. Schreibt nur die Firmware (<code>…-firmware.bin</code> an <b>0x10000</b>). <b>Knotenidentität, Kontakte, Kanäle, Chatverlauf, Name, Funkprofil und eigene Bluetooth-PIN bleiben erhalten.</b></p>
 <p class="hint">Im Fenster „Erase device“ das Kästchen <b>NICHT</b> anhaken, dann „Next“ → „Install“.</p>
 <esp-web-install-button manifest="manifest-tdeck-update.json">
- <button slot="activate" class="b-upd">Update auf 0.9.4 – LILYGO T-Deck Plus (Einstellungen bleiben)</button>
+ <button slot="activate" class="b-upd">Update auf 0.9.6-rc1 – LILYGO T-Deck Plus (Einstellungen bleiben)</button>
  <span slot="unsupported">Dieser Browser kann keine USB-Geräte ansprechen (Web Serial fehlt). Bitte Chrome oder Edge am Computer verwenden – oder manuell flashen (siehe unten).</span>
  <span slot="not-allowed">Der Flasher braucht eine sichere Verbindung (https).</span>
 </esp-web-install-button>
-<p class="sha">Datei <code>DisAHRsterRadio-MeshCore-0.9.4-LilyGo_TDeck-firmware.bin</code>, SHA-256 <code>5d276e5fca44e6427b8fd8824da58e6992b085c3a1ee4f47c7c5b7a29455a271</code></p>
+<p class="sha">Datei <code>DisAHRsterRadio-MeshCore-0.9.6-rc1-LilyGo_TDeck-firmware.bin</code>, SHA-256 <code>516019d16dae4ebaa97c0376606fa42233efd0fb0d29d00c8478d08ff2b2ee25</code></p>
 </div>
 <div class="mode neu">
 <h3>Neuinstallation – alles löschen</h3>
@@ -41,9 +41,9 @@ li{margin:4px 0}
  <span slot="unsupported">Dieser Browser kann keine USB-Geräte ansprechen (Web Serial fehlt). Bitte Chrome oder Edge am Computer verwenden.</span>
  <span slot="not-allowed">Der Flasher braucht eine sichere Verbindung (https).</span>
 </esp-web-install-button>
-<p class="sha">Datei <code>DisAHRsterRadio-MeshCore-0.9.4-LilyGo_TDeck-factory.bin</code>, SHA-256 <code>4d96d1165759d184f60813e105aef01e1d360ce81b8a60b2d2efd9f7fe061993</code></p>
+<p class="sha">Datei <code>DisAHRsterRadio-MeshCore-0.9.6-rc1-LilyGo_TDeck-factory.bin</code>, SHA-256 <code>d468e975834f5594c76798fb71b90fd6066f866d263c97e000921c94ebc6110f</code></p>
 </div>
-<p class="sha">Beide Dateien aus <code>DisAHRsterRadio-MeshCore-0.9.4-LilyGo_TDeck.zip</code> im <a href="https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.4">Release v0.9.4</a>; der Flasher prüft die SHA-256-Werte beim Bereitstellen.</p>
+<p class="sha">Beide Dateien aus <code>DisAHRsterRadio-MeshCore-0.9.6-rc1-LilyGo_TDeck.zip</code> im <a href="https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.6-rc1">Release v0.9.6-rc1</a>; der Flasher prüft die SHA-256-Werte beim Bereitstellen.</p>
 </div>
 <div class="card">
 <h2>LILYGO T-Watch S3</h2>
@@ -53,11 +53,11 @@ li{margin:4px 0}
 <p>Für Geräte, auf denen schon DisAHRsterRadio-MeshCore 0.9.x läuft. Schreibt nur die Firmware (<code>…-firmware.bin</code> an <b>0x10000</b>). <b>Knotenidentität, Kontakte, Kanäle, Chatverlauf, Name, Funkprofil und eigene Bluetooth-PIN bleiben erhalten.</b></p>
 <p class="hint">Im Fenster „Erase device“ das Kästchen <b>NICHT</b> anhaken, dann „Next“ → „Install“.</p>
 <esp-web-install-button manifest="manifest-twatch-update.json">
- <button slot="activate" class="b-upd">Update auf 0.9.4 – LILYGO T-Watch S3 (Einstellungen bleiben)</button>
+ <button slot="activate" class="b-upd">Update auf 0.9.6-rc1 – LILYGO T-Watch S3 (Einstellungen bleiben)</button>
  <span slot="unsupported">Dieser Browser kann keine USB-Geräte ansprechen (Web Serial fehlt). Bitte Chrome oder Edge am Computer verwenden – oder manuell flashen (siehe unten).</span>
  <span slot="not-allowed">Der Flasher braucht eine sichere Verbindung (https).</span>
 </esp-web-install-button>
-<p class="sha">Datei <code>DisAHRsterRadio-MeshCore-0.9.4-LilyGo_TWatchS3-firmware.bin</code>, SHA-256 <code>304606b906cd4f21903343a14c829f052da9db2479b4348eb3d1dce7deb35812</code></p>
+<p class="sha">Datei <code>DisAHRsterRadio-MeshCore-0.9.6-rc1-LilyGo_TWatchS3-firmware.bin</code>, SHA-256 <code>ad23e35dc411fb65b4e980c6b95307a383b9a2350c177e10fbbc28f717436777</code></p>
 </div>
 <div class="mode neu">
 <h3>Neuinstallation – alles löschen</h3>
@@ -67,9 +67,35 @@ li{margin:4px 0}
  <span slot="unsupported">Dieser Browser kann keine USB-Geräte ansprechen (Web Serial fehlt). Bitte Chrome oder Edge am Computer verwenden.</span>
  <span slot="not-allowed">Der Flasher braucht eine sichere Verbindung (https).</span>
 </esp-web-install-button>
-<p class="sha">Datei <code>DisAHRsterRadio-MeshCore-0.9.4-LilyGo_TWatchS3-factory.bin</code>, SHA-256 <code>21109c295e000c3c0e6d17e1a0764a08ddb216d0589fb67760984819078baf6f</code></p>
+<p class="sha">Datei <code>DisAHRsterRadio-MeshCore-0.9.6-rc1-LilyGo_TWatchS3-factory.bin</code>, SHA-256 <code>e15478cbb2ecd491f4a644a7cc026bf049a693a61775fa7aac2543069fbf8147</code></p>
 </div>
-<p class="sha">Beide Dateien aus <code>DisAHRsterRadio-MeshCore-0.9.4-LilyGo_TWatchS3.zip</code> im <a href="https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.4">Release v0.9.4</a>; der Flasher prüft die SHA-256-Werte beim Bereitstellen.</p>
+<p class="sha">Beide Dateien aus <code>DisAHRsterRadio-MeshCore-0.9.6-rc1-LilyGo_TWatchS3.zip</code> im <a href="https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.6-rc1">Release v0.9.6-rc1</a>; der Flasher prüft die SHA-256-Werte beim Bereitstellen.</p>
+</div>
+<div class="card">
+<h2>LILYGO T-Deck Plus Standalone</h2>
+<p>Antenne anschrauben. T-Deck Plus per USB-C-<b>Daten</b>kabel an den Computer, einschalten. Dann in <b>Chrome oder Edge am Computer</b> einen der beiden Knöpfe wählen, Port wählen (meist „USB JTAG/serial debug unit“ bzw. <code>usbmodem</code>/<code>ttyACM</code>), warten bis „Installation complete“, Gerät neu starten.</p>
+<div class="mode upd">
+<h3>Update – Einstellungen bleiben <span class="tag">empfohlen</span></h3>
+<p>Für Geräte, auf denen schon DisAHRsterRadio-MeshCore 0.9.x läuft. Schreibt nur die Firmware (<code>…-firmware.bin</code> an <b>0x10000</b>). <b>Knotenidentität, Kontakte, Kanäle, Chatverlauf, Name, Funkprofil und eigene Bluetooth-PIN bleiben erhalten.</b></p>
+<p class="hint">Im Fenster „Erase device“ das Kästchen <b>NICHT</b> anhaken, dann „Next“ → „Install“.</p>
+<esp-web-install-button manifest="manifest-tdeck-standalone-update.json">
+ <button slot="activate" class="b-upd">Update auf 0.9.6-rc1 – LILYGO T-Deck Plus Standalone (Einstellungen bleiben)</button>
+ <span slot="unsupported">Dieser Browser kann keine USB-Geräte ansprechen (Web Serial fehlt). Bitte Chrome oder Edge am Computer verwenden – oder manuell flashen (siehe unten).</span>
+ <span slot="not-allowed">Der Flasher braucht eine sichere Verbindung (https).</span>
+</esp-web-install-button>
+<p class="sha">Datei <code>firmware.bin</code>, SHA-256 <code>1b0e62e20d15eda29becad53f6952035d092d4687ce7a07b507151ec4227f734</code></p>
+</div>
+<div class="mode neu">
+<h3>Neuinstallation – alles löschen</h3>
+<p>Für neue Geräte, Geräte mit anderer Firmware oder wenn das Update nicht startet. <b>Achtung: löscht den ganzen Speicher</b> – Knotenidentität (neuer Schlüssel, neue Kennung), Kontakte, Kanäle, Chatverlauf und alle Einstellungen sind danach weg. Schreibt <code>…-factory.bin</code> an <b>0x0</b>.</p>
+<esp-web-install-button manifest="manifest-tdeck-standalone-neu.json">
+ <button slot="activate" class="b-neu">Neuinstallation – LILYGO T-Deck Plus Standalone (alles löschen)</button>
+ <span slot="unsupported">Dieser Browser kann keine USB-Geräte ansprechen (Web Serial fehlt). Bitte Chrome oder Edge am Computer verwenden.</span>
+ <span slot="not-allowed">Der Flasher braucht eine sichere Verbindung (https).</span>
+</esp-web-install-button>
+<p class="sha">Datei <code>factory.bin</code>, SHA-256 <code>9cd6ace7fc16b97f64314db26e4834bb4f99edd8846ed1ba882840e6feaa3a5c</code></p>
+</div>
+<p class="sha">Beide Dateien aus <code>DisAHRsterRadio-MeshCore-0.9.6-rc1-LilyGo_TDeck_standalone-test6.zip</code> im <a href="https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.6-rc1">Release v0.9.6-rc1</a>; der Flasher prüft die SHA-256-Werte beim Bereitstellen.</p>
 </div>
 <h2>Kein Port zu sehen?</h2>
 <ul><li>Anderes USB-Kabel probieren (viele Kabel laden nur).</li>
@@ -81,8 +107,8 @@ li{margin:4px 0}
 <h2>Danach</h2>
 <p>Das Display zeigt das DisAHRsterRadio-Bild, die Akku-Zeile und den Knopf „Advert senden“. Am Handy das offene WLAN <code>DisAHRsterRadio-XXXXXX</code> wählen (ohne Passwort) und <b>http://192.168.4.1</b> öffnen. Bluetooth für die MeshCore-App mit <b>PIN-Kopplung</b> – die PIN steht während der Kopplung auf dem Display; bitte danach in der App eine eigene PIN setzen. Offenes, unverschlüsseltes WLAN: Jede Person in Reichweite kann mitlesen und senden.</p>
 <p>Weboberfläche und MeshCore-App teilen die Nachrichten: Empfangene Kanal- und Direktnachrichten erscheinen in beiden (auch wenn die App erst später verbunden wird), in der App gesendete Nachrichten stehen im Web-Verlauf. Im Web gesendete Nachrichten zeigt die App als empfangene Nachricht mit Markierung („&lt;Knotenname&gt; (Web)“ im Kanal, „[von mir über Web]“ bei Direktnachrichten) – das MeshCore-Protokoll kennt keine Meldung „von einem anderen Gerät gesendet“.</p>
-<p class="hint">Akku-Anzeige der Testversion 0.9.4-test vom Nutzer erfolgreich erprobt; eine vollständige Hardwareabnahme der finalen Release-Dateien ist nicht dokumentiert.</p>
-<p>Manuell flashen (esptool) und Einzelheiten: <a href="https://github.com/Pietwars/DisAHRsterRadio-MeshCore/blob/main/docs/FLASHEN.md">Anleitung „Flashen“</a> · <a href="https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.4">Release v0.9.4</a>.</p>
+<p class="hint">Pre-Release 0.9.6-rc1: Hardwareabnahme offen, einschließlich Privatchat/Bluetooth-Parallelbetrieb und Update mit Datenerhalt.</p>
+<p>Manuell flashen (esptool) und Einzelheiten: <a href="https://github.com/Pietwars/DisAHRsterRadio-MeshCore/blob/main/docs/FLASHEN.md">Anleitung „Flashen“</a> · <a href="https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.6-rc1">Release v0.9.6-rc1</a>.</p>
 <div class="warn"><b>Prototyp, kein zertifiziertes Notrufsystem.</b> Im Notfall immer 112.</div>
 <p style="font-size:13px"><a href="../">Live-Demo</a> · <a href="https://github.com/Pietwars/DisAHRsterRadio-MeshCore">Quellcode</a> · Flasher: <a href="https://github.com/esphome/esp-web-tools">ESP Web Tools</a> 10.4.0 (Apache-2.0)</p>
 </main></body></html>
