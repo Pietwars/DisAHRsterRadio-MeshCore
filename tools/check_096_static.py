@@ -146,6 +146,14 @@ check("if (!is_retry)" in room_posts and "#ifdef DISASTER_ROOM" in room_posts,
 check("budget.count >= 6" in room_access and "600000UL" in room_access and "15000UL" in room_access,
       "room post policy limits each client to six posts per ten minutes with 15-second spacing")
 
+check("send_ack = post_accepted;" in room_posts,
+      "room post ACK is sent only after accepted storage")
+check("room_last_accepted_timestamp[i] == sender_timestamp" in room_posts and
+      "room_has_accepted_post[i] = true;" in room_posts,
+      "room post retries are acknowledged only if original post was accepted")
+check("room_has_accepted_post[i] = false;" in room_posts,
+      "recycled ACL slots cannot acknowledge the previous owner's posts")
+
 # Local PIN editor regression checks (source-level only; hardware pairing remains unverified).
 frontend = (ROOT / "examples/companion_radio/StandaloneFrontend.cpp").read_text(encoding="utf-8")
 check("bool changeBlePin(uint32_t pin" in frontend,
