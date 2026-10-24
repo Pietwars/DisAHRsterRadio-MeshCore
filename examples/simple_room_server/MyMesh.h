@@ -113,6 +113,8 @@ class MyMesh : public mesh::Mesh, public CommonCLICallbacks {
   disaster::RoomPostBudget room_post_budgets[MAX_CLIENTS]{};
   mesh::Identity room_budget_owners[MAX_CLIENTS]{};
   bool room_budget_owned[MAX_CLIENTS]{};
+  uint32_t room_last_accepted_timestamp[MAX_CLIENTS]{};
+  bool room_has_accepted_post[MAX_CLIENTS]{};
 #endif
   CommonCLI _cli;
   unsigned long dirty_contacts_expiry;
