@@ -78,6 +78,23 @@ check("sendPacket(packet," in last_zero_hop,
 check("sendPacket(a1," in mesh_core and "sendPacket(a2," in mesh_core,
       "multipart forwarding also enters shared TX scheduler")
 
+# Budget checks must precede dequeue and the physical radio TX call.
+check_send = dispatcher.split("void Dispatcher::checkSend()", 1)[1].split("void Dispatcher::", 1)[0]
+check("peekNextOutbound(" in check_send and "getNextOutbound(" in check_send and
+      check_send.index("peekNextOutbound(") < check_send.index("getNextOutbound("),
+      "TX candidate is inspected before dequeue")
+check("tx_budget_ms < required_airtime" in check_send and
+      check_send.index("tx_budget_ms < required_airtime") < check_send.index("getNextOutbound("),
+      "airtime reserve is enforced before dequeue")
+check("reserve64 > max_budget" in check_send and
+      check_send.index("reserve64 > max_budget") < check_send.index("getNextOutbound("),
+      "oversized TX packets cannot bypass the budget")
+check("startSendRaw(raw, len)" in check_send and
+      check_send.index("getNextOutbound(") < check_send.index("startSendRaw(raw, len)"),
+      "physical radio send happens only after budget checks")
+check("accountTxAirtime();" in dispatcher,
+      "dispatcher charges elapsed TX time to shared airtime budget")
+
 # Public transports must never become privileged merely because a BLE PIN is configured.
 permission = access.split("inline bool allowCompanionCommand(", 1)[1].split("\n}", 1)[0]
 check("return !publicTransport || publicCompanionCommand(cmd);" in permission,
