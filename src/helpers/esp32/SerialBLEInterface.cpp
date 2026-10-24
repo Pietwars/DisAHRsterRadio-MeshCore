@@ -101,6 +101,10 @@ bool SerialBLEInterface::onSecurityRequest() {
 }
 
 void SerialBLEInterface::onAuthenticationComplete(esp_ble_auth_cmpl_t cmpl) {
+  portENTER_CRITICAL(&_auth_mux);
+  _frame_auth.authenticate(cmpl.bd_addr, cmpl.success,
+                          (cmpl.auth_mode & ESP_LE_AUTH_REQ_MITM) != 0, _pin_code);
+  portEXIT_CRITICAL(&_auth_mux);
   s_pair_notify_at = 0;
   s_conn_unauth = false;
   if (cmpl.success) {
@@ -123,6 +127,11 @@ void SerialBLEInterface::onConnect(BLEServer* pServer) {
 void SerialBLEInterface::onConnect(BLEServer* pServer, esp_ble_gatts_cb_param_t *param) {
   BLE_DEBUG_PRINTLN("onConnect(), conn_id=%d, mtu=%d", param->connect.conn_id, pServer->getPeerMTU(param->connect.conn_id));
   last_conn_id = param->connect.conn_id;
+  portENTER_CRITICAL(&_auth_mux);
+  _frame_auth.connect(last_conn_id, param->connect.remote_bda);
+  _received_auth_token = 0;
+  portEXIT_CRITICAL(&_auth_mux);
+  deviceConnected = false;
   s_conn_at = millis();
   s_conn_unauth = true;
 }
@@ -133,6 +142,10 @@ void SerialBLEInterface::onMtuChanged(BLEServer* pServer, esp_ble_gatts_cb_param
 
 void SerialBLEInterface::onDisconnect(BLEServer* pServer) {
   BLE_DEBUG_PRINTLN("onDisconnect()");
+  portENTER_CRITICAL(&_auth_mux);
+  _frame_auth.disconnect();
+  _received_auth_token = 0;
+  portEXIT_CRITICAL(&_auth_mux);
   s_pair_notify_at = 0;
   s_conn_unauth = false;
   deviceConnected = false;
@@ -151,6 +164,9 @@ void SerialBLEInterface::onWrite(BLECharacteristic* pCharacteristic, esp_ble_gat
     BLE_DEBUG_PRINTLN("ERROR: onWrite(), frame too big, len=%d", len);
   } else {
     Frame frame = {};
+    portENTER_CRITICAL(&_auth_mux);
+    frame.auth_token = _frame_auth.capture(param->write.conn_id);
+    portEXIT_CRITICAL(&_auth_mux);
     frame.len = len;
     memcpy(frame.buf, rxValue, len);
 
@@ -187,6 +203,10 @@ void SerialBLEInterface::enable() {
 
 void SerialBLEInterface::disable() {
   _isEnabled = false;
+  portENTER_CRITICAL(&_auth_mux);
+  _frame_auth.disconnect();
+  _received_auth_token = 0;
+  portEXIT_CRITICAL(&_auth_mux);
 
   BLE_DEBUG_PRINTLN("SerialBLEInterface::disable");
 
@@ -225,6 +245,9 @@ bool SerialBLEInterface::isWriteBusy() const {
 }
 
 size_t SerialBLEInterface::checkRecvFrame(uint8_t dest[]) {
+  portENTER_CRITICAL(&_auth_mux);
+  _received_auth_token = 0;
+  portEXIT_CRITICAL(&_auth_mux);
   if (send_queue_len > 0   // first, check send queue
     && millis() >= _last_write + BLE_WRITE_MIN_INTERVAL    // space the writes apart
   ) {
@@ -242,6 +265,9 @@ size_t SerialBLEInterface::checkRecvFrame(uint8_t dest[]) {
 
   Frame frame;
   if (xQueueReceive(recv_queue, &frame, 0) == pdTRUE) {
+    portENTER_CRITICAL(&_auth_mux);
+    _received_auth_token = frame.auth_token;
+    portEXIT_CRITICAL(&_auth_mux);
     memcpy(dest, frame.buf, frame.len);
     BLE_DEBUG_PRINTLN("readBytes: sz=%d, hdr=%d", (uint32_t) frame.len, (uint32_t) dest[0]);
     return frame.len;
@@ -282,3 +308,10 @@ bool SerialBLEInterface::isConnected() const {
   return deviceConnected;  //pServer != NULL && pServer->getConnectedCount() > 0;
 }
 
+
+bool SerialBLEInterface::isAuthenticatedBluetoothFrame() const {
+  portENTER_CRITICAL(&_auth_mux);
+  bool allowed = _frame_auth.allows(_received_auth_token);
+  portEXIT_CRITICAL(&_auth_mux);
+  return _isEnabled && allowed;
+}

@@ -61,10 +61,15 @@ inline bool publicCompanionCommand(uint8_t cmd) {
 }
 // A configured BLE passkey is NOT proof that the current link authenticated.
 // Treat every public transport (including BLE) as untrusted for privileged commands.
-// A future privileged BLE path requires verified per-connection authentication state.
-inline bool allowCompanionCommand(uint8_t cmd, bool publicTransport, bool bluetooth, uint32_t blePin) {
-  (void)bluetooth;
-  (void)blePin;
+// Standalone radio writes require verified per-frame connection authentication.
+inline bool allowCompanionCommand(uint8_t cmd, bool publicTransport, bool bluetooth, uint32_t blePin,
+                                  bool authenticatedFrame = false) {
+#ifdef DISASTER_STANDALONE
+  if (publicTransport && bluetooth && authenticatedFrame && validBlePin(blePin))
+    return true; // Paired standalone owner; command-specific validation still applies.
+#else
+  (void)bluetooth; (void)blePin; (void)authenticatedFrame;
+#endif
   return !publicTransport || publicCompanionCommand(cmd);
 }
 }

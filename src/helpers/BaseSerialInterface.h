@@ -19,6 +19,8 @@ public:
   virtual bool isPublicTransport() const { return false; }
   // True only when the current frame came over Bluetooth.
   virtual bool isBluetoothTransport() const { return false; }
+  // Verified authentication of the current frame's BLE connection, never a saved PIN alone.
+  virtual bool isAuthenticatedBluetoothFrame() const { return false; }
   // True only when the current frame came from the built-in web portal (DisAHRsterRadio).
   virtual bool isPortalTransport() const { return false; }
   // While set, replies (codes < 0x80) go only to the transport which supplied the current frame;

@@ -196,6 +196,13 @@ public:
   }
 
   bool isBluetoothTransport() const override { return _receivedFrom == InterfaceType::Bluetooth; }
+  bool isAuthenticatedBluetoothFrame() const override {
+    if (!_enabled || _receivedFrom != InterfaceType::Bluetooth) return false;
+    for (const auto& iface : _interfaces)
+      if (iface.type == _receivedFrom && iface.instance)
+        return iface.instance->isEnabled() && iface.instance->isAuthenticatedBluetoothFrame();
+    return false;
+  }
   bool isPortalTransport() const override { return _receivedFrom == InterfaceType::Portal; }
   void setReplyOnly(bool on) override { _replyOnly = on; }
 

@@ -60,5 +60,23 @@ inline int radioProfileIndex(float freqMhz, float bwKhz, uint8_t sf, uint8_t cr)
   }
   return -1;
 }
+// Free standalone app parameters: reject non-finite/out-of-range values before
+// the radio driver validates its supported bands and discrete bandwidths.
+inline bool radioParamsValid(float freq, float bw, uint8_t sf, uint8_t cr) {
+  return freq>=150.0f && freq<=2500.0f && bw>=7.8f && bw<=500.0f &&
+         sf>=5 && sf<=12 && cr>=5 && cr<=8;
+}
+struct AppliedRadioConfig {
+  float freq=0, bw=0;
+  uint8_t sf=0, cr=0;
+  bool valid=false;
+  void invalidate() { valid=false; }
+  void remember(float f, float b, uint8_t s, uint8_t c) {
+    freq=f; bw=b; sf=s; cr=c; valid=radioParamsValid(f,b,s,c);
+  }
+  bool matches(float f, float b, uint8_t s, uint8_t c) const {
+    return valid && freq==f && bw==b && sf==s && cr==c;
+  }
+};
 inline bool darTxPowerAllowed(int64_t power) { return power >= -9 && power <= DAR_MAX_TX_DBM; }
 }

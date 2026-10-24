@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../BaseSerialInterface.h"
+#include "../BleFrameAuth.h"
 #include <BLEDevice.h>
 #include <BLEServer.h>
 #include <BLEUtils.h>
@@ -22,10 +23,14 @@ class SerialBLEInterface : public BaseSerialInterface, BLESecurityCallbacks, BLE
   bool _isEnabled;
   uint16_t last_conn_id;
   uint32_t _pin_code;
+  BleFrameAuth _frame_auth;
+  uint32_t _received_auth_token = 0;
+  mutable portMUX_TYPE _auth_mux = portMUX_INITIALIZER_UNLOCKED;
   unsigned long _last_write;
   unsigned long adv_restart_time;
 
   struct Frame {
+    uint32_t auth_token;
     uint8_t len;
     uint8_t buf[MAX_FRAME_SIZE];
   };
@@ -86,6 +91,7 @@ public:
   bool isEnabled() const override { return _isEnabled; }
 
   bool isConnected() const override;
+  bool isAuthenticatedBluetoothFrame() const override;
 
   bool isWriteBusy() const override;
   size_t writeFrame(const uint8_t src[], size_t len) override;

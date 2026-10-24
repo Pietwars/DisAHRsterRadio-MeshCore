@@ -134,7 +134,7 @@ per Bluetooth geändert. Der Display-Editor samt Touch-/Tastatur-/Trackball-Eing
 Standard für frische Einstellungen ist **EU/UK Narrow / Switzerland**:
 869,618 MHz, 62,5 kHz, SF8, CR 4/8. Bereits gespeicherte gültige Einstellungen bleiben
 erhalten; nach einem Update kann das gewünschte Profil in der App gewählt werden.
-Nah/Mittel/Fern bleiben als bisherige Parameterkombinationen akzeptiert. Der interne
+Auch weitere App-Presets und freie, vom Funkchip unterstützte Parameter sind möglich. Der interne
 Leistungsdeckel von 10 dBm, Sendefenster und Neustartschutz bleiben aktiv.
 Die WLAN-Variante behält ihren bisherigen Standard und physischen Profil-Editor.
 Details: [096-RADIO-PROFILES.md](096-RADIO-PROFILES.md).

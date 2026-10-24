@@ -17,6 +17,16 @@ int main() {
   RadioPreset p;
   assert(!radioProfileAt(DAR_RADIO_PROFILES,p)&&!radioProfileId(DAR_RADIO_PROFILES));
 #ifdef DISASTER_STANDALONE
+  AppliedRadioConfig applied;
+  assert(radioParamsValid(868.1f,125.0f,12,8)); // custom app settings, not a named preset
+  assert(!radioParamsValid(std::numeric_limits<float>::quiet_NaN(),125.0f,8,8));
+  assert(!radioParamsValid(869.618f,std::numeric_limits<float>::infinity(),8,8));
+  assert(!radioParamsValid(149.0f,125.0f,8,8)&&!radioParamsValid(869.618f,0,8,8));
+  assert(!radioParamsValid(869.618f,125.0f,4,8)&&!radioParamsValid(869.618f,125.0f,8,9));
+  assert(!applied.matches(868.1f,125.0f,12,8));
+  applied.remember(868.1f,125.0f,12,8); assert(applied.matches(868.1f,125.0f,12,8));
+  assert(!applied.matches(868.2f,125.0f,12,8));
+  applied.invalidate(); assert(!applied.matches(868.1f,125.0f,12,8)); // partial driver failure
   assert(DAR_DEFAULT_RADIO_PROFILE==3&&DAR_RADIO_PROFILES==4);
   assert(radioProfileAt(DAR_DEFAULT_RADIO_PROFILE,p));
   assert(p.freq==869618&&p.bw==62500&&p.sf==8&&p.cr==8);

@@ -330,7 +330,10 @@ int MyMesh::getDarRadioProfile() const {
 }
 
 bool MyMesh::isTxProfileAllowed() const {
-#ifdef DAR_MESH_POLICY
+#ifdef DISASTER_STANDALONE
+  return _dar_applied_radio.matches(_prefs.freq, _prefs.bw, _prefs.sf, _prefs.cr) &&
+         disaster::darTxPowerAllowed(_prefs.tx_power_dbm) && _radio->isTxConfigurationValid();
+#elif defined(DAR_MESH_POLICY)
   return getDarRadioProfile() >= 0 && disaster::darTxPowerAllowed(_prefs.tx_power_dbm) &&
          _radio->isTxConfigurationValid();
 #else
@@ -338,8 +341,28 @@ bool MyMesh::isTxProfileAllowed() const {
 #endif
 }
 
+#ifdef DISASTER_STANDALONE
+bool MyMesh::setDarRadioParameters(float freq, float bw, uint8_t sf, uint8_t cr) {
+  if (!disaster::radioParamsValid(freq,bw,sf,cr) || isTxInProgress() || radio_driver.isReceiving()) return false;
+  _dar_applied_radio.invalidate();
+  _dar_active_radio_profile = -1;
+  _radio->prepareReconfiguration();
+  radio_driver.setParams(freq,bw,sf,cr);
+  radio_driver.setTxPower(_prefs.tx_power_dbm);
+  if (!radio_driver.isTxConfigurationValid()) return false;
+  _prefs.freq=freq; _prefs.bw=bw; _prefs.sf=sf; _prefs.cr=cr;
+  _dar_active_radio_profile=disaster::radioProfileIndex(freq,bw,sf,cr);
+  _dar_applied_radio.remember(freq,bw,sf,cr);
+  savePrefs(); return true;
+}
+#endif
+
 bool MyMesh::setDarRadioProfile(unsigned index) {
-#ifdef DAR_MESH_POLICY
+#ifdef DISASTER_STANDALONE
+  disaster::RadioPreset profile;
+  return disaster::radioProfileAt(index,profile) &&
+         setDarRadioParameters(float(profile.freq)/1000.0f,float(profile.bw)/1000.0f,profile.sf,profile.cr);
+#elif defined(DAR_MESH_POLICY)
   disaster::RadioPreset profile;
   if (!disaster::radioProfileAt(index, profile) || isTxInProgress() || radio_driver.isReceiving()) return false;
   _dar_active_radio_profile = -1; // a partial hardware configuration must never authorize TX
@@ -1070,6 +1093,10 @@ void MyMesh::begin() {
 
   // load persisted prefs
   _store->loadPrefs(_prefs);
+#ifdef DISASTER_STANDALONE
+  const bool startup_settings_valid=disaster::radioParamsValid(_prefs.freq,_prefs.bw,_prefs.sf,_prefs.cr);
+  _dar_applied_radio.invalidate();
+#endif
 #ifdef DAR_MESH_POLICY
   _prefs.tx_power_dbm = constrain(_prefs.tx_power_dbm, -9, 10);
 #endif
@@ -1107,11 +1134,20 @@ void MyMesh::begin() {
   disaster::radioProfileAt(_dar_active_radio_profile >= 0 ? unsigned(_dar_active_radio_profile) : disaster::DAR_DEFAULT_RADIO_PROFILE, startup_profile);
   // Unsupported saved values remain unapproved. Only use a bounded RX fallback;
   // do not silently persist it as a selected TX profile.
+#ifdef DISASTER_STANDALONE
+  if (startup_settings_valid) radio_driver.setParams(_prefs.freq,_prefs.bw,_prefs.sf,_prefs.cr);
+  else radio_driver.setParams(float(startup_profile.freq)/1000.0f, float(startup_profile.bw)/1000.0f, startup_profile.sf, startup_profile.cr);
+#else
   radio_driver.setParams(float(startup_profile.freq)/1000.0f, float(startup_profile.bw)/1000.0f, startup_profile.sf, startup_profile.cr);
+#endif
 #else
   radio_driver.setParams(_prefs.freq, _prefs.bw, _prefs.sf, _prefs.cr);
 #endif
   radio_driver.setTxPower(_prefs.tx_power_dbm);
+#ifdef DISASTER_STANDALONE
+  if (startup_settings_valid && radio_driver.isTxConfigurationValid())
+    _dar_applied_radio.remember(_prefs.freq,_prefs.bw,_prefs.sf,_prefs.cr);
+#endif
   radio_driver.setRxBoostedGainMode(_prefs.rx_boosted_gain);
 
   board.attachDynamicPrefs(_prefs.getCustom());
@@ -1164,7 +1200,7 @@ void MyMesh::handleCmdFrame(size_t len) {
   if (!disaster::validCompanionLength(cmd_frame,len,MAX_FRAME_SIZE)) {
     writeErrFrame(ERR_CODE_ILLEGAL_ARG); return;
   }
-  if (!disaster::allowCompanionCommand(cmd_frame[0], _serial->isPublicTransport(), _serial->isBluetoothTransport(), _active_ble_pin)) {
+  if (!disaster::allowCompanionCommand(cmd_frame[0], _serial->isPublicTransport(), _serial->isBluetoothTransport(), _active_ble_pin, _serial->isAuthenticatedBluetoothFrame())) {
     writeDisabledFrame(); return;
   }
   // Clear stale bytes and terminate variable text fields within the allocated buffer.
@@ -1582,7 +1618,12 @@ void MyMesh::handleCmdFrame(size_t len) {
       writeErrFrame(ERR_CODE_ILLEGAL_ARG);
     } else if (freq >= 150000 && freq <= 2500000 && sf >= 5 && sf <= 12 && cr >= 5 && cr <= 8 && bw >= 7000 &&
         bw <= 500000) {
-#ifdef DAR_MESH_POLICY
+#ifdef DISASTER_STANDALONE
+      if (!setDarRadioParameters(float(freq)/1000.0f,float(bw)/1000.0f,sf,cr)) {
+        writeErrFrame(ERR_CODE_ILLEGAL_ARG); return;
+      }
+      _prefs.setRepeatEn(repeat != 0); savePrefs(); writeOKFrame();
+#elif defined(DAR_MESH_POLICY)
       int selected = disaster::radioProfileIndex(freq, bw, sf, cr);
       if (selected < 0 || !setDarRadioProfile(unsigned(selected))) {
         writeErrFrame(ERR_CODE_ILLEGAL_ARG); return;

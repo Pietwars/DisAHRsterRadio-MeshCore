@@ -35,6 +35,11 @@ with tempfile.TemporaryDirectory(prefix='dar096-') as tmp:
     run(['g++','-std=c++11','-Wall','-Wextra','-Werror',
          '-fsanitize=address,undefined','tests/dar_radio_policy.test.cpp','-o',str(profile_binary)])
     run([str(profile_binary)])
+    standalone_access_binary=Path(tmp)/'standalone-access'
+    run(['g++','-std=c++17','-Wall','-Wextra','-Werror',
+         '-fsanitize=address,undefined','-DDISASTER_STANDALONE',
+         '-Itests/open_access_fakes','tests/open_access.test.cpp','-o',str(standalone_access_binary)])
+    run([str(standalone_access_binary)])
     standalone_profile_binary=Path(tmp)/'standalone-radio-policy'
     run(['g++','-std=c++11','-Wall','-Wextra','-Werror',
          '-fsanitize=address,undefined','-DDISASTER_STANDALONE',

@@ -1,4 +1,5 @@
 #pragma once
+#include "DarRadioPolicy.h"
 
 #include <Arduino.h>
 #include <Mesh.h>
@@ -125,6 +126,9 @@ public:
   bool advert();
   int getDarRadioProfile() const;
   bool setDarRadioProfile(unsigned index);
+#ifdef DISASTER_STANDALONE
+  bool setDarRadioParameters(float freq, float bw, uint8_t sf, uint8_t cr);
+#endif
   bool floodAdvert();   // Advert als Flood ins ganze Mesh (wie "Advert (Flood)" in der App)
   void enterCLIRescue();
 
@@ -284,6 +288,9 @@ private:
   DataStore* _store;
   NodePrefs _prefs;
   int8_t _dar_active_radio_profile = -1;
+#ifdef DISASTER_STANDALONE
+  disaster::AppliedRadioConfig _dar_applied_radio;
+#endif
   uint32_t pending_login;
   uint32_t pending_status;
   uint32_t pending_telemetry, pending_discovery;   // pending _TELEMETRY_REQ

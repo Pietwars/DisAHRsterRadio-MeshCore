@@ -3,9 +3,11 @@
 #include <initializer_list>
 #include "../examples/companion_radio/OpenAccess.h"
 #include "../src/helpers/MultiSerialInterface.h"
+#include "../src/helpers/BleFrameAuth.h"
 
 struct Port : BaseSerialInterface {
-  bool on=true;size_t queued=0,written=0;
+  bool on=true, authenticated=false;size_t queued=0,written=0;
+  bool isAuthenticatedBluetoothFrame() const override { return authenticated; }
   void enable() override {on=true;}
   void disable() override {on=false;}
   bool isEnabled() const override {return on;}
@@ -15,6 +17,29 @@ struct Port : BaseSerialInterface {
   size_t checkRecvFrame(uint8_t* p) override {size_t n=queued;queued=0;if(n)p[0]=11;return n;}
 };
 int main() {
+  BleFrameAuth auth;
+  const uint8_t peer[]={1,2,3,4,5,6}, other[]={6,5,4,3,2,1};
+  assert(!auth.allows(0)); auth.connect(7,peer);
+  assert(auth.capture(7)==0);
+  auth.authenticate(other,true,true,654321); assert(auth.capture(7)==0);
+  auth.authenticate(peer,false,true,654321); assert(auth.capture(7)==0);
+  auth.authenticate(peer,true,false,654321); assert(auth.capture(7)==0);
+  auth.authenticate(peer,true,true,0); assert(auth.capture(7)==0);
+  auth.authenticate(peer,true,true,654321);
+  auto token=auth.capture(7); assert(token&&auth.allows(token)&&!auth.capture(8));
+  auth.disconnect(); assert(!auth.allows(token)&&!auth.capture(7));
+  auth.connect(7,peer); assert(!auth.allows(token));
+  auth.authenticate(peer,true,true,654321); assert(!auth.allows(token));
+  assert(auth.allows(auth.capture(7)));
+  for (unsigned cmd=0;cmd<256;++cmd) {
+    bool expected=disaster::publicCompanionCommand(cmd);
+#ifdef DISASTER_STANDALONE
+    expected=true; // Authenticated standalone owner has the full app command surface.
+#endif
+    assert(disaster::allowCompanionCommand(cmd,true,true,654321,true)==expected);
+    assert(disaster::allowCompanionCommand(cmd,true,false,654321,true)==disaster::publicCompanionCommand(cmd));
+    assert(disaster::allowCompanionCommand(cmd,true,true,0,true)==disaster::publicCompanionCommand(cmd));
+  }
   const unsigned blocked[]={8,9,11,12,14,15,19,21,23,24,25,32,33,34,35,37,38,41,50,51,54,55,57,58,61,62,63,65,66,255};
   for(auto cmd:blocked) assert(!disaster::publicCompanionCommand(cmd));
   for(auto cmd:{1,2,3,4,5,6,7,10,13,16,17,18,20,22,26,27,28,29,30,31,39,40,42,43,52,56,59,60,64}) assert(disaster::publicCompanionCommand(cmd));
@@ -46,6 +71,13 @@ int main() {
   assert(mux.addInterface(InterfaceType::USB,&usb));
   assert(mux.addInterface(InterfaceType::Portal,&portal));
   mux.enable();
+  ble.authenticated=true; ble.queued=1; mux.checkRecvFrame(frame);
+  assert(mux.isAuthenticatedBluetoothFrame());
+  ble.authenticated=false; assert(!mux.isAuthenticatedBluetoothFrame());
+  usb.authenticated=true; usb.queued=1; mux.checkRecvFrame(frame);
+  assert(!mux.isAuthenticatedBluetoothFrame());
+  ble.authenticated=true; mux.checkRecvFrame(frame);
+  assert(!mux.isAuthenticatedBluetoothFrame());
   ble.queued=1;assert(mux.checkRecvFrame(frame)==1);assert(mux.isPublicTransport());assert(mux.isBluetoothTransport());
   usb.queued=1;assert(mux.checkRecvFrame(frame)==1);assert(!mux.isPublicTransport());assert(!mux.isBluetoothTransport());
   portal.queued=1;assert(mux.checkRecvFrame(frame)==1);assert(!mux.isPublicTransport());
