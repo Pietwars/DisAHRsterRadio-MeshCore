@@ -129,11 +129,13 @@ class Dispatcher {
   uint32_t n_sent_flood, n_sent_direct;
   uint32_t n_recv_flood, n_recv_direct;
   unsigned long tx_budget_ms;
+  uint64_t tx_budget_debt_ms;
   unsigned long last_budget_update;
   unsigned long duty_cycle_window_ms;
 
   void processRecvPacket(Packet* pkt);
   void updateTxBudget();
+  uint32_t budgetWaitMillis(uint64_t missing) const;
   void accountTxAirtime();
 
 protected:
@@ -154,6 +156,7 @@ protected:
     radio_nonrx_start = 0;
     prev_isrecv_mode = true;
     tx_budget_ms = 0;
+    tx_budget_debt_ms = 0;
     last_budget_update = 0;
     duty_cycle_window_ms = 3600000;
   }

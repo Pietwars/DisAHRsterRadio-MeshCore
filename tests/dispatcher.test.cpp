@@ -53,7 +53,8 @@ int main() {
   // Long uncertain TX saturates budget; queued traffic cannot bypass the gate.
   r.startOK=true;send();c.now+=2000;d.loop();assert(d.getRemainingTxBudget()==0);
   int starts=r.starts;send();assert(r.starts==starts&&d.isTxBudgetWaiting());
-  c.now+=1501;d.loop();assert(r.starts==starts+1);
+  c.now+=1500;d.loop();assert(r.starts==starts&&d.getRemainingTxBudget()==0);
+  c.now+=20000;d.loop();assert(r.starts==starts+1);
   r.complete=true;c.now+=100;d.loop();
   // Parsing checks exact small buffers under ASan, including transport header truncation.
   mesh::Packet p;
@@ -122,6 +123,52 @@ int main() {
     failed.sendPacket(packet,0); failed.loop();
     assert(radio.starts==2&&failed.isTxBudgetWaiting());
     assert(failPool.getOutboundTotal()==1&&failPool.getFreeCount()==1);
+  }
+  // A failed TX longer than the complete bucket must retain its overrun as
+  // debt. A fresh priority-zero packet cannot send after only the reserve wait.
+  {
+    static StaticPoolPacketManager debtPool(2);
+    Clock clock; Radio radio; radio.clock=&clock;
+    radio.startOK=false; radio.startDelay=2000;
+    Dispatcher debt(radio,clock,debtPool); debt.begin();
+    auto packet=debt.obtainNewPacket(); assert(packet);
+    packet->header=ROUTE_TYPE_FLOOD; packet->payload_len=10;
+    debt.sendPacket(packet,0); debt.loop();
+    assert(debt.getTotalAirTime()==2000&&debt.getRemainingTxBudget()==0);
+    radio.startOK=true; radio.startDelay=0;
+    packet=debt.obtainNewPacket(); assert(packet);
+    packet->header=ROUTE_TYPE_FLOOD; packet->payload_len=10;
+    debt.sendPacket(packet,0);
+    clock.now+=1500; debt.loop();
+    assert(radio.starts==1&&debt.getRemainingTxBudget()==0&&debt.isTxBudgetWaiting());
+    clock.now+=9990; debt.loop(); assert(radio.starts==1&&debt.getRemainingTxBudget()==149);
+    clock.now+=10; debt.loop(); assert(radio.starts==2&&debt.getRemainingTxBudget()==150);
+    radio.complete=true; clock.now+=100; debt.loop(); assert(debtPool.getFreeCount()==2);
+  }
+  // Missing airtime estimates fail closed, even when the initial bucket is full.
+  {
+    static StaticPoolPacketManager unknownPool(1);
+    Clock clock; Radio radio; radio.estimate=0;
+    Dispatcher unknown(radio,clock,unknownPool); unknown.begin();
+    auto packet=unknown.obtainNewPacket(); assert(packet);
+    packet->header=ROUTE_TYPE_FLOOD; packet->payload_len=10;
+    unknown.sendPacket(packet,0); unknown.loop();
+    assert(radio.starts==0&&unknown.isTxBudgetWaiting()&&unknownPool.getOutboundTotal()==1);
+  }
+  // An extreme delayed error must not overflow its next-refill deadline.
+  {
+    static StaticPoolPacketManager hugePool(2);
+    Clock clock; Radio radio; radio.clock=&clock;
+    radio.startOK=false; radio.startDelay=0xffffffffUL;
+    Dispatcher huge(radio,clock,hugePool); huge.begin();
+    auto packet=huge.obtainNewPacket(); assert(packet);
+    packet->header=ROUTE_TYPE_FLOOD; packet->payload_len=10;
+    huge.sendPacket(packet,0); huge.loop();
+    assert(huge.getRemainingTxBudget()==0&&huge.getTotalAirTime()==0xffffffffUL);
+    packet=huge.obtainNewPacket(); assert(packet);
+    packet->header=ROUTE_TYPE_FLOOD; packet->payload_len=10;
+    huge.sendPacket(packet,0); clock.now+=1000; huge.loop();
+    assert(radio.starts==1&&huge.isTxBudgetWaiting()&&hugePool.getOutboundTotal()==1);
   }
   // Real TX timeout and budget subtraction across the embedded 32-bit clock wrap.
   {

@@ -46,7 +46,11 @@ bis zur Freigabe mit seiner Priorität und Fälligkeit in der Queue. Eine Reserv
 oberhalb des Gesamtbudgets blockiert, statt durch Abschneiden passend gemacht zu
 werden. Dieses Profil kann dadurch die Queue blockieren: Profil ändern/prüfen,
 kein automatischer Budget-Bypass. TX-Timeouts buchen die gesamte verstrichene
-Zeit ab und erhöhen keine Erfolgszähler. Das ist konservative Softwarezeit,
+Zeit ab und erhöhen keine Erfolgszähler.
+Übersteigt ein Fehlerfall das Restbudget, bleibt der Mehrverbrauch als Schuld
+erhalten; spätere Auffüllung tilgt zuerst diese Schuld. Sehr lange Wartefristen
+werden auf den sicheren 32-Bit-Vergleichshorizont begrenzt und erneut geprüft.
+Eine fehlende/Null-Airtime-Schätzung sperrt TX statt mit Nullreserve zu senden. Das ist konservative Softwarezeit,
 keine direkt gemessene RF-Airtime.
 
 Die 0.9.6-CI wird auch durch tools/tests/web/Build-Konfigurationsänderungen

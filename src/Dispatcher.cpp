@@ -26,6 +26,7 @@ void Dispatcher::begin() {
   duty_cycle_window_ms = getDutyCycleWindowMs();
   float duty_cycle = 1.0f / (1.0f + getAirtimeBudgetFactor());
   tx_budget_ms = (unsigned long)(duty_cycle_window_ms * duty_cycle);
+  tx_budget_debt_ms = 0;
   last_budget_update = _ms->getMillis();
 
   _radio->begin();
@@ -34,6 +35,13 @@ void Dispatcher::begin() {
 
 float Dispatcher::getAirtimeBudgetFactor() const {
   return 1.0;
+}
+
+uint32_t Dispatcher::budgetWaitMillis(uint64_t missing) const {
+  // Keep every deadline inside the signed 32-bit comparison horizon. Large
+  // debt is rechecked later; it is never truncated to grant an early send.
+  double wait = ceil(double(missing) * (1.0 + double(getAirtimeBudgetFactor())));
+  return wait >= double(INT32_MAX) ? uint32_t(INT32_MAX) : uint32_t(wait);
 }
 
 void Dispatcher::updateTxBudget() {
@@ -45,7 +53,9 @@ void Dispatcher::updateTxBudget() {
   unsigned long refill = (unsigned long)(elapsed * duty_cycle);
   
   if (refill > 0) {
-    uint64_t available = uint64_t(tx_budget_ms) + refill;
+    uint64_t repayment = tx_budget_debt_ms < refill ? tx_budget_debt_ms : refill;
+    tx_budget_debt_ms -= repayment;
+    uint64_t available = uint64_t(tx_budget_ms) + refill - repayment;
     tx_budget_ms = available > max_budget ? max_budget : (unsigned long)available;
     last_budget_update = now;
   }
@@ -57,10 +67,14 @@ void Dispatcher::accountTxAirtime() {
   uint32_t elapsed = uint32_t(_ms->getMillis()) - uint32_t(outbound_start);
   total_air_time += elapsed;
   updateTxBudget();
-  tx_budget_ms = elapsed >= tx_budget_ms ? 0 : tx_budget_ms - elapsed;
+  if (elapsed > tx_budget_ms) {
+    // Unknown/late TX completion can exceed the reserve or even the bucket.
+    // Preserve the excess so future refill first repays it, including failures.
+    tx_budget_debt_ms += uint64_t(elapsed) - tx_budget_ms;
+    tx_budget_ms = 0;
+  } else tx_budget_ms -= elapsed;
   if (tx_budget_ms < MIN_TX_BUDGET_RESERVE_MS) {
-    float duty_cycle = 1.0f / (1.0f + getAirtimeBudgetFactor());
-    next_tx_time = futureMillis((unsigned long)ceilf((MIN_TX_BUDGET_RESERVE_MS - tx_budget_ms) / duty_cycle));
+    next_tx_time = futureMillis(budgetWaitMillis(tx_budget_debt_ms + MIN_TX_BUDGET_RESERVE_MS - tx_budget_ms));
   } else {
     next_tx_time = _ms->getMillis();
   }
@@ -283,6 +297,10 @@ void Dispatcher::checkSend() {
   Packet* candidate = _mgr->peekNextOutbound(uint32_t(_ms->getMillis()));
   if (candidate == NULL) return;
   uint32_t est_airtime = _radio->getEstAirtimeFor(candidate->getRawLength());
+  if (est_airtime == 0) {
+    budget_diagnostics.set(true, uint32_t(_ms->getMillis()));
+    return; // No usable estimate: never allow a zero-reserve TX.
+  }
   // Inspect the exact wire length, including transport codes, without dequeueing.
   uint64_t reserve64 = ((uint64_t)est_airtime * TX_BUDGET_AIRTIME_MARGIN_NUM + TX_BUDGET_AIRTIME_MARGIN_DEN - 1) / TX_BUDGET_AIRTIME_MARGIN_DEN;
   uint32_t max_budget = (uint32_t)((uint64_t)getDutyCycleWindowMs() * 1.0f / (1.0f + getAirtimeBudgetFactor()));
@@ -292,13 +310,12 @@ void Dispatcher::checkSend() {
     return;
   }
   uint32_t required_airtime = uint32_t(reserve64);
-  if (tx_budget_ms < required_airtime) {
+  if (tx_budget_debt_ms || tx_budget_ms < required_airtime) {
     budget_diagnostics.set(true, uint32_t(_ms->getMillis()));
-    float duty_cycle = 1.0f / (1.0f + getAirtimeBudgetFactor());
-    unsigned long needed = required_airtime - tx_budget_ms;
+    uint64_t needed = tx_budget_debt_ms + required_airtime - tx_budget_ms;
     // Refill retains fractional elapsed time since last_budget_update. Anchor
     // the deadline there too, so frequent polling cannot keep moving it ahead.
-    uint32_t refill_wait = uint32_t(ceilf(needed / duty_cycle));
+    uint32_t refill_wait = budgetWaitMillis(needed);
     next_tx_time = uint32_t(uint32_t(last_budget_update) + refill_wait);
     return;
   }
