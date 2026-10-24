@@ -16,7 +16,7 @@ int main() {
   }
   RadioPreset p;
   assert(!radioProfileAt(DAR_RADIO_PROFILES,p)&&!radioProfileId(DAR_RADIO_PROFILES));
-#ifdef DISASTER_STANDALONE
+#ifdef DAR_ORIGINAL_MESHCORE_TX
   AppliedRadioConfig applied;
   assert(radioParamsValid(868.1f,125.0f,12,8)); // custom app settings, not a named preset
   assert(!radioParamsValid(std::numeric_limits<float>::quiet_NaN(),125.0f,8,8));
@@ -51,7 +51,7 @@ int main() {
   assert(radioProfileIndex(868100u,125000u,9,5)<0);
   assert(radioProfileIndex(869525u,125000u,9,5)<0);
   assert(radioProfileIndex(869.5251f,250.0f,9,5)<0);
-#ifndef DISASTER_STANDALONE
+#ifndef DAR_ORIGINAL_MESHCORE_TX
   assert(radioProfileIndex(869.618f,62.5f,8,8)<0);
 #endif
   assert(radioProfileIndex(std::numeric_limits<float>::quiet_NaN(),250.0f,9,5)<0);

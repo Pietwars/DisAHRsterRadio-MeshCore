@@ -33,7 +33,7 @@ int main() {
   assert(auth.allows(auth.capture(7)));
   for (unsigned cmd=0;cmd<256;++cmd) {
     bool expected=disaster::publicCompanionCommand(cmd);
-#ifdef DISASTER_STANDALONE
+#ifdef DAR_ORIGINAL_MESHCORE_TX
     expected=true; // Authenticated standalone owner has the full app command surface.
 #endif
     assert(disaster::allowCompanionCommand(cmd,true,true,654321,true)==expected);

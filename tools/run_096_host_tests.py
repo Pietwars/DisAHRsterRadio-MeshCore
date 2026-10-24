@@ -32,20 +32,35 @@ for block in blocks:
     with tempfile.TemporaryDirectory(prefix='dar-host-') as host_tmp:
         run(['bash', '-euo', 'pipefail', '-c', block.replace('/tmp/', host_tmp + '/')])
 with tempfile.TemporaryDirectory(prefix='dar096-') as tmp:
+    # Each companion frontend must select the same actual dispatcher and BLE policy.
+    for mode in ('DISASTER_STANDALONE','DISASTER_PORTAL'):
+        client_binary=Path(tmp)/('local-companion-'+mode)
+        run(['g++','-std=c++11','-Wall','-Wextra','-Werror','-Wno-misleading-indentation',
+             '-fsanitize=address,undefined','-D'+mode,'-DLORA_TX_POWER=22',
+             '-Itests/companion_fakes','-Isrc','tests/local_companion.test.cpp','-o',str(client_binary)])
+        run([str(client_binary)])
+        radio_binary=Path(tmp)/('radio-policy-'+mode)
+        run(['g++','-std=c++11','-Wall','-Wextra','-Werror','-fsanitize=address,undefined',
+             '-D'+mode,'tests/dar_radio_policy.test.cpp','-o',str(radio_binary)])
+        run([str(radio_binary)])
+        access_binary=Path(tmp)/('access-'+mode)
+        run(['g++','-std=c++17','-Wall','-Wextra','-Werror','-fsanitize=address,undefined',
+             '-D'+mode,'-Itests/open_access_fakes','-Isrc','tests/open_access.test.cpp','-o',str(access_binary)])
+        run([str(access_binary)])
+        tx_binary=Path(tmp)/('original-tx-'+mode)
+        run(['g++','-std=c++11','-Wall','-Wextra','-Wno-unused-parameter','-Wno-reorder',
+             '-Wno-sign-compare','-fsanitize=address,undefined','-D'+mode,
+             '-Isrc','-Itest/mocks','tests/original_meshcore_tx.test.cpp','src/Dispatcher.cpp',
+             'src/Packet.cpp','src/helpers/StaticPoolPacketManager.cpp','-o',str(tx_binary)])
+        run([str(tx_binary)])
+    sd_binary=Path(tmp)/'archive-sd'
+    run(['g++','-std=c++11','-Wall','-Wextra','-Werror',
+         '-fsanitize=address,undefined','-Itests/sd_fakes','tests/archive_sd.test.cpp','-o',str(sd_binary)])
+    run([str(sd_binary)])
     profile_binary=Path(tmp)/'dar-radio-policy'
     run(['g++','-std=c++11','-Wall','-Wextra','-Werror',
          '-fsanitize=address,undefined','tests/dar_radio_policy.test.cpp','-o',str(profile_binary)])
     run([str(profile_binary)])
-    standalone_access_binary=Path(tmp)/'standalone-access'
-    run(['g++','-std=c++17','-Wall','-Wextra','-Werror',
-         '-fsanitize=address,undefined','-DDISASTER_STANDALONE',
-         '-Itests/open_access_fakes','tests/open_access.test.cpp','-o',str(standalone_access_binary)])
-    run([str(standalone_access_binary)])
-    standalone_profile_binary=Path(tmp)/'standalone-radio-policy'
-    run(['g++','-std=c++11','-Wall','-Wextra','-Werror',
-         '-fsanitize=address,undefined','-DDISASTER_STANDALONE',
-         'tests/dar_radio_policy.test.cpp','-o',str(standalone_profile_binary)])
-    run([str(standalone_profile_binary)])
     editor_binary=Path(tmp)/'radio-profile-editor'
     run(['g++','-std=c++11','-Wall','-Wextra','-Werror',
          '-fsanitize=address,undefined','tests/radio_profile_editor.test.cpp','-o',str(editor_binary)])
@@ -70,10 +85,4 @@ with tempfile.TemporaryDirectory(prefix='dar096-') as tmp:
          '-Isrc','-Itest/mocks','tests/dispatcher.test.cpp','src/Dispatcher.cpp',
          'src/Packet.cpp','src/helpers/StaticPoolPacketManager.cpp','-o',str(binary)])
     run([str(binary)])
-    original_binary=Path(tmp)/'original-meshcore-tx'
-    run(['g++','-std=c++11','-Wall','-Wextra','-Wno-unused-parameter',
-         '-Wno-reorder','-Wno-sign-compare','-fsanitize=address,undefined','-DDISASTER_STANDALONE',
-         '-Isrc','-Itest/mocks','tests/original_meshcore_tx.test.cpp','src/Dispatcher.cpp',
-         'src/Packet.cpp','src/helpers/StaticPoolPacketManager.cpp','-o',str(original_binary)])
-    run([str(original_binary)])
 print('0.9.6 HOST GATES PASSED; target builds and hardware acceptance remain separate.')

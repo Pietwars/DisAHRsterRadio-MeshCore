@@ -13,7 +13,7 @@
 #include "../NodePrefs.h"
 #include "BattTrend.h"
 #include "../DarBuild.h"
-#if defined(LILYGO_TDECK) && defined(DISASTER_PORTAL)
+#if defined(LILYGO_TDECK) && defined(DISASTER_PORTAL) && !defined(DAR_ORIGINAL_MESHCORE_TX)
 #include "../LocalRadioProfileEditor.h"
 #define DAR_WIFI_RADIO_EDITOR 1
 #endif

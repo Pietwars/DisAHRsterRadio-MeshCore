@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 #pragma once
+#include "../../src/CompanionRadioMode.h"
 // Web-free local companion client (Issue #35, step 2). It owns one serialized Companion-protocol session with
 // MyMesh (InterfaceType::Portal in MultiSerialInterface) and keeps:
 //   - the startup sequence and caches of channels and contacts,
@@ -18,7 +19,7 @@
 #if LORA_TX_POWER != 22
 #error "Unexpected original T-Deck TX power default"
 #endif
-#elif LORA_TX_POWER != 10
+#elif !defined(DAR_ORIGINAL_MESHCORE_TX) && LORA_TX_POWER != 10
 #error "Unexpected local companion default TX power"
 #endif
 #include <helpers/BaseSerialInterface.h>
@@ -128,6 +129,9 @@ public:
   bool ready() const { return enabled && startup>=12; }
   bool historyOK() const { return storageOK; }
   bool archiveReady() const { return archive.ready(); }
+  bool sdCardReady() const { return archive.cardReady(); }
+  const char *sdStatus() const { return archive.status(); }
+  void retrySd() { archive.begin(); }
   uint32_t historySeq() const { return seq; }
   // Physical history slot (0..HISTORY_SLOTS-1); false for empty or damaged slots.
   bool readHistory(size_t slot, Record &r) const {
@@ -214,7 +218,7 @@ public:
     return true;
   }
   // Re-read contacts (CMD_GET_CONTACTS) or set the node name (CMD_SET_ADVERT_NAME), same as the web.
-  bool localRefresh() { if(!enabled||busy())return false; const uint8_t p[]={4}; queueCommand(p,1); return true; }
+  bool localRefresh() { if(contactSource)return enabled; if(!enabled||busy())return false; const uint8_t p[]={4}; queueCommand(p,1); return true; }
   bool localSetName(const char *name) {
     size_t n=name?strlen(name):0;
     if(!enabled||busy()||!devcfg::validName(name))return false;

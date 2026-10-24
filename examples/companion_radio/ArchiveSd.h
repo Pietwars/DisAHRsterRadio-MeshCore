@@ -19,7 +19,8 @@ class ArchiveSd {
  SPIClass bus{disaster::sdBus};
 #endif
 #endif
- bool mounted=false;
+ bool mounted=false, card_mounted=false;
+ const char *error="SD nicht eingebunden: Karte/FAT32/Bus pruefen";
 public:
  void begin(){
 #ifdef DISASTER_SD
@@ -29,25 +30,39 @@ public:
 #else
   bus.begin(disaster::sdSck,disaster::sdMiso,disaster::sdMosi,disaster::sdCs);
 #endif
-  mounted=SD.begin(disaster::sdCs,bus,4000000,"/sd",2,false);
-  if(mounted&&!SD.exists("/disaster"))mounted=SD.mkdir("/disaster");
+  // Never format a user's card. SD.end() releases only the SD mount, not the shared SPI bus.
+  if(!card_mounted){
+   card_mounted=SD.begin(disaster::sdCs,bus,disaster::sdFrequency,"/sd",2,false);
+   if(card_mounted&&SD.cardType()==CARD_NONE){SD.end();card_mounted=false;}
+  }
+  mounted=false;
+  if(card_mounted){
+   if(!SD.exists("/disaster")&&!SD.mkdir("/disaster"))error="SD da: Archivordner nicht schreibbar";
+   else {
+    File dir=SD.open("/disaster",FILE_READ);
+    mounted=dir&&dir.isDirectory();dir.close();
+    error=mounted?"":"SD da: /disaster ist kein Ordner";
+   }
+  }else error="SD nicht eingebunden: Karte/FAT32/Bus pruefen";
   Serial.println(mounted?"SD archive ready":"SD archive unavailable; internal history remains active");
 #endif
  }
  bool ready()const{return mounted;}
+ bool cardReady()const{return card_mounted;}
+ const char *status()const{return error;}
  void append(const disaster::HistoryRecord &r){
 #ifdef DISASTER_SD
   if(!mounted)return;
   auto f=SD.open("/disaster/current.bin",FILE_APPEND);
-  if(!f){mounted=false;return;}
+  if(!f){mounted=false;error="SD da: Archiv-Schreibfehler";return;}
   size_t bytes=f.size();f.close();
-  if(bytes>disaster::ARCHIVE_LIMIT){mounted=false;return;}
+  if(bytes>disaster::ARCHIVE_LIMIT){mounted=false;error="SD da: Archiv-Schreibfehler";return;}
   // Preserve a torn tail in the previous segment; never append misaligned records.
   bool rotate=disaster::archiveRotate(bytes,sizeof(r));
-  if(rotate){if(SD.exists("/disaster/previous.bin")&&!SD.remove("/disaster/previous.bin")){mounted=false;return;}
-   if(!SD.rename("/disaster/current.bin","/disaster/previous.bin")){mounted=false;return;}}
+  if(rotate){if(SD.exists("/disaster/previous.bin")&&!SD.remove("/disaster/previous.bin")){mounted=false;error="SD da: Archiv-Schreibfehler";return;}
+   if(!SD.rename("/disaster/current.bin","/disaster/previous.bin")){mounted=false;error="SD da: Archiv-Schreibfehler";return;}}
   f=SD.open("/disaster/current.bin",FILE_APPEND);
-  if(!f||f.write((const uint8_t*)&r,sizeof(r))!=sizeof(r))mounted=false;
+  if(!f||f.write((const uint8_t*)&r,sizeof(r))!=sizeof(r)){mounted=false;error="SD da: Archiv-Schreibfehler";}
   f.close();
 #else
   (void)r;

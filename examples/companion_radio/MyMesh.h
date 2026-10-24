@@ -126,7 +126,7 @@ public:
   bool advert();
   int getDarRadioProfile() const;
   bool setDarRadioProfile(unsigned index);
-#ifdef DISASTER_STANDALONE
+#ifdef DAR_ORIGINAL_MESHCORE_TX
   bool setDarRadioParameters(float freq, float bw, uint8_t sf, uint8_t cr);
 #endif
   bool floodAdvert();   // Advert als Flood ins ganze Mesh (wie "Advert (Flood)" in der App)
@@ -138,7 +138,7 @@ protected:
   float getAirtimeBudgetFactor() const override;
   bool isTxProfileAllowed() const override;
   bool useTxWindowLimiter() const override {
-#if defined(DAR_MESH_POLICY) && defined(ESP32) && !defined(DISASTER_STANDALONE)
+#if defined(DAR_MESH_POLICY) && defined(ESP32) && !defined(DAR_ORIGINAL_MESHCORE_TX)
     return true;
 #else
     return false;
@@ -288,7 +288,7 @@ private:
   DataStore* _store;
   NodePrefs _prefs;
   int8_t _dar_active_radio_profile = -1;
-#ifdef DISASTER_STANDALONE
+#ifdef DAR_ORIGINAL_MESHCORE_TX
   disaster::AppliedRadioConfig _dar_applied_radio;
 #endif
   uint32_t pending_login;

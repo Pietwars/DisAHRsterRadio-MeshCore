@@ -65,6 +65,7 @@ static void testAuthoritativeContacts() {
   assert(c.contactHex(69).substring(2,14)=="450000000000");
   assert(c.contactHex(69).substring(66,68)=="01");
   char status[96]; uint8_t frame[MAX_FRAME_SIZE];
+  assert(c.localRefresh()); // live provider must not commandeer the app iterator
   assert(c.localSend("d450000000000","Privat",1792400000,status,sizeof(status)));
   assert(c.checkRecvFrame(frame)==19&&frame[0]==2&&frame[7]==69);
   sourceCount=69; fake_millis+=15001; c.checkRecvFrame(frame);

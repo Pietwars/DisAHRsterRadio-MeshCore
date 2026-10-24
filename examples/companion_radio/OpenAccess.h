@@ -1,4 +1,5 @@
 #pragma once
+#include "../../src/CompanionRadioMode.h"
 #include <stddef.h>
 #include <stdint.h>
 
@@ -61,12 +62,12 @@ inline bool publicCompanionCommand(uint8_t cmd) {
 }
 // A configured BLE passkey is NOT proof that the current link authenticated.
 // Treat every public transport (including BLE) as untrusted for privileged commands.
-// Standalone radio writes require verified per-frame connection authentication.
+// Companion radio writes require verified per-frame connection authentication.
 inline bool allowCompanionCommand(uint8_t cmd, bool publicTransport, bool bluetooth, uint32_t blePin,
                                   bool authenticatedFrame = false) {
-#ifdef DISASTER_STANDALONE
+#ifdef DAR_ORIGINAL_MESHCORE_TX
   if (publicTransport && bluetooth && authenticatedFrame && validBlePin(blePin))
-    return true; // Paired standalone owner; command-specific validation still applies.
+    return true; // Authenticated companion owner; command-specific validation still applies.
 #else
   (void)bluetooth; (void)blePin; (void)authenticatedFrame;
 #endif

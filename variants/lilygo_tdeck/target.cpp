@@ -28,6 +28,8 @@ TDeckBoard board;
     pinMode(PIN_SD_CS, OUTPUT);       // standalone: SD card on the same bus stays deselected
     digitalWrite(PIN_SD_CS, HIGH);
   #endif
+    // LilyGO HelloWorld enables the shared MISO pull-up before starting SPI.
+    pinMode(P_LORA_MISO, INPUT_PULLUP);
     tdeck_shared_spi.begin(P_LORA_SCLK, P_LORA_MISO, P_LORA_MOSI); // SCK 40, MISO 38, MOSI 41, no HW CS
   }
 

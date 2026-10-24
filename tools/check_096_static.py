@@ -103,7 +103,7 @@ check("peekNextOutbound(candidate_time)" in check_send and "getNextOutbound(cand
 check("tx_window.complete(" in dispatcher and "tx_window.tick(" in dispatcher,
       "TX outcomes charge the rolling window and monotonic time advances in the loop")
 check("the_mesh.setTxWindowStore(&tx_window_store);" in main,
-      "DAR ESP32 startup attaches persistent TX activity storage")
+      "legacy DAR ESP32 startup retains optional persistent TX storage")
 tx_store = (ROOT / "src/helpers/esp32/Esp32TxWindowStore.h").read_text()
 check("nvs_commit(handle) == ESP_OK" in tx_store and "nvs_erase" not in tx_store,
       "TX activity marker requires explicit successful NVS commit without erase-on-error")
@@ -141,7 +141,12 @@ for path, section in (("platformio.devices.ini", "[env:dar_LilyGo_TDeck_wifi]"),
                       ("platformio.standalone.ini", "[env:LilyGo_TDeck_standalone]")):
     config = (ROOT / path).read_text().split(section, 1)[1].split("\n[", 1)[0]
     flags = config.split("build_flags =", 1)[1].split("build_src_filter", 1)[0].split("lib_deps", 1)[0]
-    expected = ("-D LORA_FREQ=869.618", "-D LORA_BW=62.5", "-D LORA_SF=8", "-D LORA_CR=8") if "standalone" in section else ("-D LORA_FREQ=869.525", "-D LORA_BW=250", "-D LORA_SF=9", "-D LORA_CR=5")
+    expected = ("-D LORA_FREQ=869.618", "-D LORA_BW=62.5", "-D LORA_SF=8", "-D LORA_CR=8")
+    if "standalone" not in section:
+        # WiFi now inherits the original common radio defaults and the board power.
+        flags += (ROOT / "platformio.ini").read_text()
+        check("LORA_TX_POWER=10" not in config and "LORA_TX_POWER=22" not in config,
+              "T-Deck WiFi inherits board power instead of forcing a DAR cap")
     check(all(flag in flags for flag in expected), section + " starts with the target radio default")
     unflags = config.split("build_unflags =",1)[1].split("build_flags =",1)[0] if "build_unflags =" in config else ""
     removed = {line.strip() for line in unflags.splitlines()}
@@ -298,19 +303,19 @@ print("UNVERIFIED: PlatformIO compilation and hardware tests")
 print("UNVERIFIED: physical RF airtime and regional/profile compliance")
 print("STATIC CHECKS PASSED (limited scope)")
 
-# Standalone explicitly restores upstream TX policy; WiFi retains DAR safeguards.
+# Both companion frontends select the same original MeshCore radio and TX path.
 mesh_header = (ROOT / "examples/companion_radio/MyMesh.h").read_text()
 standalone_config = (ROOT / "platformio.standalone.ini").read_text()
 original_tx = (ROOT / "src/OriginalMeshCoreTx.inc").read_text()
-check("#if defined(DAR_MESH_POLICY) && !defined(DISASTER_STANDALONE)" in mesh and
-      "#if defined(DAR_MESH_POLICY) && defined(ESP32) && !defined(DISASTER_STANDALONE)" in mesh_header,
-      "standalone uses saved airtime factor without the persistent DAR limiter")
+check("#if defined(DAR_MESH_POLICY) && !defined(DAR_ORIGINAL_MESHCORE_TX)" in mesh and
+      "#if defined(DAR_MESH_POLICY) && defined(ESP32) && !defined(DAR_ORIGINAL_MESHCORE_TX)" in mesh_header,
+      "both companion frontends use saved airtime factor without the persistent DAR limiter")
 check("-D LORA_TX_POWER=22" in standalone_config and "LORA_TX_POWER=10" not in standalone_config,
       "standalone restores original T-Deck power default")
 check("checkSendOriginalMeshCore(); return;" in dispatcher and
       "est_airtime / MIN_TX_BUDGET_AIRTIME_DIV" in original_tx and
       "updateOriginalMeshCoreTxBudget();" in original_tx,
-      "standalone uses the pinned original MeshCore TX budget and admission path")
+      "both companion frontends use the pinned original MeshCore TX budget and admission path")
 
 # Compare the restored admission path to the pinned original, ignoring formatting,
 # method extraction and the retained applied-hardware readiness guard.
@@ -329,3 +334,15 @@ check("PRIVATE_LIST" in ui_page and "kind==dev::Kind::Chat" in ui_page and
 check("setContactSource" in standalone and "priv-v1-seq" in standalone and
       "privateHistoryFloor()" in ui_page,
       "local sends use current contacts and private history starts once without deleting shared history")
+
+radio_mode = (ROOT / "src/CompanionRadioMode.h").read_text()
+check("defined(DISASTER_STANDALONE) || defined(DISASTER_PORTAL)" in radio_mode and
+      "#define DAR_ORIGINAL_MESHCORE_TX 1" in radio_mode,
+      "both frontend flags select the original MeshCore policy")
+check("!defined(DAR_ORIGINAL_MESHCORE_TX)" in (ROOT / "examples/companion_radio/ui-brand/UITask.h").read_text(),
+      "original-policy WiFi builds disable the old physical profile editor")
+
+web_frontend = (ROOT / "examples/companion_radio/WebFrontend.cpp").read_text()
+check("setContactSource" in web_frontend and "getContactByIdx(i+MAX_ANON_CONTACTS,c)" in web_frontend and
+      "for(auto &c:contacts)" not in portal and "for(const auto &c:contacts)" not in portal,
+      "web contacts and direct-message lookup use the same authoritative source as standalone")

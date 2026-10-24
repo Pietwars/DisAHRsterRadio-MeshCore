@@ -119,7 +119,7 @@ Kein zertifiziertes Notrufsystem. In Lebensgefahr 112.
 '''
     files['ANLEITUNG.md'] = guide.encode()
     if args.release:
-        files['ANLEITUNG.md'] = guide.replace('Testpaket fuer die Abnahme', f'Pre-Release {version}: Standalone (experimentell)').replace('Noch kein Release, Hardwareabnahme OFFEN.', 'Veroeffentlichung vom Projektbetreiber beauftragt. Vollstaendige Hardwareabnahme OFFEN.').replace('Erst danach ausdrueckliche Freigabe.', 'Die Veroeffentlichungsfreigabe ersetzt diese Hardwarepruefungen nicht.').encode()
+        files['ANLEITUNG.md'] = guide.replace('Testpaket fuer die Abnahme', f"{'Pre-Release' if '-' in version else 'Release'} {version}: Standalone").replace('Noch kein Release, Hardwareabnahme OFFEN.', 'Veroeffentlichung vom Projektbetreiber beauftragt. Vollstaendige Hardwareabnahme OFFEN.').replace('Erst danach ausdrueckliche Freigabe.', 'Die Veroeffentlichungsfreigabe ersetzt diese Hardwarepruefungen nicht.').encode()
     for png in sorted((args.build_dir / 'touch-preview').glob('*.png')):
         files['vorschau/' + png.name] = png.read_bytes()
     files['SHA256SUMS'] = ''.join(hashlib.sha256(data).hexdigest() + '  ' + path + '\n'

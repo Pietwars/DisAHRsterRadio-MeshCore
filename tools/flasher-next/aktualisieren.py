@@ -44,7 +44,7 @@ def main(zips):
         for art, f in d['files'].items(): print(d['id'], art, f['member'].split('/')[-1], f['sha256'])
 
 def html(cfg, ver):
-    hardware_hint = f'Pre-Release {ver}: Hardwareabnahme offen, einschließlich Privatchat/Bluetooth-Parallelbetrieb und Update mit Datenerhalt.'
+    hardware_hint = f"{'Pre-Release' if '-' in ver else 'Release'} {ver}: T-Deck-Privatversand sowie SD-Erkennung und Laden vom Betreiber bestätigt. Neue WLAN-Integration und T-Watch benötigen eigene Gerätetests."
     rel = f"https://github.com/{cfg['repo']}/releases/tag/{cfg['tag']}"
     karten = []
     for d in cfg['devices']:

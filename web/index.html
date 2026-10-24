@@ -15,10 +15,10 @@ header .t{flex:1}header h1{margin:0;font-size:1.15rem;line-height:1.1}header sma
 #st{padding:3px 9px;border-radius:12px;font-size:.8rem;background:#0008}
 #st.ok{color:var(--mesh)}#st.bad{color:#ff9aa8}
 .warn{background:#3a1d26cc;border-left:4px solid var(--wine);padding:6px 10px;font-size:.85rem}
-nav{position:fixed;bottom:0;left:0;right:0;z-index:20;padding-bottom:env(safe-area-inset-bottom,0px);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));max-width:900px;margin:auto;background:#0b141cf2;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-bottom:1px solid var(--line);overflow-x:auto}nav button{flex:1 0 auto;background:none;border:0;color:#cfe;min-width:0;min-height:48px;padding:10px 4px;font-size:.85rem;border-bottom:3px solid transparent}
+nav{position:fixed;bottom:0;left:0;right:0;z-index:20;padding-bottom:env(safe-area-inset-bottom,0px);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));max-width:900px;margin:auto;background:#0b141cf2;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-bottom:1px solid var(--line);overflow-x:auto}nav button{flex:1 0 auto;background:none;border:0;color:#cfe;min-width:0;min-height:48px;padding:10px 4px;font-size:.85rem;border-bottom:3px solid transparent}
 nav button.on{border-color:var(--mesh);color:var(--mesh)}
 main{flex:1;display:flex;flex-direction:column;min-height:0}section{display:none;padding:10px;margin:8px;border-radius:12px;background:#0b141c59;flex:1;flex-direction:column;gap:8px}section.on{display:flex}
-#log{flex:1;overflow-y:auto;min-height:200px;display:flex;flex-direction:column;gap:5px}
+#log,#private-log{flex:1;overflow-y:auto;min-height:200px;display:flex;flex-direction:column;gap:5px}
 .m{background:var(--card);border-radius:8px;padding:6px 9px;max-width:92%;word-wrap:break-word}.m.self{align-self:flex-end;background:#1f3d2cdd}.m.sys{align-self:center;background:#0b141c99;color:#9ab;font-size:.85rem}
 .m .n{color:var(--mesh);font-weight:600;margin-right:4px}.m .tm{color:#789;font-size:.7rem;margin-left:6px}.m .pend{color:#fc6}
 form{display:flex;gap:6px;flex-wrap:wrap}form>*,.row>*{min-width:0}select{max-width:100%}#qf select{flex:1 1 8rem}@media(max-width:480px){#qf .b{flex:1 1 100%}}input,select,textarea{flex:1;background:#0b141c;color:#eaf2f7;border:1px solid var(--line);border-radius:8px;padding:9px;font-size:1rem}
@@ -47,12 +47,18 @@ section h2,section p,.row label{text-shadow:0 1px 3px #000,0 0 8px #000}
 <header><div class="t"><h1>DisAHRsterRadio</h1><small>Ahrtal · MeshCore-Funknetz ohne Internet</small></div><div id="st" class="bad">getrennt</div></header>
 <p id="txguard" class="muted" role="status" hidden></p>
 <div class="warn">Kein zertifiziertes Notrufsystem. In Lebensgefahr immer <b>112</b> wählen, wenn irgendwie möglich.</div>
-<nav><button data-tab="chat" class="on">Chat</button><button data-tab="quick">Schnellmeldung</button><button data-tab="board">Brett</button><button data-tab="map">Karte</button><button data-tab="loc">Standort</button><button data-tab="info">Gerät</button></nav>
+<nav><button data-tab="chat" class="on">Chat</button><button data-tab="private">Privat</button><button data-tab="quick">Meldung</button><button data-tab="board">Brett</button><button data-tab="map">Karte</button><button data-tab="loc">Standort</button><button data-tab="info">Gerät</button></nav>
 <main>
 <section id="chat" class="on"><div class="tgt"><select id="target"></select><button class="b b2" id="reload" type="button" title="Kontakte neu lesen">↻</button></div>
 <div id="log"></div>
 <form id="f"><input id="msg" maxlength="100" autocomplete="off" placeholder="Nachricht (max. 100 Byte) …"><button class="b">Senden</button></form>
 <p class="muted" id="fb"></p></section>
+<section id="private"><h2>Privatnachrichten</h2>
+<p class="muted" id="private-note">Nur hinzugefügte Chat-Kontakte. Repeater und Roomserver erscheinen hier nicht.</p>
+<div class="tgt"><select id="private-target" aria-label="Privater Kontakt"></select><button class="b b2" id="private-reload" type="button" title="Kontakte neu lesen">↻</button></div>
+<div id="private-log"></div>
+<form id="private-form"><input id="private-msg" maxlength="100" autocomplete="off" placeholder="Privatnachricht (max. 100 Byte) …"><button class="b" id="private-send">Senden</button></form>
+<p class="muted" id="private-feedback"></p></section>
 <section id="quick"><h2>Schnellmeldung</h2><p class="muted">Vorlage antippen, Ort wählen, prüfen, dann an das gewählte Ziel senden (Standard: öffentlicher Kanal).</p>
 <div class="quick-grid" id="qg"></div>
 <textarea id="qtext" rows="3" maxlength="100"></textarea>
@@ -83,7 +89,7 @@ section h2,section p,.row label{text-shadow:0 1px 3px #000,0 0 8px #000}
 <div class="row"><select id="cslot"></select><input id="cname" maxlength="24" placeholder="Kanalname"><input id="ckey" maxlength="32" placeholder="Schlüssel (32 Hex)"></div><div class="row"><button class="b b2" id="setch" type="button">Kanal speichern</button></div>
 <h2>Verlauf</h2><div class="row"><button class="b b2" id="wipe" type="button">Nachrichtenverlauf auf dem Gerät löschen</button></div>
 <p class="muted" id="ifb"></p>
-<p class="muted" id="uiver">Weboberfläche DisAHRsterRadio-MeshCore 0.9.6-rc1 · MeshCore v1.18.0</p>
+<p class="muted" id="uiver">Weboberfläche DisAHRsterRadio-MeshCore 0.9.6 · MeshCore v1.18.0</p>
 <p class="muted">MeshCore (MIT) · Oberfläche aus <a href="https://github.com/Pietwars/DisAHRsterRadio" style="color:var(--sage)">DisAHRsterRadio</a>.</p></section>
 </main>
 <script>
@@ -92,13 +98,14 @@ const QUICK=[['H','Trinkwasser benötigt, Personen: ','💧','Trinkwasser'],['H'
 const KIND={H:'HILFE',I:'INFO',A:'ANGEBOT'};
 const $=s=>document.querySelector(s),enc=new TextEncoder(),dec=new TextDecoder();
 const DEMO=/[?&]demo/.test(location.search);
-let state=null,msgs=[],myPos=localStorage.getItem('dar-pos')||'',target=localStorage.getItem('mc-target')||'c0';
+let state=null,msgs=[],myPos=localStorage.getItem('dar-pos')||'',target=localStorage.getItem('mc-target')||'c0',privateTarget=localStorage.getItem('mc-private-target')||'';
+if(target[0]==='d'){privateTarget=privateTarget||target;target='c0'}
 function esc(t){return String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function cid(){let c=localStorage.getItem('mc-cid');if(!c){c=[...crypto.getRandomValues(new Uint8Array(8))].map(x=>x.toString(16).padStart(2,'0')).join('');localStorage.setItem('mc-cid',c)}return c}
 async function api(path,data){if(DEMO)return demoApi(path,data);const o={headers:{'X-Disaster-Request':'1','X-Disaster-Client':cid()},cache:'no-store'};
  if(data){o.method='POST';o.body=new URLSearchParams(data)}const r=await fetch('/api/'+path,o);if(!r.ok)throw Error(await r.text());return r}
 const now=()=>Math.floor(Date.now()/1000);
-document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button,section').forEach(e=>e.classList.remove('on'));b.classList.add('on');$('#'+b.dataset.tab).classList.add('on');if(b.dataset.tab=='map')loadMap();if(b.dataset.tab=='board')renderPosts();if(b.dataset.tab=='info')renderInfo()});
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button,section').forEach(e=>e.classList.remove('on'));b.classList.add('on');$('#'+b.dataset.tab).classList.add('on');if(b.dataset.tab=='map')loadMap();if(b.dataset.tab=='board')renderPosts();if(b.dataset.tab=='private')renderPrivate();if(b.dataset.tab=='info')renderInfo()});
 /* ---------- MeshCore-Rahmen dekodieren ---------- */
 function bytes(h){return Uint8Array.from(h.match(/../g)||[],x=>parseInt(x,16))}
 function txt(p,a,b=p.length){return dec.decode(p.slice(a,b)).replace(/\0.*$/s,'')}
@@ -117,15 +124,32 @@ function contacts(kind){return (state?.contacts||[]).map(h=>{const p=bytes(h);if
 function channels(){return (state?.channels||[]).map((h,i)=>{if(!h)return null;const p=bytes(h);return{id:'c'+i,name:txt(p,2,34)||('Kanal '+i)}}).filter(Boolean)}
 function nameOf(t){if(t[0]=='c'){const c=channels().find(x=>x.id==t);return c?'# '+c.name:'Kanal '+t.slice(1)}const c=contacts().find(x=>x.id==t);return c?c.name:t.slice(1,7)}
 /* ---------- Chat ---------- */
-function targets(){const o=channels().map(c=>[c.id,'# '+c.name]).concat(contacts(1).map(c=>[c.id,'✉ '+c.name]));
- for(const sel of ['#target','#qtarget']){const s=$(sel),v=sel=='#target'?target:(s.value||'c0');s.innerHTML=o.map(x=>'<option value="'+x[0]+'">'+esc(x[1])+'</option>').join('')||'<option value="c0"># Öffentlich</option>';if(o.some(x=>x[0]==v))s.value=v}
- const r=$('#room'),rv=r.value;r.innerHTML=contacts(3).map(c=>'<option value="'+c.id+'">'+esc(c.name)+'</option>').join('')||'<option value="">– kein Room-Server bekannt –</option>';if(rv)r.value=rv}
+function targets(){
+ const channelOptions=channels().map(c=>[c.id,'# '+c.name]);
+ const privateOptions=contacts(1).map(c=>[c.id,'✉ '+c.name]);
+ const fill=(id,options,value,empty)=>{const el=$(id);el.innerHTML=options.map(x=>'<option value="'+x[0]+'">'+esc(x[1])+'</option>').join('')||empty;el.value=options.some(x=>x[0]===value)?value:(options[0]?.[0]||'');return el.value};
+ target=fill('#target',channelOptions,target,'<option value="c0"># Öffentlich</option>')||'c0';
+ privateTarget=fill('#private-target',privateOptions,privateTarget,'<option value="">– keine hinzugefügten Kontakte –</option>');
+ fill('#qtarget',channelOptions.concat(privateOptions),$('#qtarget').value||'c0','<option value="c0"># Öffentlich</option>');
+ fill('#room',contacts(3).map(c=>[c.id,c.name]),$('#room').value,'<option value="">– kein Room-Server bekannt –</option>');
+ $('#private-msg').disabled=$('#private-send').disabled=!privateTarget;
+}
 $('#target').onchange=e=>{target=e.target.value;localStorage.setItem('mc-target',target);renderChat()};
+$('#private-target').onchange=e=>{privateTarget=e.target.value;localStorage.setItem('mc-private-target',privateTarget);renderPrivate()};
 function line(m,who){const d=document.createElement('div');d.className='m'+(m.own?' self':'');const tm=new Date(m.stamp*1000).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
  let b=m.body,n=who||'';const k=b.match(/^(.{1,32}?): ([\s\S]*)$/);if(!n&&k&&m.t[0]=='c'){n=k[1];b=k[2]}if(!n)n=m.own?'Du':nameOf(m.t);
  b=esc(b).replace(/(-?\d{1,2}\.\d{3,})\s*,\s*(-?\d{1,3}\.\d{3,})/g,'<a style="color:var(--sage)" href="geo:$1,$2">$1,$2</a>');
  d.innerHTML='<span class="n">'+esc(n)+'</span>'+b+'<span class="tm">'+tm+'</span>';return d}
 function renderChat(){const l=$('#log');l.innerHTML='';msgs.filter(m=>m.t==target&&!m.room).slice(-150).forEach(m=>l.append(line(m)));if(!l.children.length)l.innerHTML='<div class="m sys">Noch keine Nachrichten für „'+esc(nameOf(target))+'“.</div>';l.scrollTop=1e9}
+function privateConversation(list,peer,floor){return peer&&peer[0]==='d'?list.filter(m=>m.t===peer&&!m.room&&m.seq>floor).slice(-150):[]}
+function renderPrivate(){
+ const l=$('#private-log');l.innerHTML='';
+ privateConversation(msgs,privateTarget,state?.privateHistoryFloor??0).forEach(m=>l.append(line(m)));
+ if(!l.children.length)l.innerHTML='<div class="m sys">'+(privateTarget?'Noch keine neuen Privatnachrichten mit „'+esc(nameOf(privateTarget))+'“.':'Füge einen Chat-Kontakt in der MeshCore-App hinzu.')+'</div>';
+ $('#private-note').textContent=state?.privateHistoryPersistent===false?'Startmarke konnte nicht gespeichert werden; Privat startet nach Neustart erneut leer.':'Nur hinzugefügte Chat-Kontakte. Repeater und Roomserver erscheinen hier nicht.';
+ l.scrollTop=1e9;
+}
+$('#private-form').onsubmit=async e=>{e.preventDefault();const v=$('#private-msg').value.trim();if(!v||!contacts(1).some(c=>c.id===privateTarget))return;try{$('#private-feedback').textContent=await send(privateTarget,v);$('#private-msg').value='';setTimeout(poll,1500)}catch(x){$('#private-feedback').textContent='Nicht gesendet: '+x.message}};
 async function send(t,text){if(enc.encode(text).length>100)throw Error('max. 100 Byte');const r=await api('send',{target:t,text,time:now()});return r.text()}
 $('#f').onsubmit=async e=>{e.preventDefault();const v=$('#msg').value.trim();if(!v)return;try{$('#fb').textContent=await send(target,v);$('#msg').value='';setTimeout(poll,1500)}catch(x){$('#fb').textContent='Nicht gesendet: '+x.message}};
 /* ---------- Schnellmeldung ---------- */
@@ -133,7 +157,7 @@ QUICK.forEach(q=>{const b=document.createElement('button');b.type='button';b.cla
 $('#qplace').innerHTML='<option value="">– Ort –</option><option value="own">Mein Standort</option>'+PLACES.map((p,i)=>'<option value="'+i+'">'+p[0]+'</option>').join('');
 $('#qf').onsubmit=async e=>{e.preventDefault();let t=$('#qtext').value.trim();if(!t)return;const v=$('#qplace').value;
  if(v==='own'&&me)t+=' @ '+me[0].toFixed(4)+','+me[1].toFixed(4);else if(v!==''&&v!=='own'){const p=PLACES[v];t+=' @ '+p[0]+' '+p[1].toFixed(4)+','+p[2].toFixed(4)}
- try{$('#fb').textContent=await send($('#qtarget').value,t);$('#qtext').value='';target=$('#qtarget').value;$('#target').value=target;document.querySelector('nav button').click();setTimeout(poll,1500)}catch(x){alert('Nicht gesendet: '+x.message)}};
+ try{$('#fb').textContent=await send($('#qtarget').value,t);$('#qtext').value='';const dest=$('#qtarget').value;if(dest[0]==='d'){privateTarget=dest;$('#private-target').value=dest;document.querySelector('nav button[data-tab=private]').click()}else{target=dest;$('#target').value=target;document.querySelector('nav button[data-tab=chat]').click()}setTimeout(poll,1500)}catch(x){alert('Nicht gesendet: '+x.message)}};
 /* ---------- Brett (Room-Server) ---------- */
 function renderPosts(){const r=$('#room').value,l=msgs.filter(m=>m.t==r&&(m.room||m.own)).slice(-60).reverse();
  $('#posts').innerHTML=l.length?l.map(m=>'<div class="post'+(/wichtig|\[HILFE\]|!/i.test(m.body.slice(0,12))?' pin':'')+'"><div class="h"><span><b>'+esc(m.own?'Du':(contacts().find(c=>c.id.slice(1,9)==m.author)?.name||m.author||'?'))+'</b></span><span>'+new Date(m.stamp*1000).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+'</span></div><div class="tx">'+esc(m.body)+'</div></div>').join(''):'<p class="muted">Keine Beiträge geladen. Room-Server wählen und anmelden.</p>';
@@ -150,18 +174,18 @@ $('#gps').onclick=()=>{if(!navigator.geolocation)return $('#gpsres').textContent
 $('#psend').onclick=async()=>{if(!me)return alert('Zuerst Standort holen oder Ort wählen.');const t='!DP1|'+me[0].toFixed(4)+','+me[1].toFixed(4)+'|'+now();try{$('#gpsres').textContent=await send(target,t)}catch(x){$('#gpsres').textContent='Nicht gesendet: '+x.message}};
 $('#padv').onclick=async()=>{if(!me)return alert('Zuerst Standort holen oder Ort wählen.');try{await api('position',{lat:Math.round(me[0]*1e6),lon:Math.round(me[1]*1e6)});setTimeout(async()=>{try{$('#gpsres').textContent='Position gesetzt. '+await (await api('advert',{})).text()}catch(x){$('#gpsres').textContent=x.message}},1500)}catch(x){$('#gpsres').textContent=x.message}};
 /* ---------- Gerät ---------- */
-function txGuard(d){d=d||{};if(d.txProfileBlocked)return 'Senden gesperrt: Funkprofil oder Funkfehler. Auswahl am Gerät prüfen (Nah/Mittel/Fern).';if(d.txStartupWaitSeconds>0)return 'Neustartschutz: noch ca. '+Math.ceil(d.txStartupWaitSeconds/60)+' min; Empfang bleibt aktiv.';if(d.txStorageBlocked)return 'Senden gesperrt: Schutzstatus kann nicht gespeichert werden. Empfang bleibt aktiv.';if(d.txBudgetWaiting)return 'Senden wartet auf freies Sendebudget; Empfang bleibt aktiv.';return ''}
+function txGuard(d){d=d||{};if(d.txProfileBlocked)return 'Senden gesperrt: Funkprofil oder Funkfehler. Einstellungen in der MeshCore-App prüfen.';if(d.txStartupWaitSeconds>0)return 'Neustartschutz: noch ca. '+Math.ceil(d.txStartupWaitSeconds/60)+' min; Empfang bleibt aktiv.';if(d.txStorageBlocked)return 'Senden gesperrt: Schutzstatus kann nicht gespeichert werden. Empfang bleibt aktiv.';if(d.txBudgetWaiting)return 'Senden wartet auf freies Sendebudget; Empfang bleibt aktiv.';return ''}
 function renderInfo(){const s=state||{},d=s.diagnostics||{},warn=d.heapWarn||40960,kb=v=>v==null?'':(v/1024).toFixed(1).replace('.',',')+' KB',low=v=>v!=null&&v<warn;const rows=[['Firmware',d.firmware],['Bereit',s.ready?'ja':'nein'],['Funkstatus',txGuard(d)||(d.txStartupWaitSeconds!=null?'Keine aktive Budgetsperre':'Keine Budgetdaten')],['WLAN-Clients',d.wifiClients],['Kanäle',channels().map(c=>c.name).join(', ')],['Kontakte',contacts(1).length],['Repeater',contacts(2).length],['Room-Server',contacts(3).length],['Gesendet (Flood/Direkt)',(d.txFlood??'')+' / '+(d.txDirect??'')],['Empfangen (Flood/Direkt)',(d.rxFlood??'')+' / '+(d.rxDirect??'')],['Laufzeit (s)',d.uptimeSeconds],['Freier RAM',kb(s.heap),low(s.heap)],['Niedrigster freier RAM',kb(d.minHeapBytes),low(d.minHeapBytes)],['Größter freier RAM-Block',kb(d.largestHeapBlockBytes)],['Verlauf-Speicher',s.storage===false?'FEHLER – Nachrichten werden nicht gespeichert':s.storage?'ok':''],['Letztes Ergebnis',s.result]];
  $('#it').innerHTML=rows.map(r=>'<tr><td>'+r[0]+'</td><td'+(r[2]?' class="heaplow"':'')+'>'+esc(r[1]??'')+(r[2]?' ⚠&nbsp;unter&nbsp;'+Math.round(warn/1024)+'&nbsp;KB':'')+'</td></tr>').join('');$('#cslot').innerHTML=[0,1,2,3,4,5,6,7].map(i=>'<option>'+i+'</option>').join('')}
 const act=async(p,d)=>{try{$('#ifb').textContent=await (await api(p,d||{})).text();setTimeout(poll,1500)}catch(x){$('#ifb').textContent=x.message}};
-$('#refresh').onclick=$('#reload').onclick=()=>act('refresh');$('#adv').onclick=()=>act('advert');
+$('#refresh').onclick=$('#reload').onclick=$('#private-reload').onclick=()=>act('refresh');$('#adv').onclick=()=>act('advert');
 $('#setch').onclick=()=>act('channel',{slot:$('#cslot').value,name:$('#cname').value,key:$('#ckey').value});$('#setname').onclick=()=>act('name',{name:$('#nname').value});$('#setradio').onclick=()=>act('radio',{preset:$('#rpreset').value});$('#wipe').onclick=()=>{if(confirm('Nachrichtenverlauf auf dem Gerät wirklich löschen?'))act('history-wipe')};
 /* ---------- Abfrage ---------- */
 let lastSeq=-1,polling=false;
 async function poll(){if(polling)return;polling=true;try{state=await (await api('state')).json();$('#st').textContent='verbunden';$('#st').className='ok';const guard=txGuard(state.diagnostics);$('#txguard').textContent=guard;$('#txguard').hidden=!guard;targets();
  if(state.seq!==lastSeq){const raw=await (await api('history')).text();msgs=[];for(const ln of raw.trim().split('\n')){const m=/^(\d+):([0-9a-f]+)$/i.exec(ln);if(!m)continue;try{const r=decodeRecord(m[2]);if(r){r.seq=+m[1];msgs.push(r)}}catch(e){}}
   lastSeq=state.seq;msgs.sort((a,b)=>a.seq-b.seq);msgs.forEach(m=>notePos(m.body,m.own?'Du':(m.t[0]=='c'?(m.body.match(/^(.{1,32}?): /)||[])[1]:nameOf(m.t)),m.room));renderChat();renderPosts()}
- contacts().forEach(c=>{if(c.lat||c.lon)marks['n:'+c.id]={la:c.lat,lo:c.lon,n:c.name,brett:c.type==3,t:0}});if(M)drawMap();renderInfo()}
+ contacts().forEach(c=>{if(c.lat||c.lon)marks['n:'+c.id]={la:c.lat,lo:c.lon,n:c.name,brett:c.type==3,t:0}});if(M)drawMap();renderInfo();renderChat();renderPrivate();renderPosts()}
  catch(e){$('#st').textContent='getrennt';$('#st').className='bad'}finally{polling=false}}
 /* ---------- Karte ---------- */
 let mapRequest=0;const MAPS=new Map(),cv=$('#cv'),cx=cv.getContext('2d');let M=null,view=null,marks={},me=JSON.parse(localStorage.getItem('dar-me')||'null');
@@ -211,7 +235,7 @@ function demoChan(i,name){const p=new Uint8Array(50);p[0]=18;p[1]=i;p.set(enc.en
 function chMsg(ch,stamp,body){const b=enc.encode(body),p=new Uint8Array(11+b.length);p[0]=17;p[4]=ch;new DataView(p.buffer).setUint32(7,stamp,true);p.set(b,11);return hx(p)}
 function roomMsg(room6,author4,stamp,body){const b=enc.encode(body),p=new Uint8Array(20+b.length);p[0]=16;for(let i=0;i<6;i++)p[4+i]=parseInt(room6.substr(i*2,2),16);p[11]=2;new DataView(p.buffer).setUint32(12,stamp,true);for(let i=0;i<4;i++)p[16+i]=parseInt(author4.substr(i*2,2),16);p.set(b,20);return hx(p)}
 function demoApi(path){const t=now()-3600;const J=o=>({json:async()=>o,text:async()=>typeof o=='string'?o:JSON.stringify(o)});
- if(path=='state')return J({ready:true,heap:142000,seq:7,result:'',channels:[demoChan(0,'Öffentlich'),demoChan(1,'Ahrtal-Hilfe'),'','','','','',''],contacts:[demoContact('a1b2c3d4e5f6',1,'Anna',50.5515,7.1865),demoContact('b2c3d4e5f6a7',1,'Jonas',50.5449,7.1377),demoContact('c3d4e5f6a7b8',3,'Brett Heimersheim',50.5426,7.1761),demoContact('d4e5f6a7b8c9',2,'Repeater Landskrone',50.5560,7.1520)],room:{target:'dc3d4e5f6a7b8',rights:2,pending:false},diagnostics:{firmware:'v1.18.0-dar0.9.6-rc1',wifiClients:2,txFlood:12,txDirect:3,rxFlood:40,rxDirect:5,uptimeSeconds:5321,minHeapBytes:118400,largestHeapBlockBytes:69620,heapWarn:40960}});
+ if(path=='state')return J({ready:true,heap:142000,seq:7,privateHistoryFloor:7,privateHistoryPersistent:true,result:'',channels:[demoChan(0,'Öffentlich'),demoChan(1,'Ahrtal-Hilfe'),'','','','','',''],contacts:[demoContact('a1b2c3d4e5f6',1,'Anna',50.5515,7.1865),demoContact('b2c3d4e5f6a7',1,'Jonas',50.5449,7.1377),demoContact('c3d4e5f6a7b8',3,'Brett Heimersheim',50.5426,7.1761),demoContact('d4e5f6a7b8c9',2,'Repeater Landskrone',50.5560,7.1520)],room:{target:'dc3d4e5f6a7b8',rights:2,pending:false},diagnostics:{firmware:'v1.18.0-dar0.9.6',wifiClients:2,txFlood:12,txDirect:3,rxFlood:40,rxDirect:5,uptimeSeconds:5321,minHeapBytes:118400,largestHeapBlockBytes:69620,heapWarn:40960}});
  if(path=='history')return J(['1:'+chMsg(0,t,'Anna: Heimersheim: Wasser steht in der Bachstraße, Brücke gesperrt.'),'2:'+chMsg(0,t+600,'Jonas: [HILFE] Trinkwasser benötigt, Personen: 4 @ Lohrsdorf 50.5515,7.1865'),'3:'+chMsg(0,t+900,'Peter: Bin auf dem Weg, bringe 2 Kanister mit.'),'4:'+chMsg(0,t+1500,'Mia: [ANGEBOT] Strom/Ladestation verfügbar @ Bad Neuenahr 50.5449,7.1377'),
   '5:'+roomMsg('c3d4e5f6a7b8','a1b2c3d4',t-7200,'WICHTIG: Trinkwasser-Ausgabe am Bürgerhaus Heimersheim 14–17 Uhr 50.5426,7.1761'),'6:'+roomMsg('c3d4e5f6a7b8','b2c3d4e5',t-3000,'Apotheke Bad Neuenahr Notdienst bis 20 Uhr'),'7:'+roomMsg('c3d4e5f6a7b8','a1b2c3d4',t+100,'Brücke Bachstraße gesperrt, Umweg über Lohrsdorf.')].join('\n'));
  return J('Demo: nicht gesendet')}

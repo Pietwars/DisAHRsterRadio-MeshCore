@@ -33,7 +33,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        environment: [dar_LilyGo_TDeck_wifi, LilyGo_TDeck_standalone]
+        environment: [dar_LilyGo_TDeck_wifi, LilyGo_TDeck_standalone, dar_LilyGo_TWatchS3_wifi]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -50,7 +50,7 @@ jobs:
           target = os.environ["TARGET"]
           file = "platformio.standalone.ini" if target == "LilyGo_TDeck_standalone" else "platformio.devices.ini"
           config = configparser.ConfigParser(interpolation=None, strict=False)
-          config.read(file)
+          config.read(["platformio.devices.ini", "platformio.local.ini", "platformio.standalone.ini"])
           flags = config[f"env:{target}"]["build_flags"]
           assert "-D ENABLE_USB_INTERFACE" not in flags.splitlines(), f"USB conflicts with LocalCompanion in {target}"
           print(f"{target}: no conflicting USB interface flag")
@@ -133,6 +133,6 @@ jobs:
           node tools/web_previews.cjs
       - uses: actions/upload-artifact@v4
         with:
-          name: web-previews-0.9.6-rc1
+          name: web-previews-0.9.6
           path: web-previews/*.jpg
           if-no-files-found: error

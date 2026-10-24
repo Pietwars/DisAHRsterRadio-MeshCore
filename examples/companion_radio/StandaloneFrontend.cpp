@@ -21,6 +21,7 @@
 #include "ui-brand/StandaloneUI.h"
 #ifdef DISASTER_SD
 #include <SD.h>
+#include "SdFileVerify.h"
 #endif
 
 extern SerialBLEInterface bluetooth_interface;   // main.cpp
@@ -44,7 +45,7 @@ constexpr size_t LOG_LIMIT = 64 * 1024;
 #endif
 bool sdReady() {
 #ifdef DISASTER_SD
-  return companion.archiveReady();
+  return companion.sdCardReady();
 #else
   return false;
 #endif
@@ -75,7 +76,7 @@ bool config_pending = false;
 
 void loadConfig() {
 #ifdef DISASTER_SD
-  if (!sdReady()) { snprintf(sd_note, sizeof(sd_note), "keine Karte / nicht lesbar"); return; }
+  if (!sdReady()) { snprintf(sd_note, sizeof(sd_note), "%s", companion.sdStatus()); return; }
   File f = SD.open(CONFIG_PATH, FILE_READ);
   if (!f) { snprintf(sd_note, sizeof(sd_note), "noch keine config.txt"); return; }
   static char buf[devcfg::MAX_BYTES + 1];
@@ -93,7 +94,9 @@ void loadConfig() {
 
 bool saveConfig(char *status, size_t size) {
 #ifdef DISASTER_SD
-  if (!sdReady()) { snprintf(status, size, "Keine SD-Karte"); return false; }
+  // A card inserted after boot can be retried explicitly by saving; no periodic SPI stalls.
+  if (!sdReady()) companion.retrySd();
+  if (!sdReady()) { snprintf(status, size, "%s", companion.sdStatus()); return false; }
   devcfg::Config c;
   snprintf(c.name, sizeof(c.name), "%s", the_mesh.getNodePrefs()->node_name);
   c.share = share_on; c.log = log_on;
@@ -102,9 +105,12 @@ bool saveConfig(char *status, size_t size) {
   File f = SD.open(CONFIG_PATH, FILE_WRITE);
   bool ok = n && f && f.write((const uint8_t *)out, n) == n;
   if (f) f.close();
+  // Confirm that bytes can be read back, rather than reporting a write count as success.
+  if (ok) ok = disaster::sdFileMatches(SD, CONFIG_PATH, (const uint8_t *)out, n);
   sd_config = ok;
   if (ok) config_pending = false;
   snprintf(status, size, "%s", ok ? "Einstellungen auf SD gespeichert" : "SD: Schreiben fehlgeschlagen");
+  snprintf(sd_note, sizeof(sd_note), "%s", status);
   logEvent("Einstellungen gespeichert: %s", ok ? "ok" : "Fehler");
   return ok;
 #else
@@ -258,8 +264,8 @@ public:
     o.bleConnected = bluetooth_interface.isConnected(); o.defaultPin = the_mesh.getBLEPin() == DISASTER_BLE_PIN;
     o.clockOK = disaster::validStamp(rtc_clock.getCurrentTime());
     o.heapFree = ESP.getFreeHeap(); o.heapMin = ESP.getMinFreeHeap();
-    o.sdCard = sdReady(); o.sdArchive = sdReady(); o.sdConfig = sd_config; o.sdLog = log_on && sdReady();
-    snprintf(o.sdNote, sizeof(o.sdNote), "%s", sd_note);
+    o.sdCard = sdReady(); o.sdArchive = companion.archiveReady(); o.sdConfig = sd_config; o.sdLog = log_on && sdReady();
+    snprintf(o.sdNote, sizeof(o.sdNote), "%s", companion.archiveReady() ? sd_note : companion.sdStatus());
     o.txStartupWaitSeconds = the_mesh.getTxStartupWaitSeconds();
     o.txProfileBlocked = the_mesh.isTxProfileBlocked();
     o.txStorageBlocked = the_mesh.isTxStorageBlocked(); o.txBudgetWaiting = the_mesh.isTxBudgetWaiting();

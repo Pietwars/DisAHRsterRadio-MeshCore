@@ -1,11 +1,12 @@
 #pragma once
+#include "../../src/CompanionRadioMode.h"
 // DisAHRsterRadio-MeshCore build kinds (set by the PlatformIO env, never in code):
 //   DISASTER_PORTAL      companion with web layer: WLAN access point + DisasterPortal (WebFrontend.cpp)
 //   DISASTER_STANDALONE  LILYGO T-Deck Plus standalone (platformio.standalone.ini): MeshCore over PIN Bluetooth,
 //                        display/keyboard on the device, no WLAN, no web server. WebFrontend.cpp is removed from
 //                        that build by build_src_filter, so no web code is compiled in.
-// Both share the DAR policy: Nah/Mittel/Fern; standalone also defaults to EU/UK Narrow (DarRadioPolicy.h),
-// WiFi keeps the DAR 10-dBm/10% rolling/restart policy; standalone uses original MeshCore TX policy,
+// Both companion frontends default to EU/UK Narrow and use the original MeshCore TX policy.
+// Authenticated Bluetooth supports driver-valid radio parameters, board power and saved airtime factor;
 // only repeaters/room servers are added automatically, an explicitly set location is shared in adverts.
 #if defined(DISASTER_PORTAL) && defined(DISASTER_STANDALONE)
 #error "DISASTER_STANDALONE must not contain the web layer (DISASTER_PORTAL)"

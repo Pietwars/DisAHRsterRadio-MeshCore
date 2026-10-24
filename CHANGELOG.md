@@ -1,5 +1,13 @@
 # Änderungen
 
+## 0.9.6 – öffentlicher Release
+
+- WLAN/BLE und Standalone verwenden denselben ursprünglichen MeshCore-Sendeweg, freie treibergültige Funkparameter und den gespeicherten Airtime-Faktor. Frische Einstellungen starten mit EU/UK Narrow; die zusätzliche DAR-Leistungsgrenze und Neustartsperre entfallen in beiden Companion-Varianten. Gespeicherte Einstellungen bleiben erhalten.
+- Eigener Privatbereich auch in der Weboberfläche: nur gespeicherte Chat-Kontakte; Kanäle, Repeater und Roomserver sind getrennt. Der private Verlauf startet einmal leer, ohne den gemeinsamen Verlauf zu löschen. Kontaktänderungen werden direkt aus dem Funkkern gelesen, auch jenseits von 64 Kontakten.
+- SD-Zugriff am T-Deck Plus mit 800 kHz entsprechend LilyGOs Referenz; Archivfehler sperren Konfigurationszugriffe nicht mehr. Speichern prüft die Datei durch Rücklesen. Der Betreiber bestätigt SD-Erkennung und Laden auf dem Gerät.
+- Offene HTTP-Einstellungen bleiben gesperrt. Vollständige Einstellungen über authentifizierte MeshCore-Bluetooth-Verbindungen; Hardwarefehler sperren weiterhin den Sender.
+- Standalone-Privatversand und die SD-Rückmeldung wurden am Gerät bestätigt. Die neue WLAN-Integration wurde automatisiert geprüft; eigene WLAN-/T-Watch-Gerätetests und eine vollständige Hardwareabnahme werden nicht behauptet.
+
 ## 0.9.6-rc1 – öffentlicher Pre-Release (24.10.2026)
 
 - Standalone: eigener Tab Privat für gespeicherte persönliche Kontakte, getrennt von Kanal-Chat; maßgebliche Kontakte direkt aus MeshCore, ohne zusätzliche 64-Kontakte-Grenze.

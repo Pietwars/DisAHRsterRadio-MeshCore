@@ -34,7 +34,7 @@ jobs:
         run: python3 -m unittest discover -s tests -p 'test_memory_validation.py' -v
       - name: Abnahmepaket (Factory-Offsets, Pruefsummen, keine vorgetaeuschte Freigabe)
         run: python3 -m unittest discover -s tests -p 'test_candidate_package.py' -v
-      - name: Aktuelle Standalone-Galerie fuer 0.9.5
+      - name: Aktuelle Standalone-Galerie fuer 0.9.6
         run: python3 tools/check_standalone_previews.py
   build:
     runs-on: ubuntu-latest

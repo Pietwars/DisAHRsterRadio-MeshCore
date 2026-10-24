@@ -88,8 +88,8 @@ Karte → Chat/Brett und auf dem Board mehrere WLAN-Clients sowie BLE parallel p
 
 | PlatformIO-Env | Board | Release-Paket | Flash |
 |---|---|---|---|
-| `dar_LilyGo_TDeck_wifi` | **LILYGO T-Deck Plus** (ESP32-S3, SX1262) | `DisAHRsterRadio-MeshCore-0.9.6-rc1-LilyGo_TDeck.zip` | `factory.bin` an **0x0**, Update `firmware.bin` an **0x10000** |
-| `dar_LilyGo_TWatchS3_wifi` | **LILYGO T-Watch S3** (ESP32-S3, SX1262, AXP2101) | `DisAHRsterRadio-MeshCore-0.9.6-rc1-LilyGo_TWatchS3.zip` | `factory.bin` an **0x0**, Update `firmware.bin` an **0x10000** |
+| `dar_LilyGo_TDeck_wifi` | **LILYGO T-Deck Plus** (ESP32-S3, SX1262) | `DisAHRsterRadio-MeshCore-0.9.6-LilyGo_TDeck.zip` | `factory.bin` an **0x0**, Update `firmware.bin` an **0x10000** |
+| `dar_LilyGo_TWatchS3_wifi` | **LILYGO T-Watch S3** (ESP32-S3, SX1262, AXP2101) | `DisAHRsterRadio-MeshCore-0.9.6-LilyGo_TWatchS3.zip` | `factory.bin` an **0x0**, Update `firmware.bin` an **0x10000** |
 
 Beide nutzen `huge_app.csv` (3 MB App, kein OTA, SPIFFS ab 0x310000). Die `factory.bin` enthält Bootloader, Partitionen, Firmware und Dateisystem und **löscht beim Flashen alle Einstellungen** (Knotenidentität, Kontakte, Verlauf, Bluetooth-PIN). Firmwarekennung `v1.18.0-dar<Version>-wifi` (z. B. `v1.18.0-dar0.9.3-wifi`).
 
@@ -180,8 +180,8 @@ pip install platformio
 python tools/embed_web.py                         # nach Änderungen an web/
 pio run -e dar_LilyGo_TDeck_wifi -t upload        # bzw. dar_LilyGo_TWatchS3_wifi
 pio run -e dar_LilyGo_TDeck_wifi -t uploadfs      # nur einmal! (Dateisystem, löscht Identität)
-tools/build_device.sh LilyGo_TDeck dist           # dist/DisAHRsterRadio-MeshCore-0.9.6-rc1-LilyGo_TDeck.zip
-tools/build_device.sh LilyGo_TWatchS3 dist        # dist/DisAHRsterRadio-MeshCore-0.9.6-rc1-LilyGo_TWatchS3.zip
+tools/build_device.sh LilyGo_TDeck dist           # dist/DisAHRsterRadio-MeshCore-0.9.6-LilyGo_TDeck.zip
+tools/build_device.sh LilyGo_TWatchS3 dist        # dist/DisAHRsterRadio-MeshCore-0.9.6-LilyGo_TWatchS3.zip
 ```
 
 Version und MeshCore-Basis stehen nur in der Datei `VERSION`; `python3 tools/version.py` überträgt sie in Oberfläche, Demo, Firmwarekennung und README (`--check` läuft im CI). Bibliotheken sind auf feste Versionen gesetzt (`tools/pin_libs.py`, CI prüft mit `--check`).
