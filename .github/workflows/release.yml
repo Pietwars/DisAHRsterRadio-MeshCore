@@ -40,6 +40,14 @@ jobs:
           python3 tools/version.py --check
           V=$(python3 tools/version.py --get)
           [ -z "$TAG" ] || [ "$TAG" = "v$V" ] || { echo "Tag $TAG passt nicht zu VERSION=$V"; exit 1; }
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Host regression and packaging gates
+        run: |
+          python3 tools/run_096_host_tests.py
+          python3 -m unittest discover -s tests -p 'test_memory_validation.py' -v
+          python3 -m unittest discover -s tests -p 'test_candidate_package.py' -v
       - id: m
         run: |
           echo 'devices=["LilyGo_TDeck","LilyGo_TWatchS3"]' >> "$GITHUB_OUTPUT"
@@ -98,8 +106,28 @@ jobs:
           name: dev-LilyGo_TDeck_standalone
           path: dist/*.zip
           if-no-files-found: error
+  previews:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-save --package-lock=false playwright@1.62.1
+      - run: npx playwright install --with-deps chromium
+      - name: Private chat browser regression and current demo previews
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory web > /tmp/preview-server.log 2>&1 &
+          node tools/web_previews.cjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-web-previews
+          path: web-previews/*.jpg
+          if-no-files-found: error
   release:
-    needs: [check, devices, standalone]
+    needs: [check, devices, standalone, previews]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -126,7 +154,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           if [ -z "$TAG" ]; then TAG="v$(python3 tools/version.py --get)"; fi
-          ASSETS="dist/*.zip dist/SHA256SUMS-*.txt"
+          ASSETS="dist/*.zip dist/SHA256SUMS-*.txt dist/*.jpg"
           for f in docs/flyer/*-Flyer.pdf docs/flyer/*-Flyer-digital.pdf docs/flyer/*-Flyer-vorschau.jpg; do [ -f "$f" ] && ASSETS="$ASSETS $f"; done
           if gh release view "$TAG" >/dev/null 2>&1; then
             echo "Release $TAG existiert bereits (hardware-getestete Pakete) – keine Uploads, nichts ersetzt."

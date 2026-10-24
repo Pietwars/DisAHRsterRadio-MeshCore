@@ -50,7 +50,7 @@ jobs:
           target = os.environ["TARGET"]
           file = "platformio.standalone.ini" if target == "LilyGo_TDeck_standalone" else "platformio.devices.ini"
           config = configparser.ConfigParser(interpolation=None, strict=False)
-          config.read(file)
+          config.read(["platformio.devices.ini", "platformio.local.ini", "platformio.standalone.ini"])
           flags = config[f"env:{target}"]["build_flags"]
           assert "-D ENABLE_USB_INTERFACE" not in flags.splitlines(), f"USB conflicts with LocalCompanion in {target}"
           print(f"{target}: no conflicting USB interface flag")

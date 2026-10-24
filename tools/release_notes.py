@@ -14,7 +14,7 @@ print(f"""> ⚠️ **Kein zertifiziertes Notrufsystem.** In Lebensgefahr immer *
 {body}
 
 ## Standalone für T-Deck Plus
-Die zusätzliche Variante `DisAHRsterRadio-MeshCore-{version}-LilyGo_TDeck_standalone-test6.zip` bietet Chat, Meldung, Brett, Karten, Standort und Geräteaktionen direkt am Display, ohne WLAN/Webportal, mit MeshCore-Bluetooth. Touch, Tastatur und Trackball bleiben nutzbar. Die Kennung bleibt `standalone-test6`; die vollständige Hardwareabnahme ist offen. Veröffentlichung vom Projektbetreiber beauftragt. Anleitung, SHA256SUMS, Commitmanifest und Vorschauen liegen im ZIP.
+Die zusätzliche Variante `DisAHRsterRadio-MeshCore-{version}-LilyGo_TDeck_standalone-test6.zip` bietet Chat, Privat, Meldung, Brett, Karten, Standort und Geräteaktionen direkt am Display, ohne WLAN/Webportal, mit MeshCore-Bluetooth. Touch, Tastatur und Trackball bleiben nutzbar. Die Kennung bleibt `standalone-test6`; Privatversand sowie SD-Erkennung und Laden sind vom Betreiber am T-Deck Plus bestätigt; weitere Prüfungen sind in den Änderungen benannt. Veröffentlichung vom Projektbetreiber beauftragt. Anleitung, SHA256SUMS, Commitmanifest und Vorschauen liegen im ZIP.
 
 Standalone: `firmware.bin` als Update an **0x10000 ohne Löschen**; `factory.bin` an **0x0 nach vollständigem Löschen** (Datenverlust). GPS wird nur bei bewusster Freigabe und frischem Fix geteilt. [Bedienung](https://github.com/{repo}/blob/v{version}/docs/STANDALONE_TOUCH.md).
 

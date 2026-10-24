@@ -12,7 +12,7 @@ html=(OUT/'index.html').read_text(encoding='utf-8')
 force='<script>if(!/demo/.test(location.search))location.replace("?demo=1"+location.hash)</script>'
 banner=('<div style="background:#f0d5a0;color:#3b2a1f;text-align:center;'
         'font:600 13px/16px system-ui,sans-serif;padding:6px 8px;height:28px;box-sizing:border-box;white-space:nowrap;overflow:hidden">Demo – simulierte Daten · '
-        '<a style="color:#3b2a1f" href="standalone/">T-Deck 0.9.6-rc1 Vorschau</a> · '
+        '<a style="color:#3b2a1f" href="standalone/">T-Deck 0.9.6 Vorschau</a> · '
         '<a style="color:#3b2a1f" href="https://github.com/Pietwars/DisAHRsterRadio-MeshCore">Quellcode &amp; Firmware</a> · '
         '<a style="color:#3b2a1f" href="flasher/">Flasher</a> · '
         '<a style="color:#3b2a1f" href="flyer/DisAHRsterRadio-MeshCore-Flyer-digital.pdf">Flyer</a></div>')

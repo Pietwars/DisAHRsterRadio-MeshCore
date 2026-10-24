@@ -80,9 +80,11 @@ int main(int argc, char **argv) {
   entry(u, 5); page(u, d, "geraet");
   u.gesture(100, 210, 100, 100);
   page(u, d, "geraet-weiter");
-  for (int i = 0; i < 7; ++i)
-    u.move(0, 1);
+  // Scrolling changes devSel; select the Info action independently of prior gestures.
+  for (int i = 0; i < 12; ++i) u.move(0, -1);
+  for (int i = 0; i < 6; ++i) u.move(0, 1);
   u.click();
   page(u, d, "geraeteinfo");
+  if (d.allText.find("Firmware") == std::string::npos) { fprintf(stderr,"device info capture is on the wrong page\n"); return 1; }
   return 0;
 }
