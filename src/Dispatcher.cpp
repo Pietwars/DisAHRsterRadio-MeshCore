@@ -124,9 +124,8 @@ void Dispatcher::loop() {
 
   if (outbound) {  // waiting for outbound send to be completed
     if (_radio->isSendComplete()) {
-      accountTxAirtime();
-
       _radio->onSendFinished();
+      accountTxAirtime();
       logTx(outbound, outbound->getRawLength());
       if (outbound->isRouteFlood()) {
         n_sent_flood++;
@@ -139,8 +138,9 @@ void Dispatcher::loop() {
       MESH_DEBUG_PRINTLN("%s Dispatcher::loop(): WARNING: outbound packed send timed out!", getLogDateTime());
 
       // A missing TX-done interrupt does not mean the radio was silent.
-      accountTxAirtime();
       _radio->onSendFinished();
+      // Include the driver's abort/finish interval before closing TX history.
+      accountTxAirtime();
       logTxFail(outbound, outbound->getRawLength());
 
       releasePacket(outbound);  // return to pool

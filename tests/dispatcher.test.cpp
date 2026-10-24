@@ -12,14 +12,14 @@ struct Radio : mesh::Radio {
   bool complete=false, startOK=true, busy=false, configReady=true;
   bool isTxConfigurationValid() const override { return configReady; }
   int starts=0, finishes=0, length=0, estimatedLength=0, receives=0;
-  uint32_t estimate=100, startDelay=0;
+  uint32_t estimate=100, startDelay=0, finishDelay=0;
   Clock* clock=nullptr;
   int recvRaw(uint8_t*,int) override { ++receives; return 0; }
   uint32_t getEstAirtimeFor(int n) override { estimatedLength=n;return estimate; }
   float packetScore(float,int) override { return 0; }
   bool startSendRaw(const uint8_t*,int n) override { ++starts;length=n;if(clock) clock->now=uint32_t(clock->now+startDelay);return startOK; }
   bool isSendComplete() override { return complete; }
-  void onSendFinished() override { ++finishes; }
+  void onSendFinished() override { ++finishes;if(clock) clock->now=uint32_t(clock->now+finishDelay); }
   bool isInRecvMode() const override { return true; }
   bool isReceiving() override { return busy; }
 };
@@ -144,6 +144,30 @@ static void testWindowDispatch() {
 }
 int main() {
   testWindowDispatch();
+  // Finish/abort can block while RF state is still uncertain. Charge through
+  // driver cleanup, including clock wrap, for both TX-done and timeout paths.
+  static StaticPoolPacketManager timeoutFinishPool(2), doneFinishPool(2);
+  for (int completed=0; completed<2; ++completed) {
+    auto& finishPool=completed ? doneFinishPool : timeoutFinishPool;
+    Clock clock; clock.now=0xffffff00u;
+    Radio radio; radio.clock=&clock; radio.finishDelay=2000;
+    WindowStore store;
+    WindowDispatcher dispatcher(radio,clock,finishPool);
+    dispatcher.setTxWindowStore(&store); dispatcher.begin();
+    auto packet=dispatcher.obtainNewPacket(); assert(packet);
+    packet->header=ROUTE_TYPE_FLOOD; packet->payload_len=10;
+    dispatcher.sendPacket(packet,0); dispatcher.loop();
+    clock.now=uint32_t(clock.now+200); radio.complete=completed;
+    dispatcher.loop();
+    assert(radio.finishes==1&&dispatcher.getTotalAirTime()==2200);
+    assert(dispatcher.success==completed&&dispatcher.failed==1-completed);
+    assert(dispatcher.getRemainingTxBudget()==0&&finishPool.getFreeCount()==2);
+    packet=dispatcher.obtainNewPacket(); assert(packet);
+    packet->header=ROUTE_TYPE_FLOOD; packet->payload_len=10;
+    dispatcher.sendPacket(packet,0); clock.now=uint32_t(clock.now+20000);
+    dispatcher.loop(); // Token refill cannot erase the cleanup's rolling charge.
+    assert(radio.starts==1&&finishPool.getOutboundTotal()==1);
+  }
   // Static lifetime matches the embedded pool (it has no destructor).
   static StaticPoolPacketManager pool(8);
   Clock c; Radio r; Dispatcher d(r,c,pool); d.begin();
