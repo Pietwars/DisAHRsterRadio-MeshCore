@@ -26,5 +26,5 @@ for gone in ('id="admin"', 'id="apass"', 'id="alogin"', 'id="admbtn"', 'adminTok
     assert gone not in html, gone
 for need in ('id="nname"', 'id="setname"', "act('name'", 'id="rpreset"', "act('radio'", 'id="cslot"', 'id="setch"', "act('channel'", 'id="wipe"', "act('history-wipe')", 'confirm('):
     assert need in html, need
-assert set(re.findall(r'<option value="([a-z-]+)">[^<]*MHz', html)) == {'de-narrow', 'ahr-legacy', 'eu-legacy'}
+assert set(re.findall(r'<option value="([a-z-]+)"(?: selected)?>[^<]*MHz', html)) == {'nah', 'mittel', 'fern'}
 print('portal_routes.test.py: ok')

@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <string.h>
+#include "DarRadioPolicy.h"
 namespace disaster {
 class AdminSession {
   char token_[33] = {};
@@ -18,12 +19,4 @@ public:
   }
   void clear() { memset(token_,0,sizeof(token_)); }
 };
-struct RadioPreset { uint32_t freq,bw;uint8_t sf,cr; };
-inline bool dePreset(const char* id, RadioPreset& p) {
-  if(!strcmp(id,"de-narrow"))p={869618,62500,8,8};
-  else if(!strcmp(id,"ahr-legacy"))p={869618,62500,8,5};
-  else if(!strcmp(id,"eu-legacy"))p={869525,250000,11,5};
-  else return false;
-  return true;
-}
 }

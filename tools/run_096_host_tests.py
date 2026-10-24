@@ -31,6 +31,10 @@ assert blocks, 'No existing regression commands found'
 for block in blocks:
     run(['bash', '-euo', 'pipefail', '-c', block])
 with tempfile.TemporaryDirectory(prefix='dar096-') as tmp:
+    profile_binary=Path(tmp)/'dar-radio-policy'
+    run(['g++','-std=c++11','-Wall','-Wextra','-Werror',
+         '-fsanitize=address,undefined','tests/dar_radio_policy.test.cpp','-o',str(profile_binary)])
+    run([str(profile_binary)])
     window_binary=Path(tmp)/'tx-window'
     run(['g++','-std=c++11','-Wall','-Wextra','-Werror',
          '-fsanitize=address,undefined','-Isrc','tests/tx_window.test.cpp','-o',str(window_binary)])
