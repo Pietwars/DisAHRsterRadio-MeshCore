@@ -22,3 +22,14 @@ Vollständige SOS-Zustandsmaschine, vollständiges Recovery und signierte Update
 Nur die ausdrücklich passende Variante wählen. Update: firmware.bin an 0x10000 ohne Löschen; Factory-Abbild an 0x0 nach vollständigem Löschen (Datenverlust). Vorher Identität, Kontakte und Einstellungen sichern. Prüfsummen und Speicherberichte befinden sich in den Release-ZIPs, Standalone enthält zusätzlich candidate.json mit Commit und Firmware-SHA-256.
 
 Die Vorschauen zeigen aktuelle Firmware-Layouts mit Demodaten, keine Hardwareaufnahmen. Vorherige positive Tests von 0.9.5 gelten nicht als Abnahme dieser Version. Hosttests und alle drei Firmware-Builds werden vor der Veröffentlichungsentscheidung separat geprüft. Der bestehende Release-Workflow selbst bleibt unverändert.
+
+## Software-Nachweise zum Kandidaten
+
+Firmware und Tests aus Commit `470ebdb016d9b9e00e3265721501288cb375a6b4`:
+
+- [Release-Probelauf mit allen drei Paketen und abschließender Paketprüfung](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/actions/runs/40075542323): erfolgreich.
+- [Vollständige 0.9.6-Hosttests, beide T-Deck-Targets und Room-Server](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/actions/runs/40075542317): alle zugehörigen Jobs erfolgreich.
+- [Web-/Versions-/Karten-/Speicher-/Vorschauprüfungen](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/actions/runs/40075542344).
+- [Zugriffs-Regressionen](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/actions/runs/40075542439): erfolgreich.
+
+Die abschließende Aktualisierung der sechs Web-Funktionsbilder ändert keinen Firmware-Code. Ihre Herkunft und Prüfsummen stehen in `docs/images/web-preview-manifest.json`. Die Veröffentlichung verwendet den bestehenden Release-Workflow unverändert. Web-Flasher-Konfiguration erst anhand der tatsächlich veröffentlichten ZIP-Dateien aktivieren, damit die SHA-256-Werte exakt zu den Downloads passen.
