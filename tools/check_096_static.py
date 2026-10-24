@@ -322,3 +322,10 @@ restored_send = restored_send.replace("updateOriginalMeshCoreTxBudget();", "upda
 normalized_send = "\n".join(line.strip() for line in restored_send.strip().splitlines())
 check(hashlib.sha256(normalized_send.encode()).hexdigest() == "af41c228c0522a7de061abedc0db2cdeb25b4e8cd7709277a79d29497c713d06",
       "standalone TX admission matches the pinned upstream implementation")
+
+check("PRIVATE_LIST" in ui_page and "kind==dev::Kind::Chat" in ui_page and
+      "cache[8 + 64]" not in standalone and "startContactsIterator()" in standalone,
+      "private tab uses saved chat contacts from the authoritative core without a 64-contact cap")
+check("setContactSource" in standalone and "priv-v1-seq" in standalone and
+      "privateHistoryFloor()" in ui_page,
+      "local sends use current contacts and private history starts once without deleting shared history")

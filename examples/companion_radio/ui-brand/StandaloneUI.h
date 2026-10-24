@@ -38,10 +38,10 @@ enum Page : uint8_t {
   BLE_PIN_EDIT,
   NAME_EDIT,
   CONFIG_IMPORT,
+  PRIVATE_LIST,
   PAGE_COUNT
 };
 constexpr size_t COMPOSE_BYTES = 100;   // disaster::LOCAL_TEXT_LIMIT
-constexpr unsigned MAX_LIST = 72;       // 8 channels + 64 contacts
 constexpr int MENU_COUNT = 6;           // Chat, Meldung, Brett, Karte, Standort, Gerät
 
 // Map keys of MapData.h ("ahrtal", ...) for the SD settings file; -1 / nullptr if unknown.
@@ -95,7 +95,8 @@ private:
 #ifdef SUI_HAS_QUICK
   TDeckQuickPage quick;
 #endif
-  unsigned buildList(Page p, dev::Target *out, unsigned cap) const;
+  unsigned listCount(Page p) const;
+  bool listTarget(Page p, unsigned index, dev::Target &out) const;
   void open(Page p);
   void openConversation(const dev::Target &t, bool room);
   void setStatus(const char *s, uint32_t ms = 6000);

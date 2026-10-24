@@ -161,9 +161,10 @@ int main() {
   u.move(0, 1); u.click(); assert(!strcmp(u.conversation(), "c1"));
   assert(u.unreadChat() == 0);
   u.key(sui::K_BACK); assert(u.current() == sui::CHAT_LIST);
-  // direct chat by touch: tap the third row
+  // Direct chat lives in its own tab, not among the channels.
+  assert(u.tap(theme::tabCenter(5),10)&&u.current()==sui::PRIVATE_LIST);
   u.render(&d);
-  assert(u.tap(100, touchui::row(2).y + 5) && !strcmp(u.conversation(), "d0a1b2c3d4e5f"));
+  assert(u.tap(100, touchui::row(0).y + 5) && !strcmp(u.conversation(), "d0a1b2c3d4e5f"));
   u.render(&d); assert(d.allText.find("zugestellt") != std::string::npos);
   u.key(sui::K_BACK); u.key(sui::K_BACK); assert(u.current() == sui::MENU);
 

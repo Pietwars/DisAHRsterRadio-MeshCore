@@ -14,6 +14,7 @@ const char *const MENU_LABEL[MENU_COUNT] = {"Chat", "Meldung", "Brett", "Karte",
 const char *title(Page p) {
   switch (p) {
     case CHAT_LIST: case CHAT_VIEW: return "Chat";
+    case PRIVATE_LIST: return "Privat";
     case QUICK: return "Meldung";
     case BOARD_LIST: case BOARD_VIEW: return "Brett";
     case MAP: return "Karte";
@@ -73,15 +74,20 @@ void UI::setStatus(const char *s, uint32_t ms) {
   statusUntil = nowMs + ms;
 }
 
-unsigned UI::buildList(Page p, dev::Target *out, unsigned cap) const {
-  unsigned n = 0; dev::Target t;
-  if (!api) return 0;
-  for (unsigned i = 0, c = api->targetCount(); i < c && n < cap; ++i) {
-    if (!api->target(i, t)) continue;
-    bool want = p == BOARD_LIST ? t.kind == dev::Kind::Room : (t.kind == dev::Kind::Channel || t.kind == dev::Kind::Chat);
-    if (want) out[n++] = t;
-  }
+namespace {
+bool inList(Page p, dev::Kind kind) {
+  return p==BOARD_LIST?kind==dev::Kind::Room:p==PRIVATE_LIST?kind==dev::Kind::Chat:kind==dev::Kind::Channel;
+}
+}
+unsigned UI::listCount(Page p) const {
+  unsigned n=0; dev::Target t;
+  for(unsigned i=0,c=api?api->targetCount():0;i<c;++i)if(api->target(i,t)&&inList(p,t.kind))++n;
   return n;
+}
+bool UI::listTarget(Page p,unsigned index,dev::Target &out) const {
+  for(unsigned i=0,c=api?api->targetCount():0;i<c;++i)
+    if(api->target(i,out)&&inList(p,out.kind)){if(index==0)return true;--index;}
+  return false;
 }
 
 void UI::open(Page p) {
@@ -135,7 +141,7 @@ bool UI::back() {
   case MENU:
     return false;
   case CHAT_VIEW:
-    open(CHAT_LIST);
+    open(conv[0]=='d'?PRIVATE_LIST:CHAT_LIST);
     return true;
   case BOARD_VIEW:
     open(BOARD_LIST);
@@ -308,8 +314,8 @@ bool UI::move(int dx, int dy) {
       if (s == menuSel) return false;
       menuSel = s; dirty = FULL; return true;
     }
-    case CHAT_LIST: case BOARD_LIST: {
-      dev::Target list[MAX_LIST]; unsigned n = buildList(page, list, MAX_LIST);
+    case CHAT_LIST: case PRIVATE_LIST: case BOARD_LIST: {
+      unsigned n=listCount(page);
       if (listMove(page, step, n)) { dirty = FULL; return true; }
       return false;
     }
@@ -345,11 +351,11 @@ bool UI::click() {
   switch (page) {
     case BOOT: leaveBoot(); return true;
     case MENU: open(MENU_PAGE[menuSel]); return true;
-    case CHAT_LIST: case BOARD_LIST: {
-      dev::Target list[MAX_LIST]; unsigned n = buildList(page, list, MAX_LIST);
-      if (!n) { setStatus(page == BOARD_LIST ? "Kein Brett (Room-Server) bekannt" : "Noch keine Kan\xc3\xa4le geladen"); dirty = FULL; return true; }
+    case CHAT_LIST: case PRIVATE_LIST: case BOARD_LIST: {
+      unsigned n=listCount(page);
+      if (!n) { setStatus(page == PRIVATE_LIST ? "Noch keine persoenlichen Kontakte hinzugefuegt" : page == BOARD_LIST ? "Kein Brett (Room-Server) bekannt" : "Noch keine Kan\xc3\xa4le geladen"); dirty = FULL; return true; }
       if (listSel[page] >= int(n)) listSel[page] = int(n) - 1;
-      openConversation(list[listSel[page]], page == BOARD_LIST); return true;
+      dev::Target target; if(listTarget(page,unsigned(listSel[page]),target))openConversation(target,page==BOARD_LIST); return true;
     }
     case CHAT_VIEW: case BOARD_VIEW: sendCompose(); return true;
 #ifdef SUI_HAS_QUICK
@@ -405,7 +411,10 @@ bool UI::click() {
 // buttons, compose box, the map's "Zurück"). A tap acts like selecting the target and clicking.
 int UI::touchTarget(int x, int y) const {
   if (x < 0 || x >= W || y < 0 || y >= H) return -1;
-  if (y < TAB_H) return x % 64 >= 2 && x % 64 < 62 && y >= 2 && y < 34 ? 100 + x / 64 : -1;
+  if(y<TAB_H) {
+    for(int i=0;i<TAB_COUNT;++i)if(x>=tabLeft(i)+2&&x<tabRight(i)-2&&y>=2&&y<34)return 100+i;
+    return -1;
+  }
   if (y < NAV_H) return x < ui::BACK_ZONE_W ? 110 : -1;
   if (page == MAP) {
     for (int i = 0; i < 3; ++i)
@@ -430,17 +439,17 @@ bool UI::tap(int x, int y) {
   }
   const int target = touchTarget(x, y);
   if (target < 0) return false;
-  if (target >= 100 && target < 105) {
-    const Page tabs[] = { CHAT_LIST, QUICK, BOARD_LIST, MAP, DEVICE };
+  if (y<TAB_H && target >= 100 && target < 100+TAB_COUNT) {
+    const Page tabs[] = { CHAT_LIST, QUICK, BOARD_LIST, MAP, DEVICE, PRIVATE_LIST };
     Page next = tabs[target - 100];
     if (page == BLE_PIN_EDIT || page == NAME_EDIT || page == CONFIG_IMPORT) {
       back(); // Clear both PIN buffers before any tab navigation.
     }
-    if ((next == CHAT_LIST && page == CHAT_VIEW) || (next == BOARD_LIST && page == BOARD_VIEW)) return back();
+    if ((next==CHAT_LIST&&page==CHAT_VIEW&&conv[0]=='c') || (next==PRIVATE_LIST&&page==CHAT_VIEW&&conv[0]=='d') || (next==BOARD_LIST&&page==BOARD_VIEW)) return back();
     if (page != next) open(next);
     return true;
   }
-  if (target == 110) return back();
+  if (target == 110 && y>=TAB_H && y<NAV_H) return back();
   if (page == MAP) {
     if (target == 120) return key('-');
     if (target == 122) return key('+');
@@ -454,7 +463,7 @@ bool UI::tap(int x, int y) {
     return true;
   }
 #endif
-  if (page == CHAT_LIST || page == BOARD_LIST) {
+  if (page == CHAT_LIST || page == PRIVATE_LIST || page == BOARD_LIST) {
     for (int i = 0; i < nhits; ++i)
       if (hits[i].idx == target) {
         dev::Target shown;
@@ -474,6 +483,7 @@ bool UI::tap(int x, int y) {
     menuSel = target;
     break;
   case CHAT_LIST:
+  case PRIVATE_LIST:
   case BOARD_LIST:
     listSel[page] = target;
     break;
@@ -491,9 +501,8 @@ bool UI::tap(int x, int y) {
 
 bool UI::swipeList(int dy) {
   const int rows = abs(dy) / ROW_H + 1, step = dy < 0 ? rows : -rows;
-  if (page == CHAT_LIST || page == BOARD_LIST) {
-    dev::Target list[MAX_LIST];
-    int n = int(buildList(page, list, MAX_LIST));
+  if (page == CHAT_LIST || page == PRIVATE_LIST || page == BOARD_LIST) {
+    int n=int(listCount(page));
     int &top = listTop[page], &sel = listSel[page];
     if (n == 0) { top = 0; sel = 0; return false; }
     top += step;
@@ -594,7 +603,7 @@ bool UI::tick(uint32_t ms) {
     if (page == CHAT_VIEW || page == BOARD_VIEW) log.markRead(conv);
     if (page != MAP || log.incomingAfter(lastIncoming)) dirty = FULL;
   }
-  uint32_t sig = api->targetCount() * 131u + (api->ready() ? 1 : 0);
+  uint32_t sig = (api->targetCount() * 131u + (api->ready() ? 1 : 0)) ^ api->targetRevision();
   dev::Room r = api->room(); sig = sig * 31u + r.rights * 7u + (r.pending ? 3 : 0);
   if (sig != lastTargetSig) { lastTargetSig = sig; if (page != MAP) dirty = FULL; }
   return dirty != NONE;
@@ -607,13 +616,15 @@ bool UI::takeIncoming() {
 }
 
 unsigned UI::unreadChat() const {
-  dev::Target list[MAX_LIST]; unsigned n = buildList(CHAT_LIST, list, MAX_LIST), u = 0;
-  for (unsigned i = 0; i < n; ++i) u += log.unread(list[i].id, false);
+  dev::Target t; unsigned u=0;
+  for(unsigned i=0,n=api?api->targetCount():0;i<n;++i)
+    if(api->target(i,t)&&(t.kind==dev::Kind::Channel||t.kind==dev::Kind::Chat))
+      u+=log.unread(t.id,false,t.kind==dev::Kind::Chat?api->privateHistoryFloor():0);
   return u;
 }
 unsigned UI::unreadBoard() const {
-  dev::Target list[MAX_LIST]; unsigned n = buildList(BOARD_LIST, list, MAX_LIST), u = 0;
-  for (unsigned i = 0; i < n; ++i) u += log.unread(list[i].id, true);
+  dev::Target t; unsigned u=0;
+  for(unsigned i=0,n=api?api->targetCount():0;i<n;++i)if(api->target(i,t)&&t.kind==dev::Kind::Room)u+=log.unread(t.id,true);
   return u;
 }
 
@@ -661,6 +672,7 @@ void UI::drawHint(DisplayDriver *d) {
     h = "Antippen: oeffnen | Trackball / Enter auch moeglich";
     break;
   case CHAT_LIST:
+  case PRIVATE_LIST:
   case BOARD_LIST:
     h = "Tippen: oeffnen | Wischen: blaettern | < Zurueck";
     break;
@@ -699,10 +711,10 @@ void UI::drawMenu(DisplayDriver *d) {
 }
 
 void UI::drawList(DisplayDriver *d, Page p) {
-  dev::Target list[MAX_LIST]; unsigned n = buildList(p, list, MAX_LIST);
+  unsigned n=listCount(p);
   if (!api->ready()) { ui::text(d, 6, LIST_TOP + 10, MUTED, "Funkkern startet \xe2\x80\x93 Kontakte werden gelesen \xe2\x80\xa6"); return; }
   if (!n) {
-    ui::text(d, 6, LIST_TOP + 10, MUTED, p == BOARD_LIST ? "Kein Brett (Room-Server) in den Kontakten." : "Keine Kan\xc3\xa4le oder Kontakte.");
+    ui::text(d, 6, LIST_TOP + 10, MUTED, p == PRIVATE_LIST ? "Noch keine persoenlichen Kontakte hinzugefuegt." : p == BOARD_LIST ? "Kein Brett (Room-Server) in den Kontakten." : "Keine Kan\xc3\xa4le oder Kontakte.");
     ui::text(d, 6, LIST_TOP + 22, MUTED, p == BOARD_LIST ? "Room-Server erscheinen nach ihrer Bekanntgabe." : "Men\xc3\xbc \xe2\x86\x92 Ger\xc3\xa4t \xe2\x86\x92 Kontakte neu lesen.");
     return;
   }
@@ -712,7 +724,7 @@ void UI::drawList(DisplayDriver *d, Page p) {
   if (sel >= top + LIST_ROWS) top = sel - LIST_ROWS + 1;
   dev::Room room = api->room();
   for (int r = 0; r < LIST_ROWS && top + r < int(n); ++r) {
-    const dev::Target &t = list[top + r];
+    dev::Target t; if(!listTarget(p,unsigned(top+r),t))continue;
     int y = LIST_TOP + r * ROW_H;
     bool on = top + r == sel;
     d->nativeFill(4, y, W - 8, ROW_H - 4, on ? SELF : CARD);
@@ -723,9 +735,10 @@ void UI::drawList(DisplayDriver *d, Page p) {
     snprintf(line, sizeof(line), "%s %s", t.kind == dev::Kind::Channel ? "#" : p == BOARD_LIST ? "\xe2\x96\xa0" : "@", t.name);
     ui::text(d, 7, y + 5, p == BOARD_LIST ? BOARD : t.kind == dev::Kind::Channel ? MESH : TEXT, line, 23, 2);
     bool roomList = p == BOARD_LIST;
-    unsigned u = log.unread(t.id, roomList);
+    uint32_t floor=t.kind==dev::Kind::Chat?api->privateHistoryFloor():0;
+    unsigned u = log.unread(t.id, roomList, floor);
     if (u) ui::badge(d, W - 4, y + 1, u);
-    const chat::Entry *e = log.last(t.id, roomList);
+    const chat::Entry *e = log.last(t.id, roomList, floor);
     char who[34], prev[80]; const char *body = "";
     if (roomList) {
       bool here = !strcmp(room.id, t.id);
@@ -780,7 +793,7 @@ void UI::drawConversation(DisplayDriver *d) {
   } else ui::rightText(d, W - 4, NAV_H + 2, MUTED, "ALT+Del: Liste");
   const int top = NAV_H + 17, bottom = COMPOSE_Y - 2;
   const chat::Entry *items[chat::Log::CAP]; size_t n = 0;
-  log.forEach(conv, convRoom, [&](const chat::Entry &e) { if (n < chat::Log::CAP) items[n++] = &e; });
+  log.forEach(conv, convRoom, [&](const chat::Entry &e) { if (n < chat::Log::CAP) items[n++] = &e; }, !convRoom&&conv[0]=='d'?api->privateHistoryFloor():0);
   if (!n) ui::text(d, 6, top + 6, MUTED, convRoom ? "Noch keine Beitr\xc3\xa4ge. Nach dem Beitreten werden sie abgerufen." : "Noch keine Nachrichten in dieser Unterhaltung.", 52);
   if (scroll > int(n) - 1) scroll = n ? int(n) - 1 : 0;
   int y = bottom;
@@ -989,10 +1002,10 @@ void UI::render(DisplayDriver *d) {
   d->startFrame(BG);
   nhits = 0;
   bool inConv = page == CHAT_VIEW || page == BOARD_VIEW;
-  ui::statusLine(d, title(page), page != MENU, inConv ? 0 : unreadChat() + unreadBoard());
+  ui::statusLine(d, (page==CHAT_VIEW&&conv[0]=='d'?"Privat":title(page)), page != MENU, inConv ? 0 : unreadChat() + unreadBoard());
   switch (page) {
     case MENU: drawMenu(d); drawHint(d); break;
-    case CHAT_LIST: case BOARD_LIST: drawList(d, page); drawHint(d); break;
+    case CHAT_LIST: case PRIVATE_LIST: case BOARD_LIST: drawList(d, page); drawHint(d); break;
     case CHAT_VIEW: case BOARD_VIEW: drawConversation(d); break;
     case MAP: drawMap(d); break;
     case LOCATION: drawLocation(d); break;

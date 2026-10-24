@@ -44,6 +44,34 @@ static unsigned countKind(const LocalCompanion &c, uint8_t kind, disaster::Histo
 
 struct TestCompanion : LocalCompanion { using LocalCompanion::serviceRoom; using LocalCompanion::beginHistory; };
 
+struct SourceContact {
+  struct { uint8_t pub_key[32]={}; } id;
+  uint8_t type=1,flags=0,out_path_len=0xff,out_path[64]={};
+  char name[32]={};
+  uint32_t last_advert_timestamp=1,lastmod=2;
+  int32_t gps_lat=0,gps_lon=0;
+};
+static unsigned sourceCount=70;
+static unsigned sourceSize() { return sourceCount; }
+static String sourceContact(unsigned index) {
+  if(index>=sourceCount)return String();
+  SourceContact c; c.id.pub_key[0]=uint8_t(index); snprintf(c.name,sizeof(c.name),"Neu %u",index);
+  return LocalCompanion::encodeContact(c);
+}
+static void testAuthoritativeContacts() {
+  TestCompanion c; c.enable(); startup(c);
+  c.setContactSource(sourceSize,sourceContact);
+  assert(c.contactCount()==70&&c.contactHex(69).length()==296);
+  assert(c.contactHex(69).substring(2,14)=="450000000000");
+  assert(c.contactHex(69).substring(66,68)=="01");
+  char status[96]; uint8_t frame[MAX_FRAME_SIZE];
+  assert(c.localSend("d450000000000","Privat",1792400000,status,sizeof(status)));
+  assert(c.checkRecvFrame(frame)==19&&frame[0]==2&&frame[7]==69);
+  sourceCount=69; fake_millis+=15001; c.checkRecvFrame(frame);
+  assert(c.contactHex(69).length()==0);
+  assert(!c.localSend("d450000000000","Weg",1792400001,status,sizeof(status)));
+  sourceCount=70;
+}
 int main() {
   TestCompanion c; char st[96]; uint8_t f[MAX_FRAME_SIZE]; uint32_t stamp = 1792400000;
   assert(!c.localSend("c0", "x", stamp, st, sizeof(st)) && strstr(st, "beschaeftigt"));
@@ -123,5 +151,6 @@ int main() {
   // History survives a restart: sequence numbers continue.
   uint32_t seq = c.historySeq();
   TestCompanion again; again.beginHistory(); assert(again.historySeq() == seq);
+  testAuthoritativeContacts();
   puts("local_companion.test.cpp: startup, local send pause/stamps/history, Brett login, app sends passed");
 }

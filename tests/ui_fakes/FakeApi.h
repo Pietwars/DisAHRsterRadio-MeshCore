@@ -12,7 +12,7 @@ struct FakeApi : dev::Api {
   uint32_t seq = 0, clock = 1792922400u;   // 2026-10-26 10:00 local
   bool isReady = true, sendOk = true, loginOk = true;
   dev::Gps g; dev::Room rm{"", 0, false};
-  uint32_t startupWait = 0;
+  uint32_t startupWait = 0, privateFloor = 0;
   bool storageWait = false, budgetWait = false, profileWait = false;
   int nameChanges = 0, configImports = 0;
   bool configOk = true;
@@ -68,6 +68,16 @@ struct FakeApi : dev::Api {
     snprintf(status, size, "PIN gespeichert. Neustart erforderlich"); return true;
   }
   bool ready() const override { return isReady; }
+  uint32_t privateHistoryFloor() const override { return privateFloor; }
+  uint32_t targetRevision() const override {
+    uint32_t hash=2166136261u;
+    for(const auto& t:targets) {
+      for(const char *p=t.id;*p;++p)hash=(hash^uint8_t(*p))*16777619u;
+      for(const char *p=t.name;*p;++p)hash=(hash^uint8_t(*p))*16777619u;
+      hash=(hash^unsigned(t.kind))*16777619u;
+    }
+    return hash;
+  }
   unsigned targetCount() const override { return unsigned(targets.size()); }
   bool target(unsigned i, dev::Target &o) const override {
     if (i >= targets.size()) return false;

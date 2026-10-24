@@ -42,7 +42,9 @@ protected:
   bool sentOnce = false, userCommand = false;
   uint8_t pending[MAX_FRAME_SIZE] = {}, pendingLen = 0;
   uint8_t outgoing[MAX_FRAME_SIZE] = {}, outgoingLen = 0;
-  String info, contacts[64], channels[8];
+  String info, contacts[64], channels[8]; // protocol cache for legacy/web clients
+  unsigned (*contactCountSource)() = nullptr;
+  String (*contactSource)(unsigned) = nullptr;
   String roomTarget;
   uint8_t roomRights=0, loginLen=0, loginFrame[49]={};
   bool roomPending=false;
@@ -51,13 +53,17 @@ protected:
   bool localOutgoing=false;
   char localOutcome[96]="Bereit";
   // Reject ambiguous short identifiers instead of choosing an arbitrary contact.
-  const String *roomContact(const String &target) const {
-    if(target.length()!=13||target[0]!='d')return nullptr;
-    const String *found=nullptr;
-    for(const auto &c:contacts)if(c.length()>=264&&c.substring(2,14)==target.substring(1)&&c.substring(66,68)=="03"){
-      if(found)return nullptr;found=&c;
+  bool roomContact(const String &target, String &found) const {
+    if(target.length()!=13||target[0]!='d')return false;
+    found="";
+    for(unsigned i=0;i<contactCount();++i) {
+      String c=contactHex(i);
+      if(c.length()>=264&&c.substring(2,14)==target.substring(1)&&c.substring(66,68)=="03") {
+        if(found.length())return false;
+        found=c;
+      }
     }
-    return found;
+    return found.length()!=0;
   }
   String outcome = "Bereit";
   uint32_t activeSince = 0;
@@ -139,7 +145,22 @@ public:
   void beginLocal() { beginHistory(); }
   void serviceLocal() { serviceRoom(); }
   const String &channelHex(unsigned i) const { static const String none; return i<8?channels[i]:none; }
-  const String &contactHex(unsigned i) const { static const String none; return i<64?contacts[i]:none; }
+  void setContactSource(unsigned (*count)(), String (*read)(unsigned)) {
+    contactCountSource=count; contactSource=read;
+  }
+  unsigned contactCount() const { return contactCountSource ? contactCountSource() : 64; }
+  String contactHex(unsigned i) const {
+    return contactSource ? contactSource(i) : i<64 ? contacts[i] : String();
+  }
+  template<class Contact> static String encodeContact(const Contact &c) {
+    uint8_t frame[148]={3};
+    static_assert(sizeof(c.id.pub_key)==32 && sizeof(c.out_path)==64,"Companion contact layout changed");
+    memcpy(frame+1,c.id.pub_key,32); frame[33]=c.type; frame[34]=c.flags; frame[35]=c.out_path_len;
+    memcpy(frame+36,c.out_path,64); strncpy(reinterpret_cast<char*>(frame+100),c.name,31);
+    memcpy(frame+132,&c.last_advert_timestamp,4); memcpy(frame+136,&c.gps_lat,4);
+    memcpy(frame+140,&c.gps_lon,4); memcpy(frame+144,&c.lastmod,4);
+    return hex(frame,sizeof(frame));
+  }
   const String &roomTargetId() const { return roomTarget; }
   uint8_t roomRightsNow() const { return roomRights; }
   bool roomPendingNow() const { return roomPending; }
@@ -160,7 +181,10 @@ public:
     } else if(disaster::contactTarget(target.c_str())){
       String key=target.substring(1);key.toLowerCase();
       unsigned matches=0;String type;
-      for(const auto &c:contacts)if(c.length()>=264&&c.substring(2,14)==key){++matches;type=c.substring(66,68);}
+      for(unsigned i=0;i<contactCount();++i) {
+        String c=contactHex(i);
+        if(c.length()>=264&&c.substring(2,14)==key){++matches;type=c.substring(66,68);}
+      }
       if(matches!=1)return fail(status,size,"Kontakt fehlt oder ist mehrdeutig");
       if(type=="03"){
         if(roomTarget!=String("d")+key||roomRights<2)return fail(status,size,"Zuerst am Brett mit Schreibrecht anmelden");
@@ -181,10 +205,10 @@ public:
   bool localRoomLogin(const char *id,uint32_t stamp,char *status,size_t size) {
     if(!enabled||busy())return fail(status,size,"Knoten beschaeftigt; erneut versuchen");
     String target(id?id:"");target.toLowerCase();
-    const String *contact=roomContact(target);
-    if(!contact)return fail(status,size,"Brett (Room-Server) nicht eindeutig bekannt");
+    String contact;
+    if(!roomContact(target,contact))return fail(status,size,"Brett (Room-Server) nicht eindeutig bekannt");
     if(!disaster::validStamp(stamp))return fail(status,size,"Uhr fehlt: GPS-Fix abwarten / App verbinden");
-    uint8_t clock[5];prepareRoomLogin(*contact,target,stamp,clock);queueCommand(clock,5);
+    uint8_t clock[5];prepareRoomLogin(contact,target,stamp,clock);queueCommand(clock,5);
     outcome="Anmeldung vorbereitet";
     if(size)snprintf(status,size,"Anmeldung laeuft (Gast-Passwort)");
     return true;
@@ -226,15 +250,21 @@ public:
     if(startup==0){dest[0]=22;dest[1]=3;n=2;startup++;}
     else if(startup==1){memset(dest,0,8);dest[0]=1;n=8;startup++;}
     else if(startup>=2 && startup<10){dest[0]=31;dest[1]=startup-2;n=2;startup++;}
-    else if(startup==10){dest[0]=4;n=1;startup++;}
+    else if(startup==10){
+      if(contactSource){dest[0]=20;n=1;startup=12;} // authoritative local source needs no protocol iterator
+      else {dest[0]=4;n=1;startup++;}
+    }
     else if(startup==11){dest[0]=20;n=1;startup++;}
     else if(loginLen&&!pendingLen){userCommand=true;n=loginLen;memcpy(dest,loginFrame,n);loginLen=0;memset(loginFrame,0,sizeof(loginFrame));}
     else if(pendingLen){userCommand=true;n=pendingLen;memcpy(dest,pending,n);pendingLen=0;}
     else if((!sentOnce||millis()-lastSend>=5000)&&delivery.ready()){
       int job=delivery.next();
       if(job>=0){const auto &j=delivery.get(job);bool known=false,ambiguous=false;
-        for(const auto &c:contacts)if(c.length()>=264&&c.substring(2,14)==hex(j.recipient,6)){
-          if(known||c.substring(2,66)!=hex(j.recipient,32)||c.substring(66,68)!="01")ambiguous=true;known=true;
+        for(unsigned i=0;i<contactCount();++i) {
+          String c=contactHex(i);
+          if(c.length()>=264&&c.substring(2,14)==hex(j.recipient,6)) {
+            if(known||c.substring(2,66)!=hex(j.recipient,32)||c.substring(66,68)!="01")ambiguous=true;known=true;
+          }
         }
         if(!known||ambiguous)delivery.defer(job);
         else if(j.attempts&&(routeJob!=j.id||routeAttempt!=j.attempts)){

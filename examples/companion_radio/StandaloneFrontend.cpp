@@ -7,6 +7,7 @@
 
 #include <Arduino.h>
 #include <stdarg.h>
+#include <vector>
 #include <SPIFFS.h>
 #include <Preferences.h>
 #include <helpers/MultiSerialInterface.h>
@@ -136,8 +137,8 @@ void serviceGps() {
 }
 
 // ------------------------------------------------------------------ dev::Api on top of the companion
-dev::Target cache[8 + 64];
-unsigned cached = 0;
+std::vector<dev::Target> cache;
+uint32_t targets_revision = 0, private_history_floor = 0;
 int hexByte(const String &h, unsigned i) {
   if (h.length() < 2 * i + 2) return -1;
   int a = disaster::hexNibble(h[2 * i]), b = disaster::hexNibble(h[2 * i + 1]);
@@ -159,38 +160,46 @@ int32_t hexI32(const String &h, unsigned at) {
   return int32_t(v);
 }
 void rebuildTargets() {
-  unsigned n = 0;
-  for (unsigned i = 0; i < 8; ++i) {
-    const String &h = companion.channelHex(i);
-    if (!h.length()) continue;
-    dev::Target &t = cache[n++]; memset(&t, 0, sizeof(t));
-    snprintf(t.id, sizeof(t.id), "c%u", i); t.kind = dev::Kind::Channel;
-    hexText(h, 2, 34, t.name, sizeof(t.name));
-    if (!t.name[0]) snprintf(t.name, sizeof(t.name), "Kanal %u", i);
+  cache.clear();
+  for (unsigned i=0;i<8;++i) {
+    const String &h=companion.channelHex(i); if(!h.length())continue;
+    dev::Target t={}; snprintf(t.id,sizeof(t.id),"c%u",i); t.kind=dev::Kind::Channel;
+    hexText(h,2,34,t.name,sizeof(t.name));
+    if(!t.name[0])snprintf(t.name,sizeof(t.name),"Kanal %u",i);
+    cache.push_back(t);
   }
-  for (unsigned i = 0; i < 64; ++i) {
-    const String &h = companion.contactHex(i);
-    if (h.length() < 264) continue;
-    dev::Target &t = cache[n++]; memset(&t, 0, sizeof(t));
-    t.id[0] = 'd'; for (int k = 0; k < 12; ++k) t.id[1 + k] = char(tolower(h[2 + k]));
-    int type = hexByte(h, 33);
-    t.kind = type == 1 ? dev::Kind::Chat : type == 2 ? dev::Kind::Repeater : type == 3 ? dev::Kind::Room : dev::Kind::Sensor;
-    hexText(h, 100, 132, t.name, sizeof(t.name));
-    if (!t.name[0]) snprintf(t.name, sizeof(t.name), "%.6s", t.id + 1);
-    if (h.length() >= 288) {
-      int32_t la = hexI32(h, 136), lo = hexI32(h, 140);
-      if (la || lo) { t.hasPos = true; t.lat = la / 1e6; t.lon = lo / 1e6; }
+  ContactInfo contact; auto iter=the_mesh.startContactsIterator();
+  while(iter.hasNext(&the_mesh,contact)) {
+    dev::Target t={}; t.id[0]='d';
+    static const char digits[]="0123456789abcdef";
+    for(unsigned k=0;k<6;++k){t.id[1+2*k]=digits[contact.id.pub_key[k]>>4];t.id[2+2*k]=digits[contact.id.pub_key[k]&15];}
+    t.kind=contact.type==1?dev::Kind::Chat:contact.type==2?dev::Kind::Repeater:contact.type==3?dev::Kind::Room:dev::Kind::Sensor;
+    memcpy(t.name,contact.name,32); t.name[32]=0;
+    if(!t.name[0])snprintf(t.name,sizeof(t.name),"%.6s",t.id+1);
+    if(contact.gps_lat||contact.gps_lon){t.hasPos=true;t.lat=contact.gps_lat/1e6;t.lon=contact.gps_lon/1e6;}
+    cache.push_back(t);
+  }
+  uint32_t hash=2166136261u;
+  for(const auto& t:cache) {
+    for(const char *p=t.id;*p;++p)hash=(hash^uint8_t(*p))*16777619u;
+    for(const char *p=t.name;*p;++p)hash=(hash^uint8_t(*p))*16777619u;
+    hash=(hash^unsigned(t.kind))*16777619u; hash=(hash^unsigned(t.hasPos))*16777619u;
+    if(t.hasPos) {
+      for(const uint8_t *p=reinterpret_cast<const uint8_t*>(&t.lat),*end=p+sizeof(t.lat);p<end;++p)hash=(hash^*p)*16777619u;
+      for(const uint8_t *p=reinterpret_cast<const uint8_t*>(&t.lon),*end=p+sizeof(t.lon);p<end;++p)hash=(hash^*p)*16777619u;
     }
   }
-  cached = n;
+  targets_revision=hash;
 }
 
 class StandaloneApi : public dev::Api {
   mutable File hist;
 public:
   bool ready() const override { return companion.ready(); }
-  unsigned targetCount() const override { return cached; }
-  bool target(unsigned i, dev::Target &out) const override { if (i >= cached) return false; out = cache[i]; return true; }
+  unsigned targetCount() const override { return unsigned(cache.size()); }
+  uint32_t targetRevision() const override { return targets_revision; }
+  uint32_t privateHistoryFloor() const override { return private_history_floor; }
+  bool target(unsigned i, dev::Target &out) const override { if (i >= cache.size()) return false; out = cache[i]; return true; }
   uint32_t historySeq() const override { return companion.historySeq(); }
   void historyScan(bool start) const override { if (hist) hist.close(); if (start) hist = companion.openHistory(); }
   bool historyRecord(size_t slot, disaster::HistoryRecord &r) const override {
@@ -240,11 +249,11 @@ public:
     logEvent("%s", status);
     return ok;
   }
-  bool refresh() override { return companion.localRefresh(); }
+  bool refresh() override { rebuildTargets(); return true; }
   void info(dev::Info &o) const override {
     NodePrefs *p = the_mesh.getNodePrefs();
     snprintf(o.name, sizeof(o.name), "%s", p->node_name); o.firmware = FIRMWARE_VERSION;
-    unsigned ch = 0, co = 0; for (unsigned i = 0; i < cached; ++i) (cache[i].kind == dev::Kind::Channel ? ch : co)++;
+    unsigned ch=0,co=0; for(const auto& t:cache)(t.kind==dev::Kind::Channel?ch:co)++;
     o.channels = ch; o.contacts = co; o.history = companion.historySeq(); o.historyOK = companion.historyOK();
     o.bleConnected = bluetooth_interface.isConnected(); o.defaultPin = the_mesh.getBLEPin() == DISASTER_BLE_PIN;
     o.clockOK = disaster::validStamp(rtc_clock.getCurrentTime());
@@ -320,6 +329,12 @@ void frontend::begin(MultiSerialInterface &interfaces) {
   share_on = nvs.getBool("share", false);       // off until the user switches it on
   map_index = nvs.getInt("map", 0);
   companion.beginLocal();                        // history, outbox, SD archive (mounts the card)
+  cache.reserve(MAX_CONTACTS+8);
+  companion.setContactSource([]()->unsigned { return unsigned(the_mesh.getNumContacts()); },
+    [](unsigned i)->String { ContactInfo c; return the_mesh.getContactByIdx(i+MAX_ANON_CONTACTS,c)?LocalCompanion::encodeContact(c):String(); });
+  // Start the new private view empty once; keep the floor across ordinary reboots.
+  if(nvs.isKey("priv-v1-seq")) private_history_floor=nvs.getUInt("priv-v1-seq",0);
+  else {private_history_floor=companion.historySeq();nvs.putUInt("priv-v1-seq",private_history_floor);}
   interfaces.addInterface(InterfaceType::Portal, &companion);
   the_mesh.setLocalOrigin("T-Deck");
   the_mesh.setAppSentObserver([](const uint8_t *cmd, size_t len, const uint8_t *tag) { companion.recordAppSend(cmd, len, tag); });

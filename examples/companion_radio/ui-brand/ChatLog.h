@@ -133,21 +133,21 @@ public:
   const Entry &at(size_t i) const { return items[i]; }
   uint32_t newest() const { return count ? items[count - 1].seq : 0; }
   // Entries of one conversation; room=true: Brett posts (room posts and own sends to that room).
-  template <class Fn> void forEach(const char *conv, bool room, Fn fn) const {
+  template <class Fn> void forEach(const char *conv, bool room, Fn fn, uint32_t floor=0) const {
     for (size_t i = 0; i < count; ++i) {
       const Entry &e = items[i];
-      if (strcmp(e.conv, conv)) continue;
+      if (e.seq<=floor || strcmp(e.conv, conv)) continue;
       if (room ? !(e.room || e.own) : e.room) continue;
       fn(e);
     }
   }
-  unsigned unread(const char *conv, bool room = false) const {
+  unsigned unread(const char *conv, bool room = false, uint32_t floor=0) const {
     uint32_t s = seenSeq(conv); unsigned n = 0;
-    forEach(conv, room, [&](const Entry &e) { if (!e.own && e.seq > s) ++n; });
+    forEach(conv, room, [&](const Entry &e) { if (!e.own && e.seq > s) ++n; },floor);
     return n;
   }
-  const Entry *last(const char *conv, bool room = false) const {
-    const Entry *l = nullptr; forEach(conv, room, [&](const Entry &e) { l = &e; }); return l;
+  const Entry *last(const char *conv, bool room = false, uint32_t floor=0) const {
+    const Entry *l = nullptr; forEach(conv, room, [&](const Entry &e) { l = &e; },floor); return l;
   }
   void markRead(const char *conv) {
     uint32_t s = newest() > baseline ? newest() : baseline;

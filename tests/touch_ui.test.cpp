@@ -28,7 +28,7 @@ static void type(sui::UI &u, const char *s) {
     u.key(uint8_t(*s++));
 }
 static void tab(sui::UI &u, int i) {
-  assert(tap(u, 32 + i * 64, 15));
+  assert(tap(u, theme::tabCenter(i), 15));
   draw(u);
 }
 static void back(sui::UI &u) {
@@ -46,13 +46,13 @@ static void testReleaseAndLists() {
     api.add(id, name, dev::Kind::Chat);
   }
   sui::UI u;
-  start(u);
+  start(u); tab(u,5);
   // Cross-row releases, row gaps and tab gaps are not selections.
   assert(!u.gesture(100, 100, 100, 108));
   assert(!tap(u, 100, 103));
-  assert(!tap(u, 64, 15));
-  assert(u.current() == sui::CHAT_LIST);
-  assert(u.gesture(100, 210, 105, 90));
+  assert(!tap(u, theme::tabLeft(1), 15));
+  assert(u.current() == sui::PRIVATE_LIST);
+  assert(u.gesture(100, 210, 105, 128));
   draw(u);
   assert(tap(u, 100, 80));
   assert(std::string(u.conversation()) == "d000000000004");
@@ -73,7 +73,7 @@ static void testReleaseAndLists() {
   assert(!u.gesture(280, 205, 280, 205, true));        // moved out and back
   assert(!u.gesture(280, 205, 280, 205, false, 1000)); // long resting finger
   assert(!u.gesture(280, 205, 280, 140));              // scroll starts on SEND
-  assert(!u.gesture(61, 15, 66, 15));                  // another tab on release
+  assert(!u.gesture(theme::tabRight(0)-3,15,theme::tabLeft(1)+3,15));                  // another tab on release
   assert(api.sends == sends && u.draft()[0]);
   uint32_t before = u.touchEpoch();
   draw(u);
@@ -85,12 +85,12 @@ static void testReleaseAndLists() {
   assert(tap(u, 280, 205));
   assert(api.sends == sends + 1); // empty repeat does not send
   assert(u.gesture(8, 120, 100, 125));
-  assert(u.current() == sui::CHAT_LIST);
+  assert(u.current() == sui::PRIVATE_LIST);
   draw(u);
   // A disappeared displayed contact must never open its replacement at the same index.
   api.targets.erase(api.targets.begin() + 4);
   tap(u, 100, 80);
-  assert(u.current() == sui::CHAT_LIST);
+  assert(u.current() == sui::PRIVATE_LIST);
 }
 
 static void testQuickPickers() {
@@ -262,7 +262,50 @@ static void testTxGuardInfo() {
   assert(screen.allText.find("Funkprofil pruefen")!=std::string::npos);
 }
 
+static void testPrivateContacts() {
+  api=FakeApi();
+  api.add("c0","Public",dev::Kind::Channel);
+  api.add("d000000000001","Anna",dev::Kind::Chat);
+  api.add("d000000000002","Repeater X",dev::Kind::Repeater);
+  api.add("d000000000003","Room X",dev::Kind::Room);
+  api.add("d000000000004","Sensor X",dev::Kind::Sensor);
+  api.directIn("d000000000001","Alte private Nachricht",api.clock);
+  api.privateFloor=api.seq;
+  sui::UI u; start(u);
+  assert(screen.allText.find("Public")!=std::string::npos&&screen.allText.find("Anna")==std::string::npos);
+  tab(u,5); assert(u.current()==sui::PRIVATE_LIST);
+  assert(screen.allText.find("Anna")!=std::string::npos);
+  assert(screen.allText.find("Repeater X")==std::string::npos&&screen.allText.find("Room X")==std::string::npos);
+  assert(screen.allText.find("Sensor X")==std::string::npos&&screen.allText.find("Public")==std::string::npos);
+  assert(screen.allText.find("Alte private Nachricht")==std::string::npos);
+  u.click(); draw(u); assert(u.current()==sui::CHAT_VIEW);
+  assert(screen.allText.find("Alte private Nachricht")==std::string::npos);
+  api.directIn("d000000000001","Neue private Nachricht",api.clock+1); u.tick(10000); draw(u);
+  assert(screen.allText.find("Neue private Nachricht")!=std::string::npos);
+  u.key(sui::K_BACK); assert(u.current()==sui::PRIVATE_LIST);
+  snprintf(api.targets[1].name,sizeof(api.targets[1].name),"Anna neu");
+  u.tick(11000); assert(u.pending()==sui::UI::FULL); draw(u);
+  assert(screen.allText.find("Anna neu")!=std::string::npos);
+  api.targets.erase(api.targets.begin()+1);u.tick(12000);draw(u);
+  assert(screen.allText.find("Anna neu")==std::string::npos);
+  // No 64-contact truncation and no large target array on the task stack.
+  api=FakeApi();
+  for(unsigned i=0;i<350;++i){char id[14],name[33];snprintf(id,sizeof(id),"d%012x",i+1);snprintf(name,sizeof(name),"Kontakt %u",i);api.add(id,name,dev::Kind::Chat);}
+  sui::UI many;start(many);tab(many,5);
+  for(unsigned i=0;i<100;++i)many.move(0,1);
+  draw(many); tap(many,100,touchui::row(3).y+5);
+  assert(std::string(many.conversation())=="d000000000065");
+  many.key(sui::K_BACK);
+  for(unsigned i=0;i<10;++i)many.move(0,1);
+  draw(many);tap(many,100,touchui::row(3).y+5);
+  assert(std::string(many.conversation())=="d00000000006f");
+  many.key(sui::K_BACK);
+  for(unsigned i=0;i<239;++i)many.move(0,1);
+  many.click();assert(std::string(many.conversation())=="d00000000015e");draw(many);
+}
+
 int main() {
+  testPrivateContacts();
   // All settings rows remain reachable without a local radio editor.
   api=FakeApi(); sui::UI u; start(u); tab(u,4);
   for (int i=0;i<20;++i) {

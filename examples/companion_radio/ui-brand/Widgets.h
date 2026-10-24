@@ -61,9 +61,10 @@ inline void navBatteryField(DisplayDriver *d) {
 constexpr int BACK_ZONE_W = 80;
 inline void statusLine(DisplayDriver *d, const char *title_utf8, bool back, unsigned unread, bool back_focus = false) {
   d->nativeFill(0, 0, theme::W, theme::NAV_H, theme::NAV_BG);
-  const char *tabs[] = { "CHAT", "MELDUNG", "BRETT", "KARTE", "GERAET" };
+  const char *tabs[] = { "CHAT", "MELDUNG", "BRETT", "KARTE", "GERAET", "PRIVAT" };
   int selected =
-      !strcmp(title_utf8, "Chat")      ? 0
+      !strcmp(title_utf8, "Privat")    ? 5
+      : !strcmp(title_utf8, "Chat")      ? 0
       : !strcmp(title_utf8, "Meldung") ? 1
       : !strcmp(title_utf8, "Brett")   ? 2
       : !strcmp(title_utf8, "Karte")   ? 3
@@ -72,9 +73,9 @@ inline void statusLine(DisplayDriver *d, const char *title_utf8, bool back, unsi
           ? 1
       : !strcmp(title_utf8, "Info") || !strcmp(title_utf8, "Standort") || !strncmp(title_utf8, "Ger", 3) ? 4
                                                                                                          : -1;
-  for (int i = 0; i < 5; ++i) {
-    d->nativeFill(2 + i * 64, 2, 60, 32, i == selected ? theme::MESH : theme::BUTTON2);
-    centerText(d, 32 + i * 64, 14, i == selected ? theme::INK : theme::TEXT, tabs[i]);
+  for (int i = 0; i < theme::TAB_COUNT; ++i) {
+    d->nativeFill(theme::tabLeft(i)+2,2,theme::tabRight(i)-theme::tabLeft(i)-4,32,i==selected?theme::MESH:theme::BUTTON2);
+    centerText(d, theme::tabCenter(i), 14, i == selected ? theme::INK : theme::TEXT, tabs[i]);
   }
   d->nativeFill(0, theme::NAV_H - 1, theme::W, 1, theme::LINE);
   if (back) {

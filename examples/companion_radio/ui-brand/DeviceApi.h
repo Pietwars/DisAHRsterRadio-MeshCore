@@ -39,6 +39,8 @@ class Api {
 public:
   virtual ~Api() {}
   virtual bool ready() const = 0;                                  // companion startup finished
+  virtual uint32_t targetRevision() const { return 0; }
+  virtual uint32_t privateHistoryFloor() const { return 0; }
   virtual unsigned targetCount() const = 0;                        // channels first, then contacts
   virtual bool target(unsigned index, Target &out) const = 0;
   virtual uint32_t historySeq() const = 0;                         // changes with every stored record

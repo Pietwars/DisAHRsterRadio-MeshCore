@@ -1,5 +1,24 @@
 # T-Deck Plus Standalone (Issue #35)
 
+## Privatnachrichten und Kontakte
+Der neue Reiter **PRIVAT** enthält ausschließlich im Funkkern gespeicherte persönliche
+Chat-Kontakte. Kanalnachrichten stehen unter CHAT, Room-Server unter BRETT. Repeater,
+Sensoren und nur entdeckte, nicht hinzugefügte Geräte erscheinen nicht unter PRIVAT.
+Die bestehende automatische Aufnahme von Repeatern/Rooms bleibt unverändert.
+
+Der Kontaktbestand wird direkt aus dem Funkkern gelesen und ungefähr einmal pro
+Sekunde auf der Oberfläche aktualisiert, einschließlich neuer Kontakte, Namen und
+Löschungen aus der App. Die Liste ist nicht mehr auf 64 Kontakte begrenzt. Auch lokale
+Privatnachrichten und die Outbox verwenden diesen aktuellen Bestand.
+
+Der Privatverlauf beginnt beim ersten Start dieser UI-Version leer. Vorhandene
+persönliche Kontakte bleiben sichtbar. Alte private Verlaufszeilen werden nur in
+dieser Ansicht ausgeblendet, nicht aus der gemeinsamen Datei gelöscht. Der Startpunkt
+wird gespeichert, sodass ein normaler Neustart neue Nachrichten nicht wieder ausblendet.
+Kanal- und Brettverläufe bleiben erhalten. App-Parallelbetrieb und Darstellung müssen
+weiterhin auf dem realen T-Deck Plus geprüft werden.
+
+
 **Aktuelle Folgeversion: standalone-test6 im Release 0.9.5.** Die neue
 Touch-Bedienung, Vorschauen und Abnahme stehen unter [Touch-Bedienung](STANDALONE_TOUCH.md),
 [Galerie](STANDALONE_VORSCHAU.md) und [Release und Hardwarestatus](RELEASE-0.9.5.md).
