@@ -32,6 +32,10 @@ for block in blocks:
     with tempfile.TemporaryDirectory(prefix='dar-host-') as host_tmp:
         run(['bash', '-euo', 'pipefail', '-c', block.replace('/tmp/', host_tmp + '/')])
 with tempfile.TemporaryDirectory(prefix='dar096-') as tmp:
+    sd_binary=Path(tmp)/'archive-sd'
+    run(['g++','-std=c++11','-Wall','-Wextra','-Werror',
+         '-fsanitize=address,undefined','-Itests/sd_fakes','tests/archive_sd.test.cpp','-o',str(sd_binary)])
+    run([str(sd_binary)])
     profile_binary=Path(tmp)/'dar-radio-policy'
     run(['g++','-std=c++11','-Wall','-Wextra','-Werror',
          '-fsanitize=address,undefined','tests/dar_radio_policy.test.cpp','-o',str(profile_binary)])

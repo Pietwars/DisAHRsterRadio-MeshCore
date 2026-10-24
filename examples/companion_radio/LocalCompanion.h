@@ -128,6 +128,9 @@ public:
   bool ready() const { return enabled && startup>=12; }
   bool historyOK() const { return storageOK; }
   bool archiveReady() const { return archive.ready(); }
+  bool sdCardReady() const { return archive.cardReady(); }
+  const char *sdStatus() const { return archive.status(); }
+  void retrySd() { archive.begin(); }
   uint32_t historySeq() const { return seq; }
   // Physical history slot (0..HISTORY_SLOTS-1); false for empty or damaged slots.
   bool readHistory(size_t slot, Record &r) const {
