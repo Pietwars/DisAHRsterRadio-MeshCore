@@ -30,7 +30,7 @@ gpsshare::Share gps_share;
 Preferences nvs;                 // "dar-sa": share toggle, map (survive without SD card)
 bool share_on = false;
 int map_index = 0;
-bool log_on = true, sd_config = false;
+bool log_on = false, sd_config = false;
 char sd_note[64] = "";
 uint32_t next_gps = 0, next_targets = 0, next_heap = 0;
 bool last_fix = false;
@@ -69,6 +69,9 @@ void logEvent(const char *fmt, ...) {
 #endif
 }
 
+devcfg::Config pending_config;
+bool config_pending = false;
+
 void loadConfig() {
 #ifdef DISASTER_SD
   if (!sdReady()) { snprintf(sd_note, sizeof(sd_note), "keine Karte / nicht lesbar"); return; }
@@ -81,26 +84,9 @@ void loadConfig() {
   devcfg::Config c;
   if (size > devcfg::MAX_BYTES || n != size || !devcfg::parse(buf, n, c)) { snprintf(sd_note, sizeof(sd_note), "config.txt zu gross/defekt"); return; }
   sd_config = true;
-  if (c.hasLog) log_on = c.log;
-  if (c.hasShare) { share_on = c.share; nvs.putBool("share", share_on); }
-  if (c.hasMap) { int i = sui::mapIndexForKey(c.map); if (i >= 0) { map_index = i; nvs.putInt("map", i); } }
-  if (c.secrets) snprintf(sd_note, sizeof(sd_note), "%u geheime Zeile(n) ignoriert", c.secrets);
-  else if (c.rejected || c.unknown) snprintf(sd_note, sizeof(sd_note), "%u Zeile(n) ignoriert", c.rejected + c.unknown);
-#endif
-}
-char config_name[devcfg::NAME_BYTES + 1] = "";
-
-void readConfigName() {
-#ifdef DISASTER_SD
-  if (!sdReady()) return;
-  File f = SD.open(CONFIG_PATH, FILE_READ);
-  if (!f) return;
-  static char buf[devcfg::MAX_BYTES + 1];
-  size_t size = f.size(), n = size <= devcfg::MAX_BYTES ? f.read((uint8_t *)buf, size) : 0;
-  f.close();
-  devcfg::Config c;
-  if (n == size && devcfg::parse(buf, n, c) && c.hasName && strcmp(c.name, the_mesh.getNodePrefs()->node_name))
-    snprintf(config_name, sizeof(config_name), "%s", c.name);
+  pending_config = c;
+  config_pending = c.hasName || c.hasShare || c.hasMap || c.hasLog;
+  snprintf(sd_note, sizeof(sd_note), "SD-Import wartet auf Geraetebestaetigung");
 #endif
 }
 
@@ -116,6 +102,7 @@ bool saveConfig(char *status, size_t size) {
   bool ok = n && f && f.write((const uint8_t *)out, n) == n;
   if (f) f.close();
   sd_config = ok;
+  if (ok) config_pending = false;
   snprintf(status, size, "%s", ok ? "Einstellungen auf SD gespeichert" : "SD: Schreiben fehlgeschlagen");
   logEvent("Einstellungen gespeichert: %s", ok ? "ok" : "Fehler");
   return ok;
@@ -267,6 +254,40 @@ public:
     o.txFlood = the_mesh.getNumSentFlood(); o.txDirect = the_mesh.getNumSentDirect();
     o.rxFlood = the_mesh.getNumRecvFlood(); o.rxDirect = the_mesh.getNumRecvDirect();
   }
+  bool changeName(const char *name, char *status, size_t size) override {
+    if (!devcfg::validName(name) || bluetooth_interface.isConnected()) {
+      snprintf(status, size, "Name ungueltig oder Bluetooth verbunden"); return false;
+    }
+    bool ok = companion.localSetName(name);
+    snprintf(status, size, "%s", ok ? "Name uebergeben; SD-Kopie separat speichern" : "Funkkern beschaeftigt. Erneut versuchen");
+    return ok;
+  }
+  bool configPreview(devcfg::Config &out) const override {
+    if (!config_pending) return false; out = pending_config; return true;
+  }
+  bool importConfig(char *status, size_t size) override {
+    if (!config_pending || bluetooth_interface.isConnected()) {
+      snprintf(status, size, "Kein SD-Import oder Bluetooth verbunden"); return false;
+    }
+    const devcfg::Config &c = pending_config;
+    int new_map = c.hasMap ? sui::mapIndexForKey(c.map) : map_index;
+    if (new_map < 0) { snprintf(status, size, "Unbekannte Karte; Import abgebrochen"); return false; }
+    if (c.hasName && (!devcfg::validName(c.name) || !companion.localSetName(c.name))) {
+      snprintf(status, size, "Name ungueltig oder Funkkern beschaeftigt"); return false;
+    }
+    // This snapshot was read at boot. No second SD read after confirmation.
+    bool stored = true;
+    if (c.hasLog) { log_on = c.log; stored = (nvs.putBool("log", log_on) == sizeof(bool)) && stored; }
+    if (c.hasShare) { share_on = c.share; stored = (nvs.putBool("share", share_on) == sizeof(bool)) && stored; }
+    if (c.hasMap) { map_index = new_map; stored = (nvs.putInt("map", map_index) == sizeof(int32_t)) && stored; }
+    if (!stored) {
+      snprintf(status, size, "Teilweise angewendet; Speicherfehler. Erneut versuchen"); return false;
+    }
+    config_pending = false;
+    snprintf(sd_note, sizeof(sd_note), "SD-Import am Geraet bestaetigt");
+    snprintf(status, size, "SD-Einstellungen uebergeben");
+    return true;
+  }
   bool changeBlePin(uint32_t pin, char *status, size_t size) override {
     if (!disaster::validBlePin(pin) || disaster::needsBlePinProvisioning(pin) || bluetooth_interface.isConnected()) {
       snprintf(status, size, "PIN ungueltig oder Bluetooth verbunden");
@@ -292,6 +313,7 @@ bool frontend::mountFilesystem() {
 
 void frontend::begin(MultiSerialInterface &interfaces) {
   nvs.begin("dar-sa", false);
+  log_on = nvs.getBool("log", false);
   share_on = nvs.getBool("share", false);       // off until the user switches it on
   map_index = nvs.getInt("map", 0);
   companion.beginLocal();                        // history, outbox, SD archive (mounts the card)
@@ -301,7 +323,6 @@ void frontend::begin(MultiSerialInterface &interfaces) {
   gps_share.begin(gpsshare::Loc(sensors.node_lat, sensors.node_lon, the_mesh.advertLocPolicy()));
   the_mesh.setPrefsLocationHook(prefsLocation);
   loadConfig();
-  readConfigName();
   logEvent("Start %s, Heap %u, SD %s", FIRMWARE_VERSION, (unsigned)ESP.getFreeHeap(), sdReady() ? "ja" : "nein");
 }
 
@@ -312,10 +333,6 @@ void frontend::loop() {
   companion.serviceLocal();
   if (int32_t(now - next_targets) >= 0) { next_targets = now + 1000; rebuildTargets(); }
   if (int32_t(now - next_gps) >= 0) { next_gps = now + 1000; serviceGps(); }
-  if (config_name[0] && companion.ready() && companion.localSetName(config_name)) {
-    logEvent("Knotenname aus config.txt gesetzt");
-    config_name[0] = 0;
-  }
   if (int32_t(now - next_heap) >= 0) {
     next_heap = now + 30000;
     uint32_t f = ESP.getFreeHeap();

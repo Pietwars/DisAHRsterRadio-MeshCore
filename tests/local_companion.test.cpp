@@ -110,6 +110,11 @@ int main() {
   c.writeFrame(in, 19); assert(countKind(c, 17) == 1);
   uint8_t app[12] = {3, 0, 0}; memcpy(app + 3, &stamp, 4); memcpy(app + 7, "Hallo", 5);
   c.recordAppSend(app, 12, nullptr); assert(countKind(c, 0xf3) == 2);
+  assert(!c.localSetName(nullptr)&&!c.localSetName(" ")&&!c.localSetName("bad\nname"));
+  assert(c.localSetName("Lager 3"));
+  assert(!c.localSetName("Zweiter Name")); // one configuration frame at a time
+  n=c.checkRecvFrame(f); assert(n==8&&f[0]==8&&!memcmp(f+1,"Lager 3",7)); c.writeFrame(ok,1);
+  startup(c); assert(c.ready()); // name changes trigger the existing cache refresh
   // An unanswered send is never repeated automatically.
   fake_millis += 5000;
   assert(c.localSend("c0", "Spaet", stamp, st, sizeof(st)));

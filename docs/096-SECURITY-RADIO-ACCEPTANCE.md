@@ -10,7 +10,7 @@ Vorhandenes Touch-/Empfangsfeedback ersetzt keine vollständige Hardwareabnahme.
 |---|---|---|
 | Offenes WLAN/HTTP | Privilegierte Schreib-Routen 403; Login 503; keine PIN-/Token-Authentifizierung; kein Admin-Button | Reale Negativtests einschließlich gefälschter Header, paralleler Clients und Neustart |
 | BLE | Öffentliche Befehlsliste auch mit gesetzter PIN; Schlüsselimport/-export und Konfiguration gesperrt | Pairing, Bonding, Recovery und Wiederverbindung am Gerät |
-| Lokale Standalone-UI | PIN-Eingabe mit Bestätigung; Änderung bei aktiver BLE-Verbindung verweigert; Neustart erforderlich | Persistenz, Sperre bei Verbindung, Zugriff am realen Display |
+| Lokale Standalone-UI | Namenseditor und SD-Import mit Gerätebestätigung; PIN-Eingabe mit Bestätigung; Änderung bei aktiver BLE-Verbindung verweigert; Neustart erforderlich | Persistenz, Sperre bei Verbindung, Zugriff am realen Display |
 | USB | Nur bei tatsächlich aktivierter Schnittstelle vertrauenswürdiger Companion-Kanal | In beiden aktuellen LocalCompanion-T-Deck-Targets deaktiviert; nicht als nutzbare Konfiguration bewerben |
 
 ESP32 ersetzt ungültige PINs und die bekannte Test-PIN 123456 durch eine zufällige

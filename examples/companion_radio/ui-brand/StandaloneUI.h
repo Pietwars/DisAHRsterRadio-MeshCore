@@ -36,6 +36,8 @@ enum Page : uint8_t {
   DEVICE,
   DEVICE_INFO,
   BLE_PIN_EDIT,
+  NAME_EDIT,
+  CONFIG_IMPORT,
   PAGE_COUNT
 };
 constexpr size_t COMPOSE_BYTES = 100;   // disaster::LOCAL_TEXT_LIMIT
@@ -76,6 +78,8 @@ private:
   char blePinDraft[7] = "";
   char blePinFirst[7] = "";
   bool blePinConfirm = false;
+  char nameDraft[25] = "";
+  bool nameConfirm = false;
   int listSel[PAGE_COUNT] = {0}, listTop[PAGE_COUNT] = {0};
   int locSel = 0, devSel = 0, devTop = 0, scroll = 0;
   uint32_t touchRevision = 0;
@@ -111,6 +115,7 @@ private:
   void drawDevice(DisplayDriver *d);
   void drawDeviceInfo(DisplayDriver *d);
   void drawBlePinEdit(DisplayDriver *d);
+  void drawLocalConfig(DisplayDriver *d);
   void drawHint(DisplayDriver *d);
   void drawBoot(DisplayDriver *d);
   void drawMenu(DisplayDriver *d);

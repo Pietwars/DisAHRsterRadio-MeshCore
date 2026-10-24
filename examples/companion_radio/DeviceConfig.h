@@ -19,6 +19,16 @@ struct Config {
   char map[MAP_KEY_BYTES + 1] = "";
   unsigned rejected = 0, unknown = 0, secrets = 0;   // ignored lines
 };
+inline bool validName(const char *name) {
+  if (!name) return false;
+  size_t n = 0; bool visible = false;
+  for (; n <= NAME_BYTES && name[n]; ++n) {
+    unsigned char c = (unsigned char)name[n];
+    if (c < 32 || c == 127) return false;
+    if (c != ' ') visible = true;
+  }
+  return n >= 1 && n <= NAME_BYTES && visible;
+}
 inline bool secretKey(const char *k, size_t n) {
   static const char *const words[] = {"pin", "key", "schluessel", "schl\xc3\xbcssel", "passw", "secret", "token", "psk"};
   char low[40]; if (n >= sizeof(low)) n = sizeof(low) - 1;

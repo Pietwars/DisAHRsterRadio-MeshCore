@@ -226,7 +226,26 @@ static void testPinEditor() {
   type(u,"654321");u.key('\n');assert(api.pinChanges==1);
 }
 
+static void testLocalConfig() {
+  api = FakeApi(); sui::UI u; start(u); tab(u, 4);
+  for (int i=0;i<8;++i) u.move(0,1);
+  u.click(); assert(u.current()==sui::NAME_EDIT);
+  type(u,"Lager 3"); u.key('\n'); assert(api.nameChanges==0);
+  // Editing invalidates the first confirmation.
+  u.key('A'); u.key('\n'); assert(api.nameChanges==0);
+  u.key('\n'); assert(api.nameChanges==1&&api.changedName=="Lager 3A");
+  assert(u.current()==sui::DEVICE);
+  u.click(); type(u,"Verwerfen"); u.key('\n'); tab(u,0);
+  tab(u,4); u.click(); u.key('\n'); assert(api.nameChanges==1);
+  back(u); u.move(0,1); u.click(); assert(u.current()==sui::CONFIG_IMPORT);
+  draw(u); assert(api.configImports==0); back(u); assert(api.configImports==0);
+  u.click(); draw(u); api.configOk=false; u.key('\n');
+  assert(api.configImports==1&&u.current()==sui::CONFIG_IMPORT);
+  api.configOk=true; u.key('\n'); assert(api.configImports==2&&u.current()==sui::DEVICE);
+}
+
 int main() {
+  testLocalConfig();
   testPinEditor();
   testReleaseAndLists();
   testQuickPickers();

@@ -95,6 +95,16 @@ check("startSendRaw(raw, len)" in check_send and
 check("accountTxAirtime();" in dispatcher,
       "dispatcher charges elapsed TX time to shared airtime budget")
 
+# SD configuration is inert at boot; only a physical local action imports it.
+standalone = (ROOT / "examples/companion_radio/StandaloneFrontend.cpp").read_text()
+loader = standalone.split("void loadConfig()", 1)[1].split("bool saveConfig(", 1)[0]
+check("pending_config = c;" in loader and "nvs.put" not in loader and "localSetName(" not in loader,
+      "boot SD loader stages settings without changing device preferences")
+check("config_name" not in standalone and "readConfigName" not in standalone,
+      "no deferred automatic SD name application remains")
+check("api->importConfig(" in ui_page and "api->configPreview(c)" in ui_page,
+      "local SD import has a device preview and explicit confirmation")
+
 # Public transports must never become privileged merely because a BLE PIN is configured.
 permission = access.split("inline bool allowCompanionCommand(", 1)[1].split("\n}", 1)[0]
 check("return !publicTransport || publicCompanionCommand(cmd);" in permission,

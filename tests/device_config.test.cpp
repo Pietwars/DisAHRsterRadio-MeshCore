@@ -6,6 +6,10 @@
 using namespace devcfg;
 
 int main() {
+  assert(!validName(nullptr)&&!validName("")&&!validName("   "));
+  assert(!validName("Lager\nAdmin")&&!validName("Lager\x7f"));
+  assert(validName("Lager 3")&&validName(std::string(24, 'a').c_str()));
+  assert(!validName(std::string(25, 'a').c_str()));
   Config c;
   const char *ok = "# Kommentar\r\nname = DAR-Lager 3\r\ngps_teilen=1\nkarte=dernau\nlog=aus\n\n";
   assert(parse(ok, strlen(ok), c));

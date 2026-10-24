@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <string.h>
 #include "../HistoryRecord.h"
+#include "../DeviceConfig.h"
 
 namespace dev {
 enum class Kind : uint8_t { Channel = 0, Chat = 1, Repeater = 2, Room = 3, Sensor = 4 };
@@ -51,6 +52,10 @@ public:
   virtual bool advert(char *status, size_t size) = 0;               // flood advert (with position if shared)
   virtual bool refresh() = 0;                                      // re-read contacts
   virtual void info(Info &out) const = 0;
+  // Physical device UI only; never expose these through public transports.
+  virtual bool changeName(const char *, char *, size_t) { return false; }
+  virtual bool importConfig(char *, size_t) { return false; }
+  virtual bool configPreview(devcfg::Config &) const { return false; }
   virtual bool changeBlePin(uint32_t pin, char *status, size_t size) { (void)pin; (void)status; (void)size; return false; }
   virtual bool saveConfig(char *status, size_t size) = 0;          // settings to SD (no PINs, no keys)
   virtual int mapIndex() const = 0;

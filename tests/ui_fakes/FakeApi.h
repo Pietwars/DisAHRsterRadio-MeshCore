@@ -12,6 +12,16 @@ struct FakeApi : dev::Api {
   uint32_t seq = 0, clock = 1792922400u;   // 2026-10-26 10:00 local
   bool isReady = true, sendOk = true, loginOk = true;
   dev::Gps g; dev::Room rm{"", 0, false};
+  int nameChanges = 0, configImports = 0;
+  bool configOk = true;
+  std::string changedName;
+  bool changeName(const char *name, char *status, size_t size) override {
+    ++nameChanges; changedName = name; snprintf(status, size, "Name uebergeben"); return configOk;
+  }
+  bool configPreview(devcfg::Config &c) const override { c.hasShare = true; c.share = true; return true; }
+  bool importConfig(char *status, size_t size) override {
+    ++configImports; snprintf(status, size, "SD-Einstellungen uebergeben"); return configOk;
+  }
   int map = 0, sends = 0, logins = 0, adverts = 0, refreshes = 0, saves = 0;
   const char *firmwareLabel = "v1.18.0-dar0.9.5-standalone-test";
   std::string lastId, lastText; char st[96] = "Gesendet; Zustellung offen";

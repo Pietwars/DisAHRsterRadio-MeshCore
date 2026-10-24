@@ -1,6 +1,6 @@
 # 0.9.6 – sicherer lokaler Konfigurationsweg (Entwurf)
 
-Status: **Architekturentscheidung offen; noch keine Implementierung oder Hardwarefreigabe.** Bezug: #47 und docs/096-SECURITY-RADIO-ACCEPTANCE.md.
+Status: **Lokale Teilimplementierung; USB-/Gesamtarchitektur und Hardwarefreigabe weiterhin offen.** Bezug: #47 und docs/096-SECURITY-RADIO-ACCEPTANCE.md.
 
 ## Ausgangslage (Codeprüfung 24.10.2026)
 - LocalCompanion.h besitzt exklusive Kontrolle über die Companion-Schnittstelle; ENABLE_USB_INTERFACE parallel zu LocalCompanion löst absichtlich einen Compile-Fehler aus. Diesen Schutz nicht entfernen.
@@ -23,3 +23,13 @@ Status: **Architekturentscheidung offen; noch keine Implementierung oder Hardwar
 - [ ] Geräteprofil, Konfigurationspersistenz, Wiederherstellung und Firmware-SHA auf echter Hardware dokumentiert
 
 **Nicht als erledigt markieren:** USB-Konfiguration, alle Admin-Einstellungen, Funkregulierung, Update-Signaturen und vollständige Hardwareabnahme.
+
+## Lokale Bedienung im 0.9.6-Entwicklungsbranch
+- Unter Gerät: **Gerätenamen ändern**. Maximal 24 Bytes, keine Steuerzeichen oder reinen Leerzeichen. Enter öffnet die Bestätigung; ein weiteres Enter/Trackball bestätigt. Bearbeiten setzt die Bestätigung zurück. Abbruch oder Tabwechsel verwirft den Entwurf.
+- Der Name wird an den vorhandenen lokalen Companion übergeben, nicht direkt über Funk gesendet. Die Rückmeldung bedeutet Annahme in die lokale Queue, keinen Nachweis eines erfolgreichen Flash-Schreibens. Eine SD-Kopie bei Bedarf separat speichern.
+- `/disaster/config.txt` wird beim Start nur als Snapshot vorgemerkt. Unter **SD-Konfiguration anwenden** werden Name, Karte, Standortfreigabe und Log angezeigt; erst Enter/Trackball übernimmt. Die Karte wird nach der Bestätigung nicht erneut eingelesen. Neue SD-Dateien werden beim nächsten Neustart vorgemerkt.
+- Abbruch verändert keine Einstellungen. Eine erfolgreich gespeicherte neue SD-Konfiguration verwirft den alten vorgemerkten Import. Unbekannte Karten brechen den Import ab.
+- **Verhaltensänderung:** Eine SD-Datei allein aktiviert keine Standortfreigabe und überschreibt keinen Namen mehr. Bereits lokal gespeicherte Freigabe/Karte bleiben beim Start erhalten. Ereignislogging ist ohne zuvor bestätigten Import ausgeschaltet; Nachrichtenarchiv und Ereignislog sind getrennt.
+- Namensänderung/SD-Import werden bei bestehender BLE-Verbindung verweigert. Keine Freigabe über Gast-WLAN, kein Admin-Button und kein zweiter USB-Companion.
+- Mehrere NVS-Einträge bilden keine atomare Transaktion: bei Speicherfehler meldet der Import ausdrücklich „teilweise angewendet“ und bleibt wiederholbar. Stromausfall-/Persistenztests bleiben offen.
+- Noch offen: Kanal-/Schlüsselverwaltung, validierte Region-/Funkprofile, gesicherter Recovery-/Wartungsmodus und entsprechender Weg für das WLAN-Target. Dies ist **keine vollständige Konfigurationsfreigabe**.

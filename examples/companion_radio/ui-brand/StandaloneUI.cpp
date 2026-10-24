@@ -20,6 +20,8 @@ const char *title(Page p) {
     case LOCATION: return "Standort";
     case DEVICE_INFO:
       return "Info";
+    case NAME_EDIT: return "Geraetename";
+    case CONFIG_IMPORT: return "SD-Import";
     case BLE_PIN_EDIT: return "Bluetooth-PIN";
     case DEVICE: return "Ger\xc3\xa4t";
     default:
@@ -29,7 +31,7 @@ const char *title(Page p) {
 constexpr int LIST_TOP = touchui::CONTENT, ROW_H = touchui::ROW, HINT_Y = H - 9;
 constexpr int COMPOSE_Y = touchui::COMPOSE_Y, COMPOSE_H = touchui::COMPOSE_H;
 constexpr int LIST_ROWS = touchui::VISIBLE_ROWS; // 10
-constexpr int DEVICE_BUTTONS = 8;                // plus saved touch calibration
+constexpr int DEVICE_BUTTONS = 10;                // plus saved touch calibration
 }
 
 int mapIndexForKey(const char *key) {
@@ -115,6 +117,9 @@ bool UI::back() {
 #endif
   }
   switch (page) {
+  case NAME_EDIT: case CONFIG_IMPORT:
+    memset(nameDraft, 0, sizeof(nameDraft)); nameConfirm = false;
+    open(DEVICE); return true;
   case BLE_PIN_EDIT:
     memset(blePinDraft, 0, sizeof(blePinDraft));
     memset(blePinFirst, 0, sizeof(blePinFirst));
@@ -202,6 +207,24 @@ bool UI::key(uint8_t k) {
   if (k == 127) k = K_BACKSPACE;
   if (k == K_BACK) return back();                   // ALT+Backspace (UITask) / Esc: one level back, everywhere
   Redraw before = dirty;
+  if (page == NAME_EDIT) {
+    size_t n = strlen(nameDraft);
+    if (k == K_ENTER) {
+      if (!n) setStatus("Bitte Namen eingeben");
+      else if (!nameConfirm) nameConfirm = true;
+      else {
+        char st[96] = "";
+        if (api->changeName(nameDraft, st, sizeof(st))) back();
+        setStatus(st[0] ? st : "Name konnte nicht uebergeben werden");
+      }
+    } else if (k == K_BACKSPACE) {
+      nameConfirm = false; if (n) nameDraft[n - 1] = 0;
+    } else if (k >= 32 && k <= 126 && n < sizeof(nameDraft) - 1) {
+      nameConfirm = false; nameDraft[n] = char(k); nameDraft[n + 1] = 0;
+    }
+    dirty = FULL; return true;
+  }
+  if (page == CONFIG_IMPORT && k == K_ENTER) return click();
   if (page == BLE_PIN_EDIT) {
     size_t n = strlen(blePinDraft);
     if (k == K_BACKSPACE) {
@@ -341,11 +364,22 @@ bool UI::click() {
       else { api->advert(st, sizeof(st)); setStatus(st); }
       dirty = FULL; return true;
     }
+    case NAME_EDIT:
+      return key(K_ENTER);
+    case CONFIG_IMPORT: {
+      bool ok = api->importConfig(st, sizeof(st));
+      if (ok) { map.select(api->mapIndex()); back(); }
+      setStatus(st[0] ? st : "SD-Import fehlgeschlagen"); dirty = FULL; return true;
+    }
     case BLE_PIN_EDIT:
       return true; // PIN entry accepts keyboard only; ignore other touch clicks.
     case DEVICE_INFO:
       return back();
     case DEVICE:
+      if (devSel == 8) {
+        nameDraft[0] = 0; nameConfirm = false; open(NAME_EDIT); return true;
+      }
+      if (devSel == 9) { open(CONFIG_IMPORT); return true; }
       if (devSel == 7) {
         memset(blePinDraft, 0, sizeof(blePinDraft));
         memset(blePinFirst, 0, sizeof(blePinFirst));
@@ -399,7 +433,7 @@ bool UI::tap(int x, int y) {
   if (target >= 100 && target < 105) {
     const Page tabs[] = { CHAT_LIST, QUICK, BOARD_LIST, MAP, DEVICE };
     Page next = tabs[target - 100];
-    if (page == BLE_PIN_EDIT) {
+    if (page == BLE_PIN_EDIT || page == NAME_EDIT || page == CONFIG_IMPORT) {
       back(); // Clear both PIN buffers before any tab navigation.
     }
     if ((next == CHAT_LIST && page == CHAT_VIEW) || (next == BOARD_LIST && page == BOARD_VIEW)) return back();
@@ -849,7 +883,8 @@ void UI::drawDevice(DisplayDriver *d) {
   const char *buttons[DEVICE_BUTTONS] = { "Kontakte neu lesen", "Bekanntgabe senden",
                                           "Display aus",        "Auf SD speichern",
                                           "Touch kalibrieren",  "Standort / GPS / Teilen",
-                                          "Geraeteinfo / Akku", "Bluetooth-PIN aendern" };
+                                          "Geraeteinfo / Akku", "Bluetooth-PIN aendern",
+                                          "Geraetenamen aendern", "SD-Konfiguration anwenden" };
   for (int row = 0; row < LIST_ROWS && devTop + row < DEVICE_BUTTONS; ++row) {
     int i = devTop + row;
     auto r = touchui::row(row);
@@ -910,6 +945,29 @@ void UI::drawBlePinEdit(DisplayDriver *d) {
   drawHint(d);
 }
 
+void UI::drawLocalConfig(DisplayDriver *d) {
+  if (page == NAME_EDIT) {
+    ui::text(d, 8, NAV_H + 20, TEXT, nameConfirm ? "Diesen Namen uebernehmen?" : "Neuer Geraetename (max. 24)");
+    ui::text(d, 8, NAV_H + 60, TEXT, nameDraft);
+    ui::text(d, 8, NAV_H + 100, MUTED, nameConfirm ? "Enter: bestaetigen" : "Enter: pruefen");
+  } else {
+    ui::text(d, 8, NAV_H + 20, TEXT, "SD-Konfiguration uebernehmen?");
+    devcfg::Config c;
+    if (api->configPreview(c)) {
+      char line[64];
+      snprintf(line, sizeof(line), "Name: %s", c.hasName ? c.name : "unveraendert");
+      ui::text(d, 8, NAV_H + 48, TEXT, line);
+      snprintf(line, sizeof(line), "Karte: %s", c.hasMap ? c.map : "unveraendert");
+      ui::text(d, 8, NAV_H + 68, TEXT, line);
+      snprintf(line, sizeof(line), "GPS-Teilen: %s / Log: %s", c.hasShare ? (c.share ? "AN" : "AUS") : "gleich", c.hasLog ? (c.log ? "AN" : "AUS") : "gleich");
+      ui::text(d, 8, NAV_H + 88, c.hasShare && c.share ? BAD : TEXT, line);
+      ui::text(d, 8, NAV_H + 112, MUTED, "Enter / Trackball: bestaetigen");
+    } else ui::text(d, 8, NAV_H + 70, MUTED, "Kein SD-Import vorgemerkt");
+  }
+  ui::text(d, 8, NAV_H + 140, MUTED, "ALT+Backspace: abbrechen");
+  drawHint(d);
+}
+
 void UI::render(DisplayDriver *d) {
   ++touchRevision;
   dirty = NONE;
@@ -929,6 +987,7 @@ void UI::render(DisplayDriver *d) {
     case LOCATION: drawLocation(d); break;
     case DEVICE: drawDevice(d); break;
     case BLE_PIN_EDIT: drawBlePinEdit(d); break;
+    case NAME_EDIT: case CONFIG_IMPORT: drawLocalConfig(d); break;
     case DEVICE_INFO:
       drawDeviceInfo(d);
       break;

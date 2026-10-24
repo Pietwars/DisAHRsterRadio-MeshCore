@@ -23,6 +23,7 @@
 #include "SlotFile.h"
 #include "DeliveryOutbox.h"
 #include "ArchiveSd.h"
+#include "DeviceConfig.h"
 #include "LocalSend.h"
 
 class LocalCompanion : public BaseSerialInterface {
@@ -188,7 +189,7 @@ public:
   bool localRefresh() { if(!enabled||busy())return false; const uint8_t p[]={4}; queueCommand(p,1); return true; }
   bool localSetName(const char *name) {
     size_t n=name?strlen(name):0;
-    if(!enabled||busy()||n<1||n>24)return false;
+    if(!enabled||busy()||!devcfg::validName(name))return false;
     uint8_t p[26]={8};memcpy(p+1,name,n);queueCommand(p,n+1);return true;
   }
 

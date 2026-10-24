@@ -128,6 +128,17 @@ angepasst; die Oberfläche ist kein Austausch des Funkprotokolls und keine pixel
   (`GpsShare.h`, Speicher-Haken in `MyMesh::savePrefs`).
 - T-Deck-GPS: Baudraten-Erkennung über gültige NMEA-Sätze (9600/38400/115200) aus #34, nur im Standalone.
 
+### Lokale Einstellungen in 0.9.6 TEST
+Unter **Gerät** stehen zusätzlich **Gerätenamen ändern** (mit zweiter Bestätigung) und
+**SD-Konfiguration anwenden** bereit. SD-Einstellungen werden beim Start nur vorgemerkt;
+der Import zeigt Name, Karte, Standortfreigabe und Log vor der Bestätigung am Gerät.
+Eine eingelegte SD-Datei allein ändert keine Einstellungen mehr. Abbruch/Tabwechsel
+verwirft den Namensentwurf. Namensänderung und Import sind bei aktiver BLE-Verbindung
+gesperrt. Ein angenommener Name wird über den vorhandenen lokalen Companion verarbeitet;
+eine SD-Kopie wird bei Bedarf separat gespeichert. Ereignislogging ist standardmäßig aus,
+bis ein Import es ausdrücklich aktiviert. Dies schaltet das Nachrichtenarchiv nicht ab.
+Details und verbleibende Grenzen: [lokaler Konfigurationsweg](096-LOCAL-CONFIG-DESIGN.md).
+
 ### 7. SD-Karte
 - SD am **gemeinsamen SPI-Bus** von LoRa und Display (`ArchiveBusConfig.h`, T-Deck-Zweig, `tdeck_shared_spi`),
   CS **GPIO 39** laut LilyGO-Belegung, **auf Hardware zu prüfen**. Ohne Karte läuft alles weiter.
