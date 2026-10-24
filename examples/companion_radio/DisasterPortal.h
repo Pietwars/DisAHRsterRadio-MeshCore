@@ -236,11 +236,11 @@ public:
     http.on("/api/room-login",HTTP_POST,[this](){
       if(!room())return;
       String target=http.arg("target");
-      const String *contact=roomContact(target);
+      String contact; bool knownRoom=roomContact(target,contact);
       uint32_t stamp=strtoul(http.arg("time").c_str(),nullptr,10);
-      if(!contact||stamp<1700000000u||stamp>4102444800u){http.send(400,"text/plain","Raum und Uhrzeit pruefen");return;}
+      if(!knownRoom||stamp<1700000000u||stamp>4102444800u){http.send(400,"text/plain","Raum und Uhrzeit pruefen");return;}
       // First synchronize the companion clock; the next serialized command logs in (shared with the device).
-      uint8_t clock[5];prepareRoomLogin(*contact,target,stamp,clock);accept(clock,5);
+      uint8_t clock[5];prepareRoomLogin(contact,target,stamp,clock);accept(clock,5);
     });
     http.on("/api/send",HTTP_POST,[this](){
       if(!room())return;
@@ -255,7 +255,8 @@ public:
         if(!channels[target[1]-'0'].length()){http.send(400,"text/plain","Kanal nicht eingerichtet");return;}
         p[0]=3;p[2]=target[1]-'0';memcpy(p+3,&stamp,4);n=7;
       } else if(target.length()==13 && target[0]=='d') {
-        if(roomContact(target)&&(roomTarget!=target||roomRights<2)){http.send(403,"text/plain","Zuerst am Raum mit Schreibrecht anmelden");return;}
+        String roomContactData;
+        if(roomContact(target,roomContactData)&&(roomTarget!=target||roomRights<2)){http.send(403,"text/plain","Zuerst am Raum mit Schreibrecht anmelden");return;}
         p[0]=2;memcpy(p+3,&stamp,4);n=13;
         for(int i=0;i<6;i++){int a=nibble(target[1+i*2]),b=nibble(target[2+i*2]);if(a<0||b<0){http.send(400,"text/plain","Ungueltiger Kontakt");return;}p[7+i]=(a<<4)|b;}
       } else {http.send(400,"text/plain","Ungueltiges Ziel");return;}
