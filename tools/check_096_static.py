@@ -130,6 +130,12 @@ check("if (!is_retry)" in room_posts,
       "room post retries do not duplicate stored messages")
 
 room_header = (ROOT / "examples/simple_room_server/MyMesh.h").read_text(encoding="utf-8")
+check("room_budget_owners[MAX_CLIENTS]" in room_header and
+      "room_budget_owned[MAX_CLIENTS]" in room_header,
+      "room post budget tracks the owner of each recycled ACL slot")
+check("memcmp(room_budget_owners[i].pub_key, client->id.pub_key, PUB_KEY_SIZE) != 0" in room_posts and
+      "room_post_budgets[i] = disaster::RoomPostBudget{};" in room_posts,
+      "recycled ACL slots reset the previous client's room budget")
 check("room_post_budgets[MAX_CLIENTS]" in room_header,
       "room post budgets are bounded by authenticated ACL slots")
 check("roomPostAllowed(room_post_budgets[i], millis())" in room_posts and
