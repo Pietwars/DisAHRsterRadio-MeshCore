@@ -11,14 +11,18 @@ namespace disaster {
 #error "T-Deck SD needs PIN_SD_CS (platformio.standalone.ini)"
 #endif
 #define DISASTER_SD_SHARED_BUS 1
+// Match LilyGO T-Deck UnitTest::setupSD; do not use the faster TFT clock.
+constexpr unsigned sdFrequency = 800000;
 constexpr int sdSck = P_LORA_SCLK, sdMiso = P_LORA_MISO, sdMosi = P_LORA_MOSI, sdCs = PIN_SD_CS;
 static_assert(sdCs != P_LORA_NSS && sdCs != PIN_TFT_CS && sdCs != PIN_TFT_DC, "SD chip select must be its own pin");
 static_assert(sdCs != P_LORA_RESET && sdCs != P_LORA_BUSY && sdCs != P_LORA_DIO_1, "SD chip select conflicts with LoRa");
 static_assert(sdSck == PIN_TFT_SCL && sdMosi == PIN_TFT_SDA, "T-Deck SD shares the display/LoRa bus");
 #elif defined(CONFIG_IDF_TARGET_ESP32S3) && defined(LILYGO_T3S3)
+constexpr unsigned sdFrequency = 4000000;
 constexpr int sdBus = HSPI;
 constexpr int sdSck = 14, sdMiso = 2, sdMosi = 11, sdCs = 13;
 #elif defined(CONFIG_IDF_TARGET_ESP32)
+constexpr unsigned sdFrequency = 4000000;
 constexpr int sdBus = VSPI;
 constexpr int sdSck = 14, sdMiso = 2, sdMosi = 15, sdCs = 13;
 #else
