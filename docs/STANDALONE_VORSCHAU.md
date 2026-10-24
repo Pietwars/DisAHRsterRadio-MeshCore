@@ -18,9 +18,9 @@ Echte Firmware-Layouts mit Demodaten. Hardwareabnahme dieser Version offen. [Bed
 
 ![Direktnachrichten](images/standalone-test6/vorschau-chat-direkt.png)
 
-## Chat: Kanaele und Kontakte
+## Chat: Kanaele
 
-![Chat: Kanaele und Kontakte](images/standalone-test6/vorschau-chat-liste.png)
+![Chat: Kanaele](images/standalone-test6/vorschau-chat-liste.png)
 
 ## Chat mit Senden-Button
 

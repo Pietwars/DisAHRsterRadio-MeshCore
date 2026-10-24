@@ -33,3 +33,7 @@ Firmware und Tests aus Commit `470ebdb016d9b9e00e3265721501288cb375a6b4`:
 - [Zugriffs-Regressionen](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/actions/runs/40075542439): erfolgreich.
 
 Die abschließende Aktualisierung der sechs Web-Funktionsbilder ändert keinen Firmware-Code. Ihre Herkunft und Prüfsummen stehen in `docs/images/web-preview-manifest.json`. Die Veröffentlichung verwendet den bestehenden Release-Workflow unverändert. Web-Flasher-Konfiguration erst anhand der tatsächlich veröffentlichten ZIP-Dateien aktivieren, damit die SHA-256-Werte exakt zu den Downloads passen.
+
+## Öffentliche Veröffentlichung
+
+Am 24.10.2026 nach ausdrücklicher Freigabe veröffentlicht: [v0.9.6-rc1](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.6-rc1), Quellstand `47966e53eae06ba448d410bda9d35d72287daa27`. [Finaler Release-Lauf](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/actions/runs/40076135599): alle drei Builds und Paketprüfungen erfolgreich. Alle drei heruntergeladenen ZIPs entsprechen den SHA-256-Digests der öffentlichen Release-Assets. Die sechs Flasher-Manifeste sind aus diesen tatsächlichen Release-Dateien erzeugt; Hardwareabnahme bleibt offen.

@@ -9,12 +9,12 @@
    "files": {
     "neu": {
      "member": "DisAHRsterRadio-MeshCore-0.9.6-rc1-LilyGo_TDeck/DisAHRsterRadio-MeshCore-0.9.6-rc1-LilyGo_TDeck-factory.bin",
-     "sha256": "d468e975834f5594c76798fb71b90fd6066f866d263c97e000921c94ebc6110f",
+     "sha256": "2276a54dd5d217e8ab32e54c169d41268ec23c12ece612a19dacb2af120d158a",
      "out": "tdeck-neu-factory.bin"
     },
     "update": {
      "member": "DisAHRsterRadio-MeshCore-0.9.6-rc1-LilyGo_TDeck/DisAHRsterRadio-MeshCore-0.9.6-rc1-LilyGo_TDeck-firmware.bin",
-     "sha256": "516019d16dae4ebaa97c0376606fa42233efd0fb0d29d00c8478d08ff2b2ee25",
+     "sha256": "e9892bcc90a14356c3c9b2f7fa636db6344b098c7cfc3837a3fc599f6d2a69b2",
      "out": "tdeck-update-firmware.bin"
     }
    },
@@ -62,12 +62,12 @@
    "files": {
     "neu": {
      "member": "DisAHRsterRadio-MeshCore-0.9.6-rc1-LilyGo_TWatchS3/DisAHRsterRadio-MeshCore-0.9.6-rc1-LilyGo_TWatchS3-factory.bin",
-     "sha256": "e15478cbb2ecd491f4a644a7cc026bf049a693a61775fa7aac2543069fbf8147",
+     "sha256": "73ae6d45b07d353860558357b9ede1090e1c696ae7c34131e691346920798a02",
      "out": "twatch-neu-factory.bin"
     },
     "update": {
      "member": "DisAHRsterRadio-MeshCore-0.9.6-rc1-LilyGo_TWatchS3/DisAHRsterRadio-MeshCore-0.9.6-rc1-LilyGo_TWatchS3-firmware.bin",
-     "sha256": "ad23e35dc411fb65b4e980c6b95307a383b9a2350c177e10fbbc28f717436777",
+     "sha256": "663f8de8c47462e95fd3fee43537057fd4f12834f511a15ba90d736e2b747cab",
      "out": "twatch-update-firmware.bin"
     }
    },
@@ -115,12 +115,12 @@
    "files": {
     "neu": {
      "member": "DisAHRsterRadio-MeshCore-0.9.6-rc1-LilyGo_TDeck_standalone-test6/factory.bin",
-     "sha256": "9cd6ace7fc16b97f64314db26e4834bb4f99edd8846ed1ba882840e6feaa3a5c",
+     "sha256": "c9cd07d56df0b97e572fe79cedc5fa76bfafdc44dbcb8054aaac0c474b463348",
      "out": "tdeck-standalone-neu-factory.bin"
     },
     "update": {
      "member": "DisAHRsterRadio-MeshCore-0.9.6-rc1-LilyGo_TDeck_standalone-test6/firmware.bin",
-     "sha256": "1b0e62e20d15eda29becad53f6952035d092d4687ce7a07b507151ec4227f734",
+     "sha256": "b73773a90d2bddec184fe108309bbc4406da3378b3201b18f0b1d03982d86b94",
      "out": "tdeck-standalone-update-firmware.bin"
     }
    },
