@@ -23,6 +23,7 @@
 // A single local companion owns the protocol. HTTP clients share its history.
 // Raw, arbitrary companion commands and private keys are never exposed to HTTP.
 class DisasterPortal : public LocalCompanion {
+  uint32_t privateHistoryFloor=0; bool privateHistoryPersistent=false;
   uint32_t txFlood=0, txDirect=0, rxFlood=0, rxDirect=0;
   bool txBudgetWaiting=false, txStorageBlocked=false, txProfileBlocked=false;
   uint32_t txStartupWaitSeconds=0;
@@ -128,6 +129,10 @@ public:
   void begin() {
     beginHistory();
     Preferences prefs; prefs.begin("disaster",false);
+    // New private pane starts empty once; shared/channel/room history is preserved.
+    privateHistoryFloor=prefs.getUInt("web-private-v1",UINT32_MAX);
+    if(privateHistoryFloor==UINT32_MAX){privateHistoryFloor=historySeq();privateHistoryPersistent=prefs.putUInt("web-private-v1",privateHistoryFloor)==sizeof(uint32_t);}
+    else privateHistoryPersistent=true;
     // Remove old AP credentials and the former web-admin password (removed in 0.9.1) on upgrade.
     prefs.remove("ap-pass");prefs.remove("admin-salt");prefs.remove("admin-hash");
     prefs.end();
@@ -174,8 +179,8 @@ public:
       String s="{\"ready\":"+String(startup>=12?"true":"false")+",\"storage\":"+String(storageOK?"true":"false")+",\"heap\":"+String(ESP.getFreeHeap())+",\"seq\":"+String(seq)+",\"busy\":"+String((active||pendingLen||loginLen)?"true":"false")+",\"result\":\""+outcome+"\",\"info\":\""+info+"\",\"channels\":[";
       http.sendContent(s);s="";
       for(int i=0;i<8;i++){http.sendContent((i?",\"":"\"")+channels[i]+"\"");}
-      http.sendContent("],\"contacts\":["); bool first=true;
-      for(auto &c:contacts)if(c.length()){http.sendContent((first?"\"":",\"")+c+"\"");first=false;}
+      http.sendContent("],\"privateHistoryFloor\":"+String(privateHistoryFloor)+",\"privateHistoryPersistent\":"+String(privateHistoryPersistent?"true":"false")+",\"contacts\":["); bool first=true;
+      for(unsigned i=0;i<contactCount();++i){String c=contactHex(i);if(c.length()){http.sendContent((first?"\"":",\"")+c+"\"");first=false;}}
       s+="],\"archive\":"+String(archive.ready()?"true":"false")+",\"queueReady\":"+String(delivery.ready()?"true":"false")+",\"queueStorage\":"+String(delivery.storageOK()?"true":"false")+",\"room\":{\"target\":\""+roomTarget+"\",\"rights\":"+String(roomRights)+",\"pending\":"+String(roomPending?"true":"false")+"}}";
       // Fixed keys and numeric values only; no passwords, contacts or chat texts.
       s.remove(s.length()-1);
@@ -221,14 +226,14 @@ public:
       String target=http.arg("target"),body=http.arg("text"),ttl=http.arg("hours");
       uint32_t stamp=strtoul(http.arg("time").c_str(),nullptr,10);
       if(body.length()<1||body.length()>100||hasNull(body)||stamp<1700000000u||stamp>4102358400u||(ttl!="1"&&ttl!="6"&&ttl!="24")){http.send(400,"text/plain","Nachricht, Ablaufzeit oder Uhr pruefen");return;}
-      const String *contact=nullptr;
-      for(const auto &c:contacts)if(c.length()>=264&&target==String("d")+c.substring(2,14)){
-        if(contact){http.send(400,"text/plain","Mehrdeutiger Kontakt");return;}contact=&c;
-      }
-      if(!contact||contact->substring(66,68)!="01"){http.send(400,"text/plain","Nur bekannte private Chat-Kontakte");return;}
+      String contact; bool foundContact=false;
+      for(unsigned ci=0;ci<contactCount();++ci){String c=contactHex(ci);if(c.length()>=264&&target==String("d")+c.substring(2,14)){
+        if(foundContact){http.send(400,"text/plain","Mehrdeutiger Kontakt");return;}contact=c;foundContact=true;
+      }}
+      if(!foundContact||contact.substring(66,68)!="01"){http.send(400,"text/plain","Nur bekannte private Chat-Kontakte");return;}
       if(stamp<=lastStamp)stamp=lastStamp+1;
       if(!allowClientSend())return;
-      uint8_t key[32];for(int i=0;i<32;++i)key[i]=(nibble((*contact)[2+2*i])<<4)|nibble((*contact)[3+2*i]);
+      uint8_t key[32];for(int i=0;i<32;++i)key[i]=(nibble(contact[2+2*i])<<4)|nibble(contact[3+2*i]);
       int slot=delivery.enqueue(key,body.c_str(),stamp,stamp+ttl.toInt()*3600);
       if(slot<0){http.send(slot==-1?409:503,"text/plain",slot==-1?"Warteschlange voll (8 Auftraege)":"Speicherstatus unklar; Auftrag vor erneutem Anlegen kontrollieren");return;}
       lastStamp=stamp;http.send(202,"text/plain","Dauerhaft vorgemerkt: maximal vier Versuche, Absender muss eingeschaltet bleiben");
@@ -293,7 +298,7 @@ public:
       uint8_t p[12]={11};memcpy(p+1,&preset.freq,4);memcpy(p+5,&preset.bw,4);p[9]=preset.sf;p[10]=preset.cr;p[11]=0;accept(p,12);
     });
     http.on("/api/advert",HTTP_POST,[this](){if(!room())return;if(sendPaused()){http.send(429,"text/plain","Bitte fuenf Sekunden Sendepause einhalten");return;}if(!allowClientSend())return;const uint8_t p[]={7,1};accept(p,2);});
-    http.on("/api/refresh",HTTP_POST,[this](){if(!room())return;const uint8_t p[]={4};accept(p,1);});
+    http.on("/api/refresh",HTTP_POST,[this](){if(!room())return;if(localRefresh())http.send(202,"text/plain","Kontaktbestand aktualisiert");else http.send(409,"text/plain","Knoten beschaeftigt");});
     http.onNotFound([this](){
       // Diagnose: which client asks for unknown paths (e.g. iOS captive-portal probes)?
       static uint32_t lastLog=0,skipped=0;

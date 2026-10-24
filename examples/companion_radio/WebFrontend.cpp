@@ -35,6 +35,8 @@ void frontend::begin(MultiSerialInterface& interfaces) {
   delay(1500);
 #endif
   DIAG("portal.begin (softAP)");
+  disaster_portal.setContactSource([]()->unsigned { return unsigned(the_mesh.getNumContacts()); },
+    [](unsigned i)->String { ContactInfo c; return the_mesh.getContactByIdx(i+MAX_ANON_CONTACTS,c)?LocalCompanion::encodeContact(c):String(); });
   disaster_portal.begin();
   DIAG("portal ok");
   interfaces.addInterface(InterfaceType::Portal, &disaster_portal);

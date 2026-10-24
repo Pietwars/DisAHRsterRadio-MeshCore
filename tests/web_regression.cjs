@@ -9,11 +9,11 @@ assert.equal(zlib.gunzipSync(compressed).toString(),html);
 assert.ok(compressed.length < Buffer.byteLength(html)*0.5);
 assert.ok(!/#map\s*\{[^}]*position:absolute/.test(html));
 assert.match(html,/#cv\{[^}]*position:absolute/);
-assert.match(html,/nav\{[^}]*position:fixed[^}]*grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
+assert.match(html,/nav\{[^}]*position:fixed[^}]*grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);
 const guardContext=vm.createContext({});
 vm.runInContext(script.slice(script.indexOf('function txGuard('),script.indexOf('function renderInfo(')),guardContext);
 assert.equal(vm.runInContext('txGuard(null)',guardContext),'');
-assert.match(vm.runInContext('txGuard({txProfileBlocked:true,txStartupWaitSeconds:3600})',guardContext),/Funkprofil.*Nah\/Mittel\/Fern/);
+assert.match(vm.runInContext('txGuard({txProfileBlocked:true,txStartupWaitSeconds:3600})',guardContext),/Funkprofil.*MeshCore-App/);
 assert.match(vm.runInContext('txGuard({txStartupWaitSeconds:3600,txStorageBlocked:true})',guardContext),/60 min.*Empfang/);
 assert.match(vm.runInContext('txGuard({txStorageBlocked:true})',guardContext),/gesperrt.*Empfang/);
 assert.match(vm.runInContext('txGuard({txBudgetWaiting:true})',guardContext),/Sendebudget.*Empfang/);
@@ -37,3 +37,10 @@ vm.runInContext('const MAPS=new Map();let M=null,mapRequest=0;'+script.slice(scr
  assert.equal(vm.runInContext('M.name',ctx),'map/fast.json');
  console.log(`PASS: syntax, gzip roundtrip (${compressed.length} bytes), navigation selectors, bounded map cache, out-of-order map loading`);
 })().catch(e=>{console.error(e);process.exitCode=1;});
+
+assert.match(html,/data-tab="private"/);
+const privateCtx=vm.createContext({});
+vm.runInContext(script.slice(script.indexOf('function privateConversation('),script.indexOf('function renderPrivate(')),privateCtx);
+assert.equal(vm.runInContext("privateConversation([{t:'dabc',seq:9},{t:'dabc',seq:11},{t:'dabc',seq:12,room:true},{t:'dother',seq:13},{t:'c0',seq:14}], 'dabc',10).map(m=>m.seq).join(',')",privateCtx),'11');
+assert.equal(vm.runInContext("privateConversation([{t:'c0',seq:11}],'c0',0).length",privateCtx),0);
+assert.equal(vm.runInContext("privateConversation([], '', 0).length",privateCtx),0);

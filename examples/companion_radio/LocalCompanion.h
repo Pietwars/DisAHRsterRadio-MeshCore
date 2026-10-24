@@ -217,7 +217,7 @@ public:
     return true;
   }
   // Re-read contacts (CMD_GET_CONTACTS) or set the node name (CMD_SET_ADVERT_NAME), same as the web.
-  bool localRefresh() { if(!enabled||busy())return false; const uint8_t p[]={4}; queueCommand(p,1); return true; }
+  bool localRefresh() { if(contactSource)return enabled; if(!enabled||busy())return false; const uint8_t p[]={4}; queueCommand(p,1); return true; }
   bool localSetName(const char *name) {
     size_t n=name?strlen(name):0;
     if(!enabled||busy()||!devcfg::validName(name))return false;
