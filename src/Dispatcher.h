@@ -1,6 +1,7 @@
 #pragma once
 
 #include <MeshCore.h>
+#include "CompanionRadioMode.h"
 #include <Identity.h>
 #include <Packet.h>
 #include <Utils.h>
@@ -143,7 +144,7 @@ class Dispatcher {
   void updateTxBudget();
   uint32_t budgetWaitMillis(uint64_t missing) const;
   void accountTxAirtime();
-#ifdef DISASTER_STANDALONE
+#ifdef DAR_ORIGINAL_MESHCORE_TX
   void checkSendOriginalMeshCore();
   void updateOriginalMeshCoreTxBudget();
   void completeOriginalMeshCoreTx();

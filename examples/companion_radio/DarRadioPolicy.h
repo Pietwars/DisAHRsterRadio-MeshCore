@@ -1,11 +1,12 @@
 #pragma once
+#include "../../src/CompanionRadioMode.h"
 #include <stdint.h>
 #include <string.h>
 
 namespace disaster {
 // Nominal centre in kHz, bandwidth in Hz (Companion protocol units).
 struct RadioPreset { uint32_t freq, bw; uint8_t sf, cr; };
-#ifdef DISASTER_STANDALONE
+#ifdef DAR_ORIGINAL_MESHCORE_TX
 constexpr unsigned DAR_RADIO_PROFILES = 4;
 constexpr unsigned DAR_DEFAULT_RADIO_PROFILE = 3; // MeshCore EU/UK Narrow, fresh preferences
 #else
@@ -60,7 +61,7 @@ inline int radioProfileIndex(float freqMhz, float bwKhz, uint8_t sf, uint8_t cr)
   }
   return -1;
 }
-// Free standalone app parameters: reject non-finite/out-of-range values before
+// Free companion app parameters: reject non-finite/out-of-range values before
 // the radio driver validates its supported bands and discrete bandwidths.
 inline bool radioParamsValid(float freq, float bw, uint8_t sf, uint8_t cr) {
   return freq>=150.0f && freq<=2500.0f && bw>=7.8f && bw<=500.0f &&

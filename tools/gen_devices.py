@@ -38,10 +38,10 @@ for d in sorted(devs,key=str.lower):
             e=f'dar_{d}_wifi'; entry['envs']['wifi']=e
             flags=' '.join(c.get(f'env:{base}','build_flags',[]))
             # 0.9.1: ENABLE_PRIVATE_KEY_EXPORT/IMPORT bleiben aus der Basis erhalten (nur ueber PIN-Bluetooth/USB erreichbar).
-            unf=sorted(set(m.group(0).strip() for m in re.finditer(r'-D\s*(ENABLE_USB_INTERFACE|ENABLE_WIFI_INTERFACE|WIFI_SSID|WIFI_PWD|LORA_TX_POWER)(=\S+)?',flags) if m.group(0).strip().replace(' ','')!='-DLORA_TX_POWER=10'))
+            unf=sorted(set(m.group(0).strip() for m in re.finditer(r'-D\s*(ENABLE_USB_INTERFACE|ENABLE_WIFI_INTERFACE|WIFI_SSID|WIFI_PWD)(=\S+)?',flags)))
             ini+=[f'[env:{e}]',f'extends = env:{base}','test_framework = custom','lib_ldf_mode = deep+','build_unflags =',*['  '+u for u in unf],
                   'board_build.partitions = huge_app.csv',
-                  'build_flags =',f'  ${{env:{base}.build_flags}}','  -D LORA_TX_POWER=10','  -D MAX_GROUP_CHANNELS=8','  -D DISASTER_PORTAL=1','  -D OFFLINE_QUEUE_SIZE=64',
+                  'build_flags =',f'  ${{env:{base}.build_flags}}','  -D MAX_GROUP_CHANNELS=8','  -D DISASTER_PORTAL=1','  -D OFFLINE_QUEUE_SIZE=64',
                   '  -D DISASTER_WIFI_DELAY_MS=1500',f"  -D FIRMWARE_VERSION='\"v1.18.0-dar{VER}-wifi\"'",
                   'lib_deps =',f'  ${{env:{base}.lib_deps}}','  densaugeo/base64 @ ~1.4.0','']
     else:
