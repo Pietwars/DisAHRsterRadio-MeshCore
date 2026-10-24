@@ -20,9 +20,13 @@ static const uint8_t ROOM_PERM_ADMIN = 3;       // PERM_ACL_ADMIN
 
 // Rolle fuer eine neue Anmeldung: Admin-Passwort -> Admin, Gast-Passwort -> Lesen/Schreiben,
 // alles andere (leer oder falsch) -> Gast mit Leserecht. Leere Passwoerter passen nie.
+inline bool roomAdminPasswordSafe(const char *admin, const char *guest) {
+  return admin && admin[0] && strcmp(admin, DISASTER_ROOM_GUEST_PASSWORD) != 0 &&
+         (!guest || !guest[0] || strcmp(admin, guest) != 0);
+}
 inline uint8_t roomLoginPermission(const char *given, const char *admin, const char *guest) {
   if (!given) return ROOM_PERM_GUEST;
-  if (admin && admin[0] && strcmp(given, admin) == 0) return ROOM_PERM_ADMIN;
+  if (roomAdminPasswordSafe(admin, guest) && strcmp(given, admin) == 0) return ROOM_PERM_ADMIN;
   if (guest && guest[0] && strcmp(given, guest) == 0) return ROOM_PERM_READ_WRITE;
   return ROOM_PERM_GUEST;
 }
@@ -52,13 +56,15 @@ struct RoomPostBudget {
   bool started = false;
 };
 inline bool roomPostAllowed(RoomPostBudget &budget, uint32_t now) {
+  // A late post still needs its full pause when the ten-minute window ends.
+  // Check before resetting state so a rejected request cannot erase the pause.
+  if (budget.started && budget.count && uint32_t(now - budget.last_post_ms) < 15000UL) return false;
   if (!budget.started || uint32_t(now - budget.window_start_ms) >= 600000UL) {
     budget.window_start_ms = now;
     budget.last_post_ms = 0;
     budget.count = 0;
     budget.started = true;
   }
-  if (budget.count && uint32_t(now - budget.last_post_ms) < 15000UL) return false;
   if (budget.count >= 6) return false;
   budget.last_post_ms = now;
   ++budget.count;

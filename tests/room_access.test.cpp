@@ -14,9 +14,12 @@ int main() {
   assert(roomLoginPermission("Hello", admin, "hello") == ROOM_PERM_GUEST);
   assert(roomLoginPermission("hell", admin, "hello") == ROOM_PERM_GUEST);
   assert(roomLoginPermission(nullptr, admin, "hello") == ROOM_PERM_GUEST);
-  // Admin-Passwort -> Admin (unveraendert), hat Vorrang
+  // Nur ein nichtoeffentliches, vom Gastkennwort verschiedenes Admin-Passwort vergibt Adminrechte.
   assert(roomLoginPermission(admin, admin, "hello") == ROOM_PERM_ADMIN);
-  assert(roomLoginPermission("hello", "hello", "hello") == ROOM_PERM_ADMIN);
+  assert(roomLoginPermission("hello", "hello", "hello") == ROOM_PERM_READ_WRITE);
+  assert(roomLoginPermission("shared", "shared", "shared") == ROOM_PERM_READ_WRITE);
+  assert(roomLoginPermission("hello", "hello", nullptr) == ROOM_PERM_GUEST);
+  assert(roomLoginPermission("hello", "hello", "different") == ROOM_PERM_GUEST);
   // Leere Passwoerter vergeben niemals Rechte
   assert(roomLoginPermission("", "", "") == ROOM_PERM_GUEST);
   // Start/Update: leeres oder zufaelliges Gast-Passwort wird "hello", Lesezugriff an
@@ -35,5 +38,22 @@ int main() {
   assert(!roomCliBlocked("set password neu"));
   assert(!roomCliBlocked("password neu"));
   assert(!roomCliBlocked(nullptr));
+  // A fixed-window reset must not discard the pause after a late post.
+  RoomPostBudget budget;
+  assert(roomPostAllowed(budget,100));
+  assert(roomPostAllowed(budget,599999));
+  assert(!roomPostAllowed(budget,600100));
+  assert(budget.window_start_ms==100&&budget.count==2&&budget.last_post_ms==599999);
+  assert(roomPostAllowed(budget,614999)&&budget.count==1);
+  RoomPostBudget zero;
+  assert(roomPostAllowed(zero,0)&&!roomPostAllowed(zero,1));
+  RoomPostBudget wrap;
+  assert(roomPostAllowed(wrap,0xfffffff0u));
+  assert(!roomPostAllowed(wrap,uint32_t(0xfffffff0u+14999)));
+  assert(roomPostAllowed(wrap,uint32_t(0xfffffff0u+15000)));
+  RoomPostBudget quota;
+  for (unsigned i=0;i<6;++i) assert(roomPostAllowed(quota,i*15000));
+  assert(!roomPostAllowed(quota,90000)&&quota.count==6);
+  assert(roomPostAllowed(quota,600000)&&quota.count==1);
   return 0;
 }
