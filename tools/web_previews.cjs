@@ -7,7 +7,7 @@ const fs = require('fs');
   try {
     const page = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
     await page.goto('http://127.0.0.1:8765/?demo=1');
-    await page.waitForSelector('#qg button');
+    await page.waitForSelector('#qg button', { state: 'attached' });
     fs.mkdirSync('web-previews', { recursive: true });
     for (const [tab, name] of [['chat', 'chat'], ['quick', 'meldung'], ['map', 'karte']]) {
       await page.locator(`nav button[data-tab="${tab}"]`).click();

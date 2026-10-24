@@ -135,7 +135,7 @@ Alle Demos sind simuliert.
 
 ## Sicherheit
 
-> ⚠️ Prototyp, **kein zertifiziertes Notrufsystem**. Im Notfall immer **112** wählen. Im offenen WLAN kann jede Person mitlesen und senden sowie Kanäle, Knotenname und Funkprofil ändern.
+> ⚠️ Prototyp, **kein zertifiziertes Notrufsystem**. Im Notfall immer **112** wählen. Im offenen WLAN kann jede Person mitlesen und senden. Privilegierte Web-Änderungen an Kanälen, Knotenname und Funkprofil sind in 0.9.6 gesperrt.
 
 ## Mehr Doku
 
