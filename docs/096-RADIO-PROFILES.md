@@ -9,20 +9,23 @@ Gespeicherte gültige Einstellungen werden beim Update beibehalten. Die drei bis
 Tupel Nah/Mittel/Fern (869,525 MHz, 250 kHz, CR 4/5, SF7/9/11) bleiben zusätzlich
 akzeptiert, damit bestehende Geräte nicht durch das Update TX-gesperrt werden.
 Auch freie App-Parameter und andere vom Funkchip unterstützte Presets sind erlaubt.
-Die WLAN-Variante behält ihre drei Profile,
-den Standard Mittel und den physischen Tastatur-Editor.
+Die WLAN-Variante behält ihre drei Profile, den Standard Mittel und den physischen
+Tastatur-Editor.
 
 Standalone-App-Befehle prüfen Wertebereiche und anschließend den Funkchip-Erfolg.
 TX erfordert eine exakt zu den Preferences passende erfolgreich angewandte Konfiguration.
 Nicht endliche Werte, ungültige SF/CR-Kombinationen und unvollständig
-angewandte Hardwarekonfigurationen autorisieren keinen TX. Standalone folgt für Leistung, einstellbaren Duty Cycle und TX-Tokenbudget wieder
+angewandte Hardwarekonfigurationen autorisieren keinen TX.
+
+Standalone folgt für Leistung, einstellbaren Duty Cycle und TX-Tokenbudget wieder
 der originalen MeshCore-Basis (Upstream 81dbae592ffad40b4212bc0b37e82b38da08f4bc).
 Kein zusätzlicher DAR-Leistungsdeckel, kein festes 10-%-Limit und kein persistentes
 DAR-Stundenfenster oder 60-Minuten-Neustartschutz am Standalone. Der T-Deck-
 Leistungsstandard ist wieder 22 dBm. Vorhandene Preferences bleiben erhalten.
 WLAN behält seine bisherige DAR-Politik. Parser- und Hardwarefehlerprüfungen bleiben.
-Die bestehende lokale Rescue-CLI ist kein neuer Display-Editor; Remote-Mesh-CLI
-bleibt von lokalen Funkänderungen ausgeschlossen.
+Die bestehende CLI verwendet am Standalone wieder die originale CommonRadioPrefs-
+Behandlung. Zugriffe aus der App erfordern weiterhin die authentifizierte Verbindung;
+Remote-Mesh-CLI setzt die vorhandene Kontaktberechtigung voraus.
 
 Die Profilnamen ersetzen keine regionale Freigabe oder HF-Messung. Antennenleistung,
 Spektrum, Funkabschluss/Abbruch, Stromausfall während Speicherung, App-Readback und

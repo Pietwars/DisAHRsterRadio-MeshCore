@@ -311,3 +311,14 @@ check("checkSendOriginalMeshCore(); return;" in dispatcher and
       "est_airtime / MIN_TX_BUDGET_AIRTIME_DIV" in original_tx and
       "updateOriginalMeshCoreTxBudget();" in original_tx,
       "standalone uses the pinned original MeshCore TX budget and admission path")
+
+# Compare the restored admission path to the pinned original, ignoring formatting,
+# method extraction and the retained applied-hardware readiness guard.
+import hashlib
+restored_send = original_tx.split("void Dispatcher::checkSendOriginalMeshCore()",1)[1]
+restored_send = "void Dispatcher::checkSend()" + restored_send
+restored_send = restored_send.replace("  if (!isTxProfileAllowed()) return; // retain applied-hardware failure protection\n", "")
+restored_send = restored_send.replace("updateOriginalMeshCoreTxBudget();", "updateTxBudget();")
+normalized_send = "\n".join(line.strip() for line in restored_send.strip().splitlines())
+check(hashlib.sha256(normalized_send.encode()).hexdigest() == "af41c228c0522a7de061abedc0db2cdeb25b4e8cd7709277a79d29497c713d06",
+      "standalone TX admission matches the pinned upstream implementation")
