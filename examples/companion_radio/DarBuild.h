@@ -4,7 +4,7 @@
 //   DISASTER_STANDALONE  LILYGO T-Deck Plus standalone (platformio.standalone.ini): MeshCore over PIN Bluetooth,
 //                        display/keyboard on the device, no WLAN, no web server. WebFrontend.cpp is removed from
 //                        that build by build_src_filter, so no web code is compiled in.
-// Both share the DAR policy: exactly Nah/Mittel/Fern EU868 profiles (DarRadioPolicy.h),
+// Both share the DAR policy: Nah/Mittel/Fern; standalone also defaults to EU/UK Narrow (DarRadioPolicy.h),
 // TX power capped at 10 dBm, 10% hourly budget with rolling-window/restart guard on ESP32,
 // only repeaters/room servers are added automatically, an explicitly set location is shared in adverts.
 #if defined(DISASTER_PORTAL) && defined(DISASTER_STANDALONE)

@@ -5,18 +5,26 @@
 namespace disaster {
 // Nominal centre in kHz, bandwidth in Hz (Companion protocol units).
 struct RadioPreset { uint32_t freq, bw; uint8_t sf, cr; };
+#ifdef DISASTER_STANDALONE
+constexpr unsigned DAR_RADIO_PROFILES = 4;
+constexpr unsigned DAR_DEFAULT_RADIO_PROFILE = 3; // MeshCore EU/UK Narrow, fresh preferences
+#else
 constexpr unsigned DAR_RADIO_PROFILES = 3;
 constexpr unsigned DAR_DEFAULT_RADIO_PROFILE = 1; // Mittel, fresh preferences only
+#endif
 constexpr int8_t DAR_MAX_TX_DBM = 10; // conducted-power cap, not measured antenna ERP
 
 inline const char* radioProfileId(unsigned index) {
-  return index == 0 ? "nah" : index == 1 ? "mittel" : index == 2 ? "fern" : nullptr;
+  return index == 0 ? "nah" : index == 1 ? "mittel" : index == 2 ? "fern" :
+         index == 3 && index < DAR_RADIO_PROFILES ? "narrow" : nullptr;
 }
 inline const char* radioProfileName(unsigned index) {
-  return index == 0 ? "Nah" : index == 1 ? "Mittel" : index == 2 ? "Fern" : "Nicht freigegeben";
+  return index == 0 ? "Nah" : index == 1 ? "Mittel" : index == 2 ? "Fern" :
+         index == 3 && index < DAR_RADIO_PROFILES ? "EU/UK Narrow" : "Nicht freigegeben";
 }
 inline bool radioProfileAt(unsigned index, RadioPreset& p) {
   if (index >= DAR_RADIO_PROFILES) return false;
+  if (index == 3) { p = {869618, 62500, 8, 8}; return true; }
   p = {869525, 250000, uint8_t(index == 0 ? 7 : index == 1 ? 9 : 11), 5};
   return true;
 }

@@ -15,7 +15,22 @@ int main() {
     assert(radioProfileIndex(float(p.freq)/1000.0f,float(p.bw)/1000.0f,p.sf,p.cr)==int(i));
   }
   RadioPreset p;
-  assert(!radioProfileAt(3,p)&&!radioProfileId(3));
+  assert(!radioProfileAt(DAR_RADIO_PROFILES,p)&&!radioProfileId(DAR_RADIO_PROFILES));
+#ifdef DISASTER_STANDALONE
+  assert(DAR_DEFAULT_RADIO_PROFILE==3&&DAR_RADIO_PROFILES==4);
+  assert(radioProfileAt(DAR_DEFAULT_RADIO_PROFILE,p));
+  assert(p.freq==869618&&p.bw==62500&&p.sf==8&&p.cr==8);
+  assert(withinDeBand54(p.freq,p.bw));
+  assert(dePreset("narrow",p));
+  assert(radioProfileIndex(p.freq,p.bw,p.sf,p.cr)==3);
+  assert(radioProfileIndex(869.618f,62.5f,8,8)==3);
+  assert(radioProfileIndex(869618u,62500u,8,5)<0);
+  assert(radioProfileIndex(869.6181f,62.5f,8,8)<0);
+  assert(radioProfileIndex(869618u,62501u,8,8)<0);
+#else
+  assert(DAR_DEFAULT_RADIO_PROFILE==1&&DAR_RADIO_PROFILES==3);
+  assert(!dePreset("narrow",p));
+#endif
   for (const char* id : {"", "de-narrow", "ahr-legacy", "eu-legacy", "nah ", "Nah"})
     assert(!dePreset(id,p));
   assert(!dePreset(nullptr,p));
@@ -26,7 +41,9 @@ int main() {
   assert(radioProfileIndex(868100u,125000u,9,5)<0);
   assert(radioProfileIndex(869525u,125000u,9,5)<0);
   assert(radioProfileIndex(869.5251f,250.0f,9,5)<0);
+#ifndef DISASTER_STANDALONE
   assert(radioProfileIndex(869.618f,62.5f,8,8)<0);
+#endif
   assert(radioProfileIndex(std::numeric_limits<float>::quiet_NaN(),250.0f,9,5)<0);
   assert(radioProfileIndex(869.525f,std::numeric_limits<float>::infinity(),9,5)<0);
   unsigned accepted=0;
@@ -36,5 +53,5 @@ int main() {
   assert(darTxPowerAllowed(-9)&&darTxPowerAllowed(10));
   assert(!darTxPowerAllowed(-10)&&!darTxPowerAllowed(11)&&!darTxPowerAllowed(255));
   assert(!darTxPowerAllowed(4294967306LL)&&!darTxPowerAllowed(-4294967286LL));
-  puts("dar_radio_policy: exactly three profiles, canonical floats, band edges and power cap passed");
+  puts("dar_radio_policy: target profiles and defaults, canonical floats, band edges and power cap passed");
 }

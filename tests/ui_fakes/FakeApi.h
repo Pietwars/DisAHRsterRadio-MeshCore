@@ -14,13 +14,6 @@ struct FakeApi : dev::Api {
   dev::Gps g; dev::Room rm{"", 0, false};
   uint32_t startupWait = 0;
   bool storageWait = false, budgetWait = false, profileWait = false;
-  int selectedProfile=1, profileChanges=0;
-  int radioProfile() const override { return selectedProfile; }
-  bool changeRadioProfile(unsigned index, char *status, size_t size) override {
-    ++profileChanges;
-    if (!configOk || index>=3) { snprintf(status,size,"Profilfehler"); return false; }
-    selectedProfile=int(index); snprintf(status,size,"Funkprofil angewendet"); return true;
-  }
   int nameChanges = 0, configImports = 0;
   bool configOk = true;
   std::string changedName;

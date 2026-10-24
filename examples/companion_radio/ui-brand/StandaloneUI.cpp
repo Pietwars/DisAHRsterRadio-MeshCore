@@ -22,7 +22,6 @@ const char *title(Page p) {
       return "Info";
     case NAME_EDIT: return "Geraetename";
     case CONFIG_IMPORT: return "SD-Import";
-    case RADIO_PROFILE: return "Funkprofil";
     case BLE_PIN_EDIT: return "Bluetooth-PIN";
     case DEVICE: return "Ger\xc3\xa4t";
     default:
@@ -32,7 +31,7 @@ const char *title(Page p) {
 constexpr int LIST_TOP = touchui::CONTENT, ROW_H = touchui::ROW, HINT_Y = H - 9;
 constexpr int COMPOSE_Y = touchui::COMPOSE_Y, COMPOSE_H = touchui::COMPOSE_H;
 constexpr int LIST_ROWS = touchui::VISIBLE_ROWS; // 10
-constexpr int DEVICE_BUTTONS = 11;                // plus saved touch calibration
+constexpr int DEVICE_BUTTONS = 10;                // plus saved touch calibration
 }
 
 int mapIndexForKey(const char *key) {
@@ -118,8 +117,6 @@ bool UI::back() {
 #endif
   }
   switch (page) {
-  case RADIO_PROFILE:
-    radioConfirm = false; radioSelection = 1; open(DEVICE); return true;
   case NAME_EDIT: case CONFIG_IMPORT:
     memset(nameDraft, 0, sizeof(nameDraft)); nameConfirm = false;
     open(DEVICE); return true;
@@ -210,11 +207,6 @@ bool UI::key(uint8_t k) {
   if (k == 127) k = K_BACKSPACE;
   if (k == K_BACK) return back();                   // ALT+Backspace (UITask) / Esc: one level back, everywhere
   Redraw before = dirty;
-  if (page == RADIO_PROFILE) {
-    if (k >= '1' && k <= '3') { radioSelection = k - '1'; radioConfirm = false; dirty = FULL; }
-    else if (k == K_ENTER) return click();
-    return true;
-  }
   if (page == NAME_EDIT) {
     size_t n = strlen(nameDraft);
     if (k == K_ENTER) {
@@ -308,11 +300,6 @@ bool UI::move(int dx, int dy) {
   if (!api || (!dx && !dy)) return false;
   int step = dy ? dy : dx;
   switch (page) {
-    case RADIO_PROFILE:
-      radioSelection += step > 0 ? 1 : -1;
-      if (radioSelection < 0) radioSelection = 0;
-      if (radioSelection > 2) radioSelection = 2;
-      radioConfirm = false; dirty = FULL; return true;
     case BOOT: leaveBoot(); return true;
     case MENU: {
       int s = menuSel + (step > 0 ? 1 : -1);
@@ -377,15 +364,6 @@ bool UI::click() {
       else { api->advert(st, sizeof(st)); setStatus(st); }
       dirty = FULL; return true;
     }
-    case RADIO_PROFILE:
-      if (!radioConfirm) radioConfirm = true;
-      else {
-        bool ok = api->changeRadioProfile(unsigned(radioSelection), st, sizeof(st));
-        radioConfirm = false;
-        if (ok) back();
-        setStatus(st[0] ? st : "Funkprofil konnte nicht angewendet werden");
-      }
-      dirty = FULL; return true;
     case NAME_EDIT:
       return key(K_ENTER);
     case CONFIG_IMPORT: {
@@ -398,10 +376,6 @@ bool UI::click() {
     case DEVICE_INFO:
       return back();
     case DEVICE:
-      if (devSel == 10) {
-        int active = api->radioProfile(); radioSelection = active >= 0 && active < 3 ? active : 1;
-        radioConfirm = false; open(RADIO_PROFILE); return true;
-      }
       if (devSel == 8) {
         nameDraft[0] = 0; nameConfirm = false; open(NAME_EDIT); return true;
       }
@@ -459,7 +433,7 @@ bool UI::tap(int x, int y) {
   if (target >= 100 && target < 105) {
     const Page tabs[] = { CHAT_LIST, QUICK, BOARD_LIST, MAP, DEVICE };
     Page next = tabs[target - 100];
-    if (page == BLE_PIN_EDIT || page == NAME_EDIT || page == CONFIG_IMPORT || page == RADIO_PROFILE) {
+    if (page == BLE_PIN_EDIT || page == NAME_EDIT || page == CONFIG_IMPORT) {
       back(); // Clear both PIN buffers before any tab navigation.
     }
     if ((next == CHAT_LIST && page == CHAT_VIEW) || (next == BOARD_LIST && page == BOARD_VIEW)) return back();
@@ -496,9 +470,6 @@ bool UI::tap(int x, int y) {
     return false;
   }
   switch (page) {
-  case RADIO_PROFILE:
-    if (target == 3) return click();
-    radioSelection = target; radioConfirm = false; dirty = FULL; return true;
   case MENU:
     menuSel = target;
     break;
@@ -702,9 +673,6 @@ void UI::drawHint(DisplayDriver *d) {
   case LOCATION:
   case DEVICE:
     h = "Tippen: ausfuehren | Wischen: weitere Aktionen";
-    break;
-  case RADIO_PROFILE:
-    h = "1-3 waehlen | Enter pruefen / bestaetigen";
     break;
   case DEVICE_INFO:
     h = "< Zurueck: Einstellungen | ALT+Del / Klick";
@@ -923,8 +891,7 @@ void UI::drawDevice(DisplayDriver *d) {
                                           "Display aus",        "Auf SD speichern",
                                           "Touch kalibrieren",  "Standort / GPS / Teilen",
                                           "Geraeteinfo / Akku", "Bluetooth-PIN aendern",
-                                          "Geraetenamen aendern", "SD-Konfiguration anwenden",
-                                          "Funkprofil waehlen" };
+                                          "Geraetenamen aendern", "SD-Konfiguration anwenden" };
   for (int row = 0; row < LIST_ROWS && devTop + row < DEVICE_BUTTONS; ++row) {
     int i = devTop + row;
     auto r = touchui::row(row);
@@ -1012,20 +979,6 @@ void UI::drawLocalConfig(DisplayDriver *d) {
   drawHint(d);
 }
 
-void UI::drawRadioProfile(DisplayDriver *d) {
-  for (unsigned i = 0; i < disaster::DAR_RADIO_PROFILES; ++i) {
-    disaster::RadioPreset profile; disaster::radioProfileAt(i, profile);
-    char label[40]; snprintf(label, sizeof(label), "%s / SF%u", disaster::radioProfileName(i), unsigned(profile.sf));
-    int y = NAV_H + 8 + int(i) * 32;
-    ui::button(d, 8, y, W - 16, 28, label, radioSelection == int(i));
-    addHit(8, y, W - 16, 28, int(i));
-  }
-  ui::text(d, 8, NAV_H + 108, MUTED, "869,525 MHz | 250 kHz | CR 4/5");
-  ui::button(d, 8, NAV_H + 128, W - 16, 24, radioConfirm ? "Jetzt anwenden" : "Auswahl pruefen", radioConfirm);
-  addHit(8, NAV_H + 128, W - 16, 24, 3);
-  drawHint(d);
-}
-
 void UI::render(DisplayDriver *d) {
   ++touchRevision;
   dirty = NONE;
@@ -1046,7 +999,6 @@ void UI::render(DisplayDriver *d) {
     case DEVICE: drawDevice(d); break;
     case BLE_PIN_EDIT: drawBlePinEdit(d); break;
     case NAME_EDIT: case CONFIG_IMPORT: drawLocalConfig(d); break;
-    case RADIO_PROFILE: drawRadioProfile(d); break;
     case DEVICE_INFO:
       drawDeviceInfo(d);
       break;

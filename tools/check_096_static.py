@@ -141,11 +141,14 @@ for path, section in (("platformio.devices.ini", "[env:dar_LilyGo_TDeck_wifi]"),
                       ("platformio.standalone.ini", "[env:LilyGo_TDeck_standalone]")):
     config = (ROOT / path).read_text().split(section, 1)[1].split("\n[", 1)[0]
     flags = config.split("build_flags =", 1)[1].split("build_src_filter", 1)[0].split("lib_deps", 1)[0]
-    check(all(flag in flags for flag in ("-D LORA_FREQ=869.525", "-D LORA_BW=250", "-D LORA_SF=9", "-D LORA_CR=5")),
-          section + " starts the radio with the Mittel profile")
+    expected = ("-D LORA_FREQ=869.618", "-D LORA_BW=62.5", "-D LORA_SF=8", "-D LORA_CR=8") if "standalone" in section else ("-D LORA_FREQ=869.525", "-D LORA_BW=250", "-D LORA_SF=9", "-D LORA_CR=5")
+    check(all(flag in flags for flag in expected), section + " starts with the target radio default")
 
 # SD configuration is inert at boot; only a physical local action imports it.
 standalone = (ROOT / "examples/companion_radio/StandaloneFrontend.cpp").read_text()
+standalone_ui = (ROOT / "examples/companion_radio/ui-brand/StandaloneUI.cpp").read_text()
+check("RADIO_PROFILE" not in standalone_ui and "changeRadioProfile" not in standalone,
+      "standalone radio settings have no local editor")
 loader = standalone.split("void loadConfig()", 1)[1].split("bool saveConfig(", 1)[0]
 check("pending_config = c;" in loader and "nvs.put" not in loader and "localSetName(" not in loader,
       "boot SD loader stages settings without changing device preferences")

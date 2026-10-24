@@ -128,14 +128,16 @@ angepasst; die Oberfläche ist kein Austausch des Funkprotokolls und keine pixel
   (`GpsShare.h`, Speicher-Haken in `MyMesh::savePrefs`).
 - T-Deck-GPS: Baudraten-Erkennung über gültige NMEA-Sätze (9600/38400/115200) aus #34, nur im Standalone.
 
-### Drei Funkprofile in 0.9.6 TEST
-Unter **Gerät → Funkprofil wählen** gibt es ausschließlich **Nah, Mittel, Fern**:
-869,525 MHz, 250 kHz, CR 4/5 mit SF7, SF9 bzw. SF11. Frische Konfigurationen nutzen
-Mittel. Alle Teilnehmer müssen dasselbe Profil wählen. Die Auswahl braucht eine
-zweite Bestätigung; BLE muss getrennt sein. Unpassende Altwerte sperren TX bis zur
-gültigen Auswahl. Sendefenster und Neustartschutz werden dadurch nicht zurückgesetzt.
-Bei der WLAN-Variante öffnet die physische Taste P die entsprechende Auswahl.
-Details und Grenzen: [096-RADIO-PROFILES.md](096-RADIO-PROFILES.md).
+### Funkparameter in 0.9.6 TEST
+Die Funkparameter werden am Standalone ausschließlich in der originalen MeshCore-App
+per Bluetooth geändert. Der Display-Editor samt Touch-/Tastatur-/Trackball-Eingaben entfällt.
+Standard für frische Einstellungen ist **EU/UK Narrow / Switzerland**:
+869,618 MHz, 62,5 kHz, SF8, CR 4/8. Bereits gespeicherte gültige Einstellungen bleiben
+erhalten; nach einem Update kann das gewünschte Profil in der App gewählt werden.
+Nah/Mittel/Fern bleiben als bisherige Parameterkombinationen akzeptiert. Der interne
+Leistungsdeckel von 10 dBm, Sendefenster und Neustartschutz bleiben aktiv.
+Die WLAN-Variante behält ihren bisherigen Standard und physischen Profil-Editor.
+Details: [096-RADIO-PROFILES.md](096-RADIO-PROFILES.md).
 
 ### Sendefenster und Neustartschutz in 0.9.6 TEST
 Nach einem Update mit unbekannter Sendehistorie oder einem unklaren Neustart
