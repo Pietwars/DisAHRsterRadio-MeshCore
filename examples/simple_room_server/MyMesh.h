@@ -111,6 +111,8 @@ class MyMesh : public mesh::Mesh, public CommonCLICallbacks {
 #ifdef DISASTER_ROOM
   // Bounded per-client posting budget, indexed by ACL slot.
   disaster::RoomPostBudget room_post_budgets[MAX_CLIENTS]{};
+  mesh::Identity room_budget_owners[MAX_CLIENTS]{};
+  bool room_budget_owned[MAX_CLIENTS]{};
 #endif
   CommonCLI _cli;
   unsigned long dirty_contacts_expiry;
