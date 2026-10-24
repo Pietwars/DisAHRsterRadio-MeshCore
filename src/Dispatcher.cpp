@@ -124,8 +124,12 @@ void Dispatcher::loop() {
 
   if (outbound) {  // waiting for outbound send to be completed
     if (_radio->isSendComplete()) {
+#ifdef DISASTER_STANDALONE
+      completeOriginalMeshCoreTx();
+#else
       _radio->onSendFinished();
       accountTxAirtime();
+#endif
       logTx(outbound, outbound->getRawLength());
       if (outbound->isRouteFlood()) {
         n_sent_flood++;
@@ -139,8 +143,10 @@ void Dispatcher::loop() {
 
       // A missing TX-done interrupt does not mean the radio was silent.
       _radio->onSendFinished();
+#ifndef DISASTER_STANDALONE
       // Include the driver's abort/finish interval before closing TX history.
       accountTxAirtime();
+#endif
       logTxFail(outbound, outbound->getRawLength());
 
       releasePacket(outbound);  // return to pool
@@ -298,6 +304,9 @@ void Dispatcher::processRecvPacket(Packet* pkt) {
 }
 
 void Dispatcher::checkSend() {
+#ifdef DISASTER_STANDALONE
+  checkSendOriginalMeshCore(); return;
+#endif
   const uint32_t candidate_time = uint32_t(_ms->getMillis());
   if (_mgr->getOutboundCount(candidate_time) == 0) {
     budget_diagnostics.set(false, uint32_t(_ms->getMillis()));
@@ -449,5 +458,9 @@ bool Dispatcher::millisHasNowPassed(unsigned long timestamp) const {
 unsigned long Dispatcher::futureMillis(int millis_from_now) const {
   return uint32_t(uint32_t(_ms->getMillis()) + uint32_t(millis_from_now));
 }
+
+#ifdef DISASTER_STANDALONE
+#include "OriginalMeshCoreTx.inc"
+#endif
 
 }

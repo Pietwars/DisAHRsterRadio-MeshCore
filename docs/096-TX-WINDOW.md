@@ -1,5 +1,10 @@
 # 0.9.6 TEST – gleitendes Sendefenster und Neustartschutz
 
+Aktueller Standalone-Stand: ursprüngliche MeshCore-Funk-/Duty-Cycle-Steuerung,
+kein zusätzlicher DAR-Neustartschutz und kein persistentes DAR-Stundenfenster.
+Die nachfolgenden DAR-Fenster-/10-%-Aussagen gelten für das WLAN-Target.
+Siehe [Funkprofile](096-RADIO-PROFILES.md). Hardwareabnahme bleibt offen.
+
 Status: Softwareimplementierung für die DAR-Companion-Targets auf ESP32.
 Keine Funkmessung, keine Hardwarefreigabe, keine vollständige Funkzulässigkeitsprüfung.
 Der feste Faktor 9 ersetzt weiterhin keine Region-/Subband-/Profilvalidierung.

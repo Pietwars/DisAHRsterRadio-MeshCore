@@ -14,7 +14,11 @@
 #if defined(ENABLE_USB_INTERFACE) || defined(WIFI_SSID)
 #error "The local companion client must own the Companion interface in this profile"
 #endif
-#if LORA_TX_POWER != 10
+#if defined(DISASTER_STANDALONE)
+#if LORA_TX_POWER != 22
+#error "Unexpected original T-Deck TX power default"
+#endif
+#elif LORA_TX_POWER != 10
 #error "Unexpected local companion default TX power"
 #endif
 #include <helpers/BaseSerialInterface.h>

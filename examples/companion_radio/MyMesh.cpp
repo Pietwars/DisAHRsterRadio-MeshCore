@@ -332,7 +332,7 @@ int MyMesh::getDarRadioProfile() const {
 bool MyMesh::isTxProfileAllowed() const {
 #ifdef DISASTER_STANDALONE
   return _dar_applied_radio.matches(_prefs.freq, _prefs.bw, _prefs.sf, _prefs.cr) &&
-         disaster::darTxPowerAllowed(_prefs.tx_power_dbm) && _radio->isTxConfigurationValid();
+         _prefs.tx_power_dbm>=-9 && _prefs.tx_power_dbm<=MAX_LORA_TX_POWER && _radio->isTxConfigurationValid();
 #elif defined(DAR_MESH_POLICY)
   return getDarRadioProfile() >= 0 && disaster::darTxPowerAllowed(_prefs.tx_power_dbm) &&
          _radio->isTxConfigurationValid();
@@ -382,7 +382,7 @@ bool MyMesh::setDarRadioProfile(unsigned index) {
 }
 
 float MyMesh::getAirtimeBudgetFactor() const {
-#ifdef DAR_MESH_POLICY
+#if defined(DAR_MESH_POLICY) && !defined(DISASTER_STANDALONE)
   return 9.0f; // fixed internal 10% budget, including existing saved preferences
 #else
   return _prefs.airtime_factor;
@@ -1034,7 +1034,9 @@ MyMesh::MyMesh(mesh::Radio &radio, mesh::RNG &rng, mesh::RTCClock &rtc, SimpleMe
   disaster::radioProfileAt(disaster::DAR_DEFAULT_RADIO_PROFILE, default_profile);
   _prefs.freq = float(default_profile.freq)/1000.0f; _prefs.bw = float(default_profile.bw)/1000.0f;
   _prefs.sf = default_profile.sf; _prefs.cr = default_profile.cr;
+  #ifndef DISASTER_STANDALONE
   _prefs.airtime_factor = 9.0f;
+  #endif
   // DisAHRsterRadio: only repeaters and room servers are added automatically, chat users stay
   // manual. Applies to fresh prefs only; a saved /prefs.json (man_add, auto_add) overrides it.
   _prefs.manual_add_contacts = autoadd::DISASTER_DEFAULT_MANUAL;
@@ -1097,7 +1099,7 @@ void MyMesh::begin() {
   const bool startup_settings_valid=disaster::radioParamsValid(_prefs.freq,_prefs.bw,_prefs.sf,_prefs.cr);
   _dar_applied_radio.invalidate();
 #endif
-#ifdef DAR_MESH_POLICY
+#if defined(DAR_MESH_POLICY) && !defined(DISASTER_STANDALONE)
   _prefs.tx_power_dbm = constrain(_prefs.tx_power_dbm, -9, 10);
 #endif
   sensors.node_lat = _prefs.node_lat;
@@ -1651,8 +1653,10 @@ void MyMesh::handleCmdFrame(size_t len) {
   } else if (cmd_frame[0] == CMD_SET_RADIO_TX_POWER) {
     int8_t power = (int8_t)cmd_frame[1];
     if (power < -9 || power > MAX_LORA_TX_POWER
-#ifdef DAR_MESH_POLICY
+#if defined(DAR_MESH_POLICY) && !defined(DISASTER_STANDALONE)
         || !disaster::darTxPowerAllowed(power) || isTxInProgress()
+#elif defined(DISASTER_STANDALONE)
+        || isTxInProgress()
 #endif
     ) {
       writeErrFrame(ERR_CODE_ILLEGAL_ARG);
@@ -2282,7 +2286,7 @@ bool MyMesh::handleCommand(const char* command, uint32_t sender_timestamp, char*
     command += 3;
   }
 
-#ifdef DAR_MESH_POLICY
+#if defined(DAR_MESH_POLICY) && !defined(DISASTER_STANDALONE)
   if (!strncmp(command, "set radio ", 10)) {
     if (!local_radio_change) { strcpy(reply, "ERROR: radio changes require local rescue mode"); return true; }
     disaster::RadioPreset profile;

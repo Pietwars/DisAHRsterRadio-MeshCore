@@ -15,9 +15,12 @@ den Standard Mittel und den physischen Tastatur-Editor.
 Standalone-App-Befehle prüfen Wertebereiche und anschließend den Funkchip-Erfolg.
 TX erfordert eine exakt zu den Preferences passende erfolgreich angewandte Konfiguration.
 Nicht endliche Werte, ungültige SF/CR-Kombinationen und unvollständig
-angewandte Hardwarekonfigurationen autorisieren keinen TX. Ein Wechsel löscht
-weder das rollierende Sendefenster noch den dauerhaften Neustartschutz.
-Leistung bleibt auf -9 bis 10 dBm begrenzt; die interne 10-%-Politik bleibt fest.
+angewandte Hardwarekonfigurationen autorisieren keinen TX. Standalone folgt für Leistung, einstellbaren Duty Cycle und TX-Tokenbudget wieder
+der originalen MeshCore-Basis (Upstream 81dbae592ffad40b4212bc0b37e82b38da08f4bc).
+Kein zusätzlicher DAR-Leistungsdeckel, kein festes 10-%-Limit und kein persistentes
+DAR-Stundenfenster oder 60-Minuten-Neustartschutz am Standalone. Der T-Deck-
+Leistungsstandard ist wieder 22 dBm. Vorhandene Preferences bleiben erhalten.
+WLAN behält seine bisherige DAR-Politik. Parser- und Hardwarefehlerprüfungen bleiben.
 Die bestehende lokale Rescue-CLI ist kein neuer Display-Editor; Remote-Mesh-CLI
 bleibt von lokalen Funkänderungen ausgeschlossen.
 

@@ -201,7 +201,7 @@ void setup() {
   store.begin();
   the_mesh.begin();
 #elif defined(ESP32)
-#ifdef DAR_MESH_POLICY
+#if defined(DAR_MESH_POLICY) && !defined(DISASTER_STANDALONE)
   the_mesh.setTxWindowStore(&tx_window_store);
 #endif
   if (!frontend::mountFilesystem()) halt();

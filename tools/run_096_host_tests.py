@@ -69,4 +69,10 @@ with tempfile.TemporaryDirectory(prefix='dar096-') as tmp:
          '-Isrc','-Itest/mocks','tests/dispatcher.test.cpp','src/Dispatcher.cpp',
          'src/Packet.cpp','src/helpers/StaticPoolPacketManager.cpp','-o',str(binary)])
     run([str(binary)])
+    original_binary=Path(tmp)/'original-meshcore-tx'
+    run(['g++','-std=c++11','-Wall','-Wextra','-Wno-unused-parameter',
+         '-Wno-reorder','-Wno-sign-compare','-fsanitize=address,undefined','-DDISASTER_STANDALONE',
+         '-Isrc','-Itest/mocks','tests/original_meshcore_tx.test.cpp','src/Dispatcher.cpp',
+         'src/Packet.cpp','src/helpers/StaticPoolPacketManager.cpp','-o',str(original_binary)])
+    run([str(original_binary)])
 print('0.9.6 HOST GATES PASSED; target builds and hardware acceptance remain separate.')

@@ -1,5 +1,10 @@
 # 0.9.6 Sicherheits-, Funk- und Hardwareabnahme
 
+Aktueller Standalone-Stand: ursprüngliche MeshCore-Funk-/Duty-Cycle-Steuerung,
+kein zusätzlicher DAR-Neustartschutz und kein persistentes DAR-Stundenfenster.
+Die nachfolgenden DAR-Fenster-/10-%-Aussagen gelten für das WLAN-Target.
+Siehe [Funkprofile](096-RADIO-PROFILES.md). Hardwareabnahme bleibt offen.
+
 Status: **NICHT FREIGEGEBEN**. Bezug: Issue #47. Hosttests sind keine Funkmessung.
 Die 0.9.5-UI-Basis und PR #44 sind getrennt von der 0.9.6-Härtung zu bewerten.
 Vorhandenes Touch-/Empfangsfeedback ersetzt keine vollständige Hardwareabnahme.

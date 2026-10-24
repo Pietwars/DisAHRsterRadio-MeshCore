@@ -297,3 +297,17 @@ print("BLOCKED: privileged settings require a separate secure local provisioning
 print("UNVERIFIED: PlatformIO compilation and hardware tests")
 print("UNVERIFIED: physical RF airtime and regional/profile compliance")
 print("STATIC CHECKS PASSED (limited scope)")
+
+# Standalone explicitly restores upstream TX policy; WiFi retains DAR safeguards.
+mesh_header = (ROOT / "examples/companion_radio/MyMesh.h").read_text()
+standalone_config = (ROOT / "platformio.standalone.ini").read_text()
+original_tx = (ROOT / "src/OriginalMeshCoreTx.inc").read_text()
+check("#if defined(DAR_MESH_POLICY) && !defined(DISASTER_STANDALONE)" in mesh and
+      "#if defined(DAR_MESH_POLICY) && defined(ESP32) && !defined(DISASTER_STANDALONE)" in mesh_header,
+      "standalone uses saved airtime factor without the persistent DAR limiter")
+check("-D LORA_TX_POWER=22" in standalone_config and "LORA_TX_POWER=10" not in standalone_config,
+      "standalone restores original T-Deck power default")
+check("checkSendOriginalMeshCore(); return;" in dispatcher and
+      "est_airtime / MIN_TX_BUDGET_AIRTIME_DIV" in original_tx and
+      "updateOriginalMeshCoreTxBudget();" in original_tx,
+      "standalone uses the pinned original MeshCore TX budget and admission path")

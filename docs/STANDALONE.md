@@ -134,17 +134,17 @@ per Bluetooth geändert. Der Display-Editor samt Touch-/Tastatur-/Trackball-Eing
 Standard für frische Einstellungen ist **EU/UK Narrow / Switzerland**:
 869,618 MHz, 62,5 kHz, SF8, CR 4/8. Bereits gespeicherte gültige Einstellungen bleiben
 erhalten; nach einem Update kann das gewünschte Profil in der App gewählt werden.
-Auch weitere App-Presets und freie, vom Funkchip unterstützte Parameter sind möglich. Der interne
-Leistungsdeckel von 10 dBm, Sendefenster und Neustartschutz bleiben aktiv.
-Die WLAN-Variante behält ihren bisherigen Standard und physischen Profil-Editor.
-Details: [096-RADIO-PROFILES.md](096-RADIO-PROFILES.md).
+Weitere App-Presets und freie, vom Funkchip unterstützte Parameter sind möglich.
+Funkleistung und Duty Cycle folgen der originalen MeshCore-Basis dieses Projekts
+und lassen sich über die App einstellen. Der T-Deck-Build verwendet wieder den
+originalen Leistungsstandard von 22 dBm. Gespeicherte Werte bleiben erhalten.
 
-### Sendefenster und Neustartschutz in 0.9.6 TEST
-Nach einem Update mit unbekannter Sendehistorie oder einem unklaren Neustart
-bleibt RX aktiv, während neue TX für eine Stunde kontinuierlicher Laufzeit
-pausieren können. Unter Gerät → Geräteinfo/Akku → Funk steht der Sperrgrund.
-Ein Neustart während der Pause beginnt diese erneut; SOS umgeht sie nicht.
-Details und offene Hardwareprüfungen: [Sendefenster](096-TX-WINDOW.md).
+### TX-Budget: originales MeshCore-Verhalten
+Standalone nutzt die ursprüngliche MeshCore-Tokenbudget-Steuerung. Die DAR-
+Sonderregeln (feste 10 %, 10-dBm-Deckel, persistentes Stundenfenster und zusätzliche
+60-Minuten-Neustartsperre) sind dort deaktiviert. Die WLAN-Variante behält sie.
+Die DAR-Oberfläche und die PIN-authentifizierte App-Bedienung bleiben erhalten.
+Keine Aussage über tatsächliche HF-Leistung oder Hardwareabnahme.
 
 ### Lokale Einstellungen in 0.9.6 TEST
 Unter **Gerät** stehen zusätzlich **Gerätenamen ändern** (mit zweiter Bestätigung) und

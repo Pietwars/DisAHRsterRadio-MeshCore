@@ -143,6 +143,11 @@ class Dispatcher {
   void updateTxBudget();
   uint32_t budgetWaitMillis(uint64_t missing) const;
   void accountTxAirtime();
+#ifdef DISASTER_STANDALONE
+  void checkSendOriginalMeshCore();
+  void updateOriginalMeshCoreTxBudget();
+  void completeOriginalMeshCoreTx();
+#endif
 
 protected:
   PacketManager* _mgr;
