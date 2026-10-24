@@ -34,6 +34,11 @@ for block in blocks:
 with tempfile.TemporaryDirectory(prefix='dar096-') as tmp:
     # Each companion frontend must select the same actual dispatcher and BLE policy.
     for mode in ('DISASTER_STANDALONE','DISASTER_PORTAL'):
+        client_binary=Path(tmp)/('local-companion-'+mode)
+        run(['g++','-std=c++11','-Wall','-Wextra','-Werror','-Wno-misleading-indentation',
+             '-fsanitize=address,undefined','-D'+mode,'-DLORA_TX_POWER=22',
+             '-Itests/companion_fakes','-Isrc','tests/local_companion.test.cpp','-o',str(client_binary)])
+        run([str(client_binary)])
         radio_binary=Path(tmp)/('radio-policy-'+mode)
         run(['g++','-std=c++11','-Wall','-Wextra','-Werror','-fsanitize=address,undefined',
              '-D'+mode,'tests/dar_radio_policy.test.cpp','-o',str(radio_binary)])

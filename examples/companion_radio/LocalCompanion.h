@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 #pragma once
+#include "../../src/CompanionRadioMode.h"
 // Web-free local companion client (Issue #35, step 2). It owns one serialized Companion-protocol session with
 // MyMesh (InterfaceType::Portal in MultiSerialInterface) and keeps:
 //   - the startup sequence and caches of channels and contacts,
@@ -18,7 +19,7 @@
 #if LORA_TX_POWER != 22
 #error "Unexpected original T-Deck TX power default"
 #endif
-#elif LORA_TX_POWER != 10
+#elif !defined(DAR_ORIGINAL_MESHCORE_TX) && LORA_TX_POWER != 10
 #error "Unexpected local companion default TX power"
 #endif
 #include <helpers/BaseSerialInterface.h>

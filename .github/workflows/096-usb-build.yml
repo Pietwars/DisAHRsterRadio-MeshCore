@@ -133,6 +133,6 @@ jobs:
           node tools/web_previews.cjs
       - uses: actions/upload-artifact@v4
         with:
-          name: web-previews-0.9.6-rc1
+          name: web-previews-0.9.6
           path: web-previews/*.jpg
           if-no-files-found: error
