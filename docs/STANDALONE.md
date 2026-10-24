@@ -128,6 +128,13 @@ angepasst; die Oberfläche ist kein Austausch des Funkprotokolls und keine pixel
   (`GpsShare.h`, Speicher-Haken in `MyMesh::savePrefs`).
 - T-Deck-GPS: Baudraten-Erkennung über gültige NMEA-Sätze (9600/38400/115200) aus #34, nur im Standalone.
 
+### Sendefenster und Neustartschutz in 0.9.6 TEST
+Nach einem Update mit unbekannter Sendehistorie oder einem unklaren Neustart
+bleibt RX aktiv, während neue TX für eine Stunde kontinuierlicher Laufzeit
+pausieren können. Unter Gerät → Geräteinfo/Akku → Funk steht der Sperrgrund.
+Ein Neustart während der Pause beginnt diese erneut; SOS umgeht sie nicht.
+Details und offene Hardwareprüfungen: [Sendefenster](096-TX-WINDOW.md).
+
 ### Lokale Einstellungen in 0.9.6 TEST
 Unter **Gerät** stehen zusätzlich **Gerätenamen ändern** (mit zweiter Bestätigung) und
 **SD-Konfiguration anwenden** bereit. SD-Einstellungen werden beim Start nur vorgemerkt;

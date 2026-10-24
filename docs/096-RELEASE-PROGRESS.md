@@ -13,6 +13,11 @@ eine implementierte Teilfunktion schließt ihren Gesamtblock nicht automatisch.
 | Namenseditor und SD-Import nach lokaler Vorschau/Bestätigung | `0c884f1d`, beide CI-Targets einschließlich Hosttests erfolgreich, Run 40053293342 | Keine vollständige Konfiguration, kein Recovery, Gerätetests offen |
 | TX-Mehrverbrauch als Schuld erhalten, Null-Schätzung sperren, lange Fristen begrenzen | `26bafefa`, gezielter Hosttest mit UndefinedBehaviorSanitizer; beide CI-Targets mit Hosttests erfolgreich, Run 40053580325 | Keine HF-/Hardwarefreigabe |
 
+Die reine Fensterlogik wurde mit `1800bb4f` eingeführt; beide CI-Targets inklusive
+Hosttests waren erfolgreich (Run 40054930489). Die nachfolgende Integration in
+Scheduler, ESP32-NVS und Anzeigen ist in [096-TX-WINDOW.md](096-TX-WINDOW.md)
+beschrieben; ihr eigener Buildnachweis ist separat zu prüfen.
+
 ## Reihenfolge und offene Ergebnisse
 
 1. **Lokale Konfiguration und Recovery**: Kanal-/Schlüsselverwaltung, Funkprofil und
@@ -60,10 +65,11 @@ Grundsätzlich gilt ein fortlaufender einstündiger Beobachtungszeitraum. Für
 höchstens 10 % Arbeitszyklus und 500 mW ERP. Diese einzelne Tabellenzeile ist keine
 allgemeine Freigabe aller Frequenzen, Modulationsprofile, Antennen oder Länder.
 
-Codebefund: Der aktuelle Dispatcher füllt einen anfangs vollen Stunden-Tokenbucket
-während derselben Stunde wieder auf. Damit ist die Summe in jedem gleitenden
-Stundenfenster nicht allein durch die Bucket-Kapazität begrenzt. Die neuen
-Schulden-/Reserveprüfungen beheben Fehlerfälle, ersetzen aber keine gleitende
-Fensterrechnung. Ein Neustart löscht außerdem den RAM-Verlauf. Vor Release müssen
-Fensterrechnung, belastbare Neustartstrategie und Bandwechsel gemeinsam gelöst und
-mit adversarialen Zeitfolgen getestet werden. Bis dahin keine Funkregelkonformität behaupten.
+Ausgangsbefund vor der Fensterintegration: Der damalige Dispatcher füllte einen anfangs vollen Stunden-Tokenbucket
+während derselben Stunde wieder auf. Damit war die Summe in jedem gleitenden
+Stundenfenster nicht allein durch die Bucket-Kapazität begrenzt. Die Schulden-/Reserveprüfungen allein ersetzten keine gleitende Fensterrechnung.
+Die neue Integration ergänzt eine konservative Fensterrechnung und einen
+persistenten Aktivitätsmarker mit stiller Stunde nach unklaren Neustarts;
+Details, Verhalten beim ersten Update und Testabdeckung: [096-TX-WINDOW.md](096-TX-WINDOW.md).
+Band-/Profilvalidierung und reale HF-/Stromausfallnachweise bleiben offen.
+Bis dahin keine vollständige Funkregelkonformität behaupten.

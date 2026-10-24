@@ -31,6 +31,8 @@ struct Info {
   bool sdCard = false, sdArchive = false, sdConfig = false, sdLog = false;
   char sdNote[64] = "";
   uint32_t txFlood = 0, txDirect = 0, rxFlood = 0, rxDirect = 0;
+  uint32_t txStartupWaitSeconds = 0;
+  bool txStorageBlocked = false, txBudgetWaiting = false;
 };
 class Api {
 public:

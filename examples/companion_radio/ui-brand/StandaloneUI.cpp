@@ -920,7 +920,10 @@ void UI::drawDeviceInfo(DisplayDriver *d) {
   row("Uhr", in.clockOK ? when : "nicht gestellt (App/GPS)", in.clockOK ? TEXT : PEND);
   snprintf(v, sizeof(v), "TX %lu/%lu \xc2\xb7 RX %lu/%lu (Flood/Direkt)", (unsigned long)in.txFlood, (unsigned long)in.txDirect,
            (unsigned long)in.rxFlood, (unsigned long)in.rxDirect);
-  row("Funk", v, TEXT);
+  if (in.txStartupWaitSeconds) snprintf(v, sizeof(v), "TX: Neustartschutz %lu min", (unsigned long)((in.txStartupWaitSeconds + 59) / 60));
+  else if (in.txStorageBlocked) snprintf(v, sizeof(v), "TX gesperrt: Speicherschutz");
+  else if (in.txBudgetWaiting) snprintf(v, sizeof(v), "TX wartet: Sendebudget");
+  row("Funk", v, in.txStartupWaitSeconds || in.txStorageBlocked || in.txBudgetWaiting ? PEND : TEXT);
   snprintf(v, sizeof(v), "%lu KB frei \xc2\xb7 min. %lu KB", (unsigned long)(in.heapFree / 1024), (unsigned long)(in.heapMin / 1024));
   row("Speicher", v, in.heapMin && in.heapMin < 40 * 1024 ? BAD : TEXT);
   if (in.sdCard) snprintf(v, sizeof(v), "Config %s \xc2\xb7 Log %s%s%s", in.sdConfig ? "ja" : "nein", in.sdLog ? "an" : "aus",

@@ -130,6 +130,13 @@ public:
 
 protected:
   float getAirtimeBudgetFactor() const override;
+  bool useTxWindowLimiter() const override {
+#if defined(DAR_MESH_POLICY) && defined(ESP32)
+    return true;
+#else
+    return false;
+#endif
+  }
   int getInterferenceThreshold() const override;
   bool getCADEnabled() const override;
   int getAGCResetInterval() const override {

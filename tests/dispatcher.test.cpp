@@ -10,10 +10,10 @@ struct Clock : mesh::MillisecondClock {
 };
 struct Radio : mesh::Radio {
   bool complete=false, startOK=true, busy=false;
-  int starts=0, finishes=0, length=0, estimatedLength=0;
+  int starts=0, finishes=0, length=0, estimatedLength=0, receives=0;
   uint32_t estimate=100, startDelay=0;
   Clock* clock=nullptr;
-  int recvRaw(uint8_t*,int) override { return 0; }
+  int recvRaw(uint8_t*,int) override { ++receives; return 0; }
   uint32_t getEstAirtimeFor(int n) override { estimatedLength=n;return estimate; }
   float packetScore(float,int) override { return 0; }
   bool startSendRaw(const uint8_t*,int n) override { ++starts;length=n;if(clock) clock->now=uint32_t(clock->now+startDelay);return startOK; }
@@ -31,7 +31,95 @@ struct Dispatcher : mesh::Dispatcher {
   void logTx(mesh::Packet*,int) override { ++success; }
   void logTxFail(mesh::Packet*,int) override { ++failed; }
 };
+struct WindowStore : mesh::TxWindowStore {
+  bool clean=true, fail=false;
+  int dirtyWrites=0;
+  Clock* clock=nullptr; uint32_t writeDelay=0;
+  bool loadClean() override { return clean; }
+  bool saveDirty() override {
+    ++dirtyWrites;
+    if (clock) clock->now=uint32_t(clock->now+writeDelay);
+    if (fail) return false;
+    clean=false; return true;
+  }
+  bool saveClean() override { clean=true; return true; }
+};
+struct WindowDispatcher : Dispatcher {
+  using Dispatcher::Dispatcher;
+  bool useTxWindowLimiter() const override { return true; }
+};
+static void testWindowDispatch() {
+  // Refilling tokens is insufficient while rolling-hour quota is occupied.
+  static StaticPoolPacketManager pool(3);
+  Clock clock; Radio radio; radio.complete=true; WindowStore store;
+  WindowDispatcher dispatcher(radio,clock,pool);
+  dispatcher.setTxWindowStore(&store); dispatcher.begin();
+  auto queue=[&](uint8_t priority=0,uint32_t delay=0){
+    auto p=dispatcher.obtainNewPacket(); assert(p);
+    p->header=ROUTE_TYPE_FLOOD; p->payload_len=10; dispatcher.sendPacket(p,priority,delay);
+  };
+  for (int i=0;i<6;++i) {
+    queue(); dispatcher.loop(); clock.now+=100; dispatcher.loop();
+  }
+  assert(radio.starts==6&&store.dirtyWrites==1);
+  assert(dispatcher.getRemainingTxBudget()==100); // 6 * 150ms reserve of 1000
+  clock.now+=10000; queue(); dispatcher.loop();
+  assert(radio.starts==6&&dispatcher.isTxBudgetWaiting()&&pool.getOutboundTotal()==1);
+  clock.now=3660100; dispatcher.loop(); assert(radio.starts==7);
+  clock.now+=100; dispatcher.loop(); assert(pool.getFreeCount()==3);
+
+  // Dirty restart, storage errors and priority-zero traffic cannot bypass admission.
+  static StaticPoolPacketManager retryPool(2);
+  Clock restartClock; Radio restartRadio; WindowStore dirty; dirty.clean=false;
+  WindowDispatcher restarted(restartRadio,restartClock,retryPool);
+  restarted.setTxWindowStore(&dirty); restarted.begin();
+  auto p=restarted.obtainNewPacket(); assert(p);
+  p->header=ROUTE_TYPE_FLOOD; p->payload_len=10; restarted.sendPacket(p,0);
+  restarted.loop(); assert(restartRadio.starts==0&&restartRadio.receives>0&&restarted.getTxStartupWaitSeconds()==3600);
+  restartClock.now+=3599999; restarted.loop(); assert(restartRadio.starts==0);
+  dirty.fail=true; ++restartClock.now; restarted.loop();
+  assert(restarted.isTxStorageBlocked()&&retryPool.getOutboundTotal()==1);
+  auto events=restarted.getTxBudgetWaitEvents(); restarted.loop();
+  assert(restarted.getTxBudgetWaitEvents()==events); // no false wait-event inflation
+  dirty.fail=false; restartClock.now+=1000; restarted.loop();
+  assert(restartRadio.starts==1&&retryPool.getOutboundTotal()==0&&!restarted.isTxStorageBlocked());
+  restartRadio.complete=true; restartClock.now+=100; restarted.loop();
+  assert(retryPool.getFreeCount()==2);
+
+  // Failed start and timeout both consume rolling quota and release their packet.
+  static StaticPoolPacketManager errorPool(2);
+  Clock errorClock; Radio errorRadio; WindowStore errorStore;
+  WindowDispatcher errors(errorRadio,errorClock,errorPool);
+  errors.setTxWindowStore(&errorStore); errors.begin();
+  auto failed=errors.obtainNewPacket(); assert(failed);
+  failed->header=ROUTE_TYPE_FLOOD; failed->payload_len=10;
+  errorRadio.startOK=false; errors.sendPacket(failed,0); errors.loop();
+  assert(errors.failed==1&&errors.getTotalAirTime()==0&&errors.getRemainingTxBudget()==850);
+  assert(errorPool.getFreeCount()==2);
+  failed=errors.obtainNewPacket(); assert(failed);
+  failed->header=ROUTE_TYPE_FLOOD; failed->payload_len=10;
+  errorRadio.startOK=true; errors.sendPacket(failed,0); errors.loop();
+  errorClock.now+=200; errors.loop();
+  assert(errors.failed==2&&errors.getRemainingTxBudget()==650&&errorPool.getFreeCount()==2);
+
+  // A slow flash commit must not substitute a newly due, larger packet after peek.
+  static StaticPoolPacketManager delayedPool(3);
+  Clock delayedClock; Radio delayedRadio; WindowStore delayed;
+  delayed.clock=&delayedClock; delayed.writeDelay=100;
+  WindowDispatcher delayedDispatcher(delayedRadio,delayedClock,delayedPool);
+  delayedDispatcher.setTxWindowStore(&delayed); delayedDispatcher.begin();
+  auto first=delayedDispatcher.obtainNewPacket(); auto later=delayedDispatcher.obtainNewPacket();
+  assert(first&&later); first->header=later->header=ROUTE_TYPE_FLOOD;
+  first->payload_len=1; later->payload_len=100;
+  delayedDispatcher.sendPacket(first,5); delayedDispatcher.sendPacket(later,0,50);
+  delayedDispatcher.loop(); assert(delayedRadio.starts==1&&delayedRadio.length==3);
+  assert(delayedPool.getOutboundTotal()==1);
+  delayedRadio.complete=true; delayedClock.now+=100; delayedDispatcher.loop();
+  assert(delayedRadio.starts==2&&delayedRadio.length==102);
+  delayedClock.now+=100; delayedDispatcher.loop(); assert(delayedPool.getFreeCount()==3);
+}
 int main() {
+  testWindowDispatch();
   // Static lifetime matches the embedded pool (it has no destructor).
   static StaticPoolPacketManager pool(8);
   Clock c; Radio r; Dispatcher d(r,c,pool); d.begin();

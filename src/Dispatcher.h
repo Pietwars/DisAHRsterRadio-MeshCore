@@ -5,6 +5,7 @@
 #include <Packet.h>
 #include <Utils.h>
 #include "TxBudgetDiagnostics.h"
+#include "TxWindowLimiter.h"
 #include <string.h>
 
 namespace mesh {
@@ -119,6 +120,9 @@ typedef uint32_t  DispatcherAction;
 */
 class Dispatcher {
   TxBudgetDiagnostics budget_diagnostics;
+  TxWindowLimiter tx_window;
+  TxWindowStore* tx_window_store = nullptr;
+  bool tx_window_enabled = false;
   Packet* outbound;  // current outbound packet
   unsigned long outbound_expiry, outbound_start, total_air_time, rx_air_time;
   unsigned long next_tx_time;
@@ -171,6 +175,7 @@ protected:
   virtual const char* getLogDateTime() { return ""; }
 
   virtual float getAirtimeBudgetFactor() const;
+  virtual bool useTxWindowLimiter() const { return false; }
   virtual int calcRxDelay(float score, uint32_t air_time) const;
   virtual uint32_t getCADFailRetryDelay() const;
   virtual uint32_t getCADFailMaxDuration() const;
@@ -182,6 +187,10 @@ protected:
 public:
   void begin();
   void loop();
+  // Attach before begin(). Public transports never receive this capability.
+  void setTxWindowStore(TxWindowStore* store) { tx_window_store = store; }
+  uint32_t getTxStartupWaitSeconds() const { return tx_window_enabled ? tx_window.startupSeconds() : 0; }
+  bool isTxStorageBlocked() const { return tx_window_enabled && tx_window.storageBlocked(); }
 
   Packet* obtainNewPacket();
   void releasePacket(Packet* packet);
@@ -193,7 +202,7 @@ public:
   uint32_t getTxBudgetWaitEvents() const { return budget_diagnostics.events(); }
   uint32_t getTxBudgetWaitSeconds() const { return budget_diagnostics.seconds(uint32_t(_ms->getMillis())); }
   int getTxQueuePackets() const { return _mgr->getOutboundTotal(); }
-  unsigned long getRemainingTxBudget() const { return tx_budget_ms; }
+  unsigned long getRemainingTxBudget() const;
   uint32_t getNumSentFlood() const { return n_sent_flood; }
   uint32_t getNumSentDirect() const { return n_sent_direct; }
   uint32_t getNumRecvFlood() const { return n_recv_flood; }

@@ -11,6 +11,7 @@ struct Store : mesh::TxWindowStore {
   bool saveClean() override { ++cleanWrites; clean=true; return !clearFail; }
 };
 using Window = mesh::TxWindowLimiter;
+static_assert(sizeof(Window)<=600,"rolling TX history must remain bounded in RAM");
 int main() {
   Store store; Window w;
   w.begin(100, &store);

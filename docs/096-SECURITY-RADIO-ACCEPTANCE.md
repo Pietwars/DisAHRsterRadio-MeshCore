@@ -58,6 +58,15 @@ angestoßen und legt Commitkennung und SHA256SUMS zu den Test-Binaries ab.
 **Tor:** Hosttests und beide Builds für denselben finalen Commit erfolgreich;
 Firmware-SHA256 und Artefaktquelle festhalten. Nicht auf ältere grüne Läufe stützen.
 
+## Gleitendes Fenster / Neustartschutz (0.9.6 TEST)
+
+Der zusätzliche ESP32-DAR-Schutz ist in [096-TX-WINDOW.md](096-TX-WINDOW.md)
+beschrieben. Unbekannte Vorgeschichte führt zu einer Stunde TX-Pause bei aktivem
+RX, auch beim ersten Update auf diese Implementierung. Markerfehler sperren TX;
+kein SOS-/Prioritäts-Bypass. Die Fensterabrechnung ist konservativ und beweist
+weder eine zulässige Frequenz-/Antennenkombination noch echte HF-Zeit.
+Stromausfall-, Reset- und RX-während-NVS-Tests ausdrücklich in die Abnahme aufnehmen.
+
 ## 3. Funkmessung (zwei reale Geräte)
 
 Pro Messreihe: Boardrevision, Commit, Firmware-SHA256, Frequenz, Bandbreite, SF,

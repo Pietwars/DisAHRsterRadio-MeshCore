@@ -95,6 +95,19 @@ check("startSendRaw(raw, len)" in check_send and
 check("accountTxAirtime();" in dispatcher,
       "dispatcher charges elapsed TX time to shared airtime budget")
 
+check("tx_window.start(" in check_send and
+      check_send.index("tx_window.start(") < check_send.index("getNextOutbound("),
+      "durable rolling-window admission precedes dequeue and radio TX")
+check("peekNextOutbound(candidate_time)" in check_send and "getNextOutbound(candidate_time)" in check_send,
+      "flash commit cannot substitute a newly due packet after reserve inspection")
+check("tx_window.complete(" in dispatcher and "tx_window.tick(" in dispatcher,
+      "TX outcomes charge the rolling window and monotonic time advances in the loop")
+check("the_mesh.setTxWindowStore(&tx_window_store);" in main,
+      "DAR ESP32 startup attaches persistent TX activity storage")
+tx_store = (ROOT / "src/helpers/esp32/Esp32TxWindowStore.h").read_text()
+check("nvs_commit(handle) == ESP_OK" in tx_store and "nvs_erase" not in tx_store,
+      "TX activity marker requires explicit successful NVS commit without erase-on-error")
+
 # SD configuration is inert at boot; only a physical local action imports it.
 standalone = (ROOT / "examples/companion_radio/StandaloneFrontend.cpp").read_text()
 loader = standalone.split("void loadConfig()", 1)[1].split("bool saveConfig(", 1)[0]

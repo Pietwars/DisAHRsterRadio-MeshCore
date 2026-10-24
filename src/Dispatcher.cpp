@@ -28,9 +28,18 @@ void Dispatcher::begin() {
   tx_budget_ms = (unsigned long)(duty_cycle_window_ms * duty_cycle);
   tx_budget_debt_ms = 0;
   last_budget_update = _ms->getMillis();
+  tx_window_enabled = useTxWindowLimiter();
+  if (tx_window_enabled) tx_window.begin(uint32_t(last_budget_update), tx_window_store);
 
   _radio->begin();
   prev_isrecv_mode = _radio->isInRecvMode();
+}
+
+unsigned long Dispatcher::getRemainingTxBudget() const {
+  if (!tx_window_enabled) return tx_budget_ms;
+  uint32_t limit = uint32_t(double(getDutyCycleWindowMs()) / (1.0 + getAirtimeBudgetFactor()));
+  uint32_t remaining = tx_window.available(limit);
+  return tx_budget_ms < remaining ? tx_budget_ms : remaining;
 }
 
 float Dispatcher::getAirtimeBudgetFactor() const {
@@ -66,6 +75,7 @@ void Dispatcher::updateTxBudget() {
 void Dispatcher::accountTxAirtime() {
   uint32_t elapsed = uint32_t(_ms->getMillis()) - uint32_t(outbound_start);
   total_air_time += elapsed;
+  if (tx_window_enabled) tx_window.complete(uint32_t(_ms->getMillis()), elapsed);
   updateTxBudget();
   if (elapsed > tx_budget_ms) {
     // Unknown/late TX completion can exceed the reserve or even the bucket.
@@ -92,6 +102,7 @@ uint32_t Dispatcher::getCADFailMaxDuration() const {
 }
 
 void Dispatcher::loop() {
+  if (tx_window_enabled) tx_window.tick(uint32_t(_ms->getMillis()));
   if (millisHasNowPassed(next_floor_calib_time)) {
     _radio->triggerNoiseFloorCalibrate(getInterferenceThreshold());
     _radio->setCADEnabled(getCADEnabled());
@@ -287,14 +298,15 @@ void Dispatcher::processRecvPacket(Packet* pkt) {
 }
 
 void Dispatcher::checkSend() {
-  if (_mgr->getOutboundCount(_ms->getMillis()) == 0) {
+  const uint32_t candidate_time = uint32_t(_ms->getMillis());
+  if (_mgr->getOutboundCount(candidate_time) == 0) {
     budget_diagnostics.set(false, uint32_t(_ms->getMillis()));
     return;
   }
   
   updateTxBudget();
   
-  Packet* candidate = _mgr->peekNextOutbound(uint32_t(_ms->getMillis()));
+  Packet* candidate = _mgr->peekNextOutbound(candidate_time);
   if (candidate == NULL) return;
   uint32_t est_airtime = _radio->getEstAirtimeFor(candidate->getRawLength());
   if (est_airtime == 0) {
@@ -320,7 +332,6 @@ void Dispatcher::checkSend() {
     return;
   }
   
-  budget_diagnostics.set(false, uint32_t(_ms->getMillis()));
   if (!millisHasNowPassed(next_tx_time)) return;
   if (_radio->isReceiving()) {
     if (cad_busy_start == 0) {
@@ -340,7 +351,16 @@ void Dispatcher::checkSend() {
   }
   cad_busy_start = 0;  // reset busy state
 
-  outbound = _mgr->getNextOutbound(_ms->getMillis());
+  // Persist activity before dequeue/TX. Flash failure must retain the packet,
+  // its priority and schedule. A later due packet cannot replace this candidate
+  // while the flash commit advances millis(), hence the frozen queue timestamp.
+  if (tx_window_enabled && !tx_window.start(uint32_t(_ms->getMillis()), required_airtime, max_budget)) {
+    budget_diagnostics.set(true, uint32_t(_ms->getMillis()));
+    return;
+  }
+  budget_diagnostics.set(false, uint32_t(_ms->getMillis()));
+  outbound = _mgr->getNextOutbound(candidate_time);
+  if (!outbound && tx_window_enabled) tx_window.cancelBeforeRadio();
   if (outbound) {
     int len = 0;
     uint8_t raw[MAX_TRANS_UNIT];
@@ -357,6 +377,7 @@ void Dispatcher::checkSend() {
       MESH_DEBUG_PRINTLN("%s Dispatcher::checkSend(): FATAL: Invalid packet queued... too long, len=%d", getLogDateTime(), len + outbound->payload_len);
       _mgr->free(outbound);
       outbound = NULL;
+      if (tx_window_enabled) tx_window.cancelBeforeRadio();
     } else {
       memcpy(&raw[len], outbound->payload, outbound->payload_len); len += outbound->payload_len;
 

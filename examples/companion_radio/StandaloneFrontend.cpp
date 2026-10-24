@@ -251,6 +251,8 @@ public:
     o.heapFree = ESP.getFreeHeap(); o.heapMin = ESP.getMinFreeHeap();
     o.sdCard = sdReady(); o.sdArchive = sdReady(); o.sdConfig = sd_config; o.sdLog = log_on && sdReady();
     snprintf(o.sdNote, sizeof(o.sdNote), "%s", sd_note);
+    o.txStartupWaitSeconds = the_mesh.getTxStartupWaitSeconds();
+    o.txStorageBlocked = the_mesh.isTxStorageBlocked(); o.txBudgetWaiting = the_mesh.isTxBudgetWaiting();
     o.txFlood = the_mesh.getNumSentFlood(); o.txDirect = the_mesh.getNumSentDirect();
     o.rxFlood = the_mesh.getNumRecvFlood(); o.rxDirect = the_mesh.getNumRecvDirect();
   }

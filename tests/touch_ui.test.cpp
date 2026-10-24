@@ -244,7 +244,20 @@ static void testLocalConfig() {
   api.configOk=true; u.key('\n'); assert(api.configImports==2&&u.current()==sui::DEVICE);
 }
 
+static void testTxGuardInfo() {
+  api=FakeApi(); sui::UI u; start(u); tab(u,4);
+  for (int i=0;i<6;++i) u.move(0,1);
+  u.click(); assert(u.current()==sui::DEVICE_INFO);
+  api.startupWait=3600; draw(u);
+  assert(screen.allText.find("Neustartschutz 60 min")!=std::string::npos);
+  api.startupWait=0; api.storageWait=true; draw(u);
+  assert(screen.allText.find("Speicherschutz")!=std::string::npos);
+  api.storageWait=false; api.budgetWait=true; draw(u);
+  assert(screen.allText.find("Sendebudget")!=std::string::npos);
+}
+
 int main() {
+  testTxGuardInfo();
   testLocalConfig();
   testPinEditor();
   testReleaseAndLists();

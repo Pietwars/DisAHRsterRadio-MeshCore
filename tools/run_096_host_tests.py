@@ -15,6 +15,7 @@ def run(args):
 
 run([sys.executable, 'tools/check_096_static.py'])
 run([sys.executable, 'tests/portal_routes.test.py'])
+run(['node', 'tests/web_regression.cjs'])
 # Reuse every existing host compile/run block, rather than maintaining a second list.
 # Only literal run blocks from this checked-in workflow are executed.
 workflow = (ROOT / '.github/workflows/open-access.yml').read_text().splitlines()
@@ -34,6 +35,11 @@ with tempfile.TemporaryDirectory(prefix='dar096-') as tmp:
     run(['g++','-std=c++11','-Wall','-Wextra','-Werror',
          '-fsanitize=address,undefined','-Isrc','tests/tx_window.test.cpp','-o',str(window_binary)])
     run([str(window_binary)])
+    store_binary=Path(tmp)/'tx-window-store'
+    run(['g++','-std=c++11','-Wall','-Wextra','-Werror',
+         '-fsanitize=address,undefined','-Itests/tx_window_fakes','-Isrc',
+         'tests/tx_window_store.test.cpp','-o',str(store_binary)])
+    run([str(store_binary)])
     binary=Path(tmp)/'dispatcher'
     run(['g++','-std=c++11','-Wall','-Wextra','-Wno-unused-parameter',
          '-Wno-reorder','-Wno-sign-compare','-fsanitize=address,undefined',

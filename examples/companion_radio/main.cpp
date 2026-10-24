@@ -2,6 +2,10 @@
 #include <Arduino.h>   // needed for PlatformIO
 #include <Mesh.h>
 #include "MyMesh.h"
+#if defined(DAR_MESH_POLICY) && defined(ESP32)
+#include <helpers/esp32/Esp32TxWindowStore.h>
+static mesh::Esp32TxWindowStore tx_window_store;
+#endif
 #include "Frontend.h"   // optional extra frontend (web layer or none), see Frontend.h
 
 // Believe it or not, this std C function is busted on some platforms!
@@ -197,6 +201,9 @@ void setup() {
   store.begin();
   the_mesh.begin();
 #elif defined(ESP32)
+#ifdef DAR_MESH_POLICY
+  the_mesh.setTxWindowStore(&tx_window_store);
+#endif
   if (!frontend::mountFilesystem()) halt();
   store.begin();
   the_mesh.begin();

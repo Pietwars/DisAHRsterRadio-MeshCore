@@ -12,6 +12,8 @@ struct FakeApi : dev::Api {
   uint32_t seq = 0, clock = 1792922400u;   // 2026-10-26 10:00 local
   bool isReady = true, sendOk = true, loginOk = true;
   dev::Gps g; dev::Room rm{"", 0, false};
+  uint32_t startupWait = 0;
+  bool storageWait = false, budgetWait = false;
   int nameChanges = 0, configImports = 0;
   bool configOk = true;
   std::string changedName;
@@ -100,6 +102,7 @@ struct FakeApi : dev::Api {
     snprintf(o.name, sizeof(o.name), "DAR-TDeck-3f2a"); o.firmware = firmwareLabel;
     o.channels = 2; o.contacts = unsigned(targets.size()) - 2; o.history = seq; o.bleConnected = true; o.defaultPin = true;
     o.clockOK = true; o.heapFree = 142 * 1024; o.heapMin = 118 * 1024; o.sdCard = true; o.sdConfig = true; o.sdLog = true;
+    o.txStartupWaitSeconds=startupWait; o.txStorageBlocked=storageWait; o.txBudgetWaiting=budgetWait;
     o.txFlood = 12; o.txDirect = 3; o.rxFlood = 57; o.rxDirect = 9;
   }
   bool saveConfig(char *status, size_t size) override { ++saves; snprintf(status, size, "Einstellungen auf SD gespeichert"); return true; }
