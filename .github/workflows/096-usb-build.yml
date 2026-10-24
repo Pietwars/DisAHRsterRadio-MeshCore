@@ -9,6 +9,7 @@ on:
       - 'platformio.standalone.ini'
       - 'variants/**'
       - 'examples/companion_radio/**'
+      - 'examples/simple_room_server/**'
       - 'src/**'
       - 'tools/**'
       - 'tests/**'
@@ -103,3 +104,15 @@ jobs:
           path: firmware-test/${{ matrix.environment }}/
           if-no-files-found: error
           retention-days: 14
+
+  room-server:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned PlatformIO
+        run: python -m pip install platformio==6.2.0
+      - name: Build existing DISASTER_ROOM SX1262 target (no flashing)
+        run: pio run -e disaster_t3s3_sx1262_room

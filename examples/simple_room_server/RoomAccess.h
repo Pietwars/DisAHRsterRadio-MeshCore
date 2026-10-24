@@ -31,6 +31,15 @@ inline uint8_t roomLoginPermission(const char *given, const char *admin, const c
   return ROOM_PERM_GUEST;
 }
 
+// Both guest (0) and explicit read-only (1) are non-writing roles.
+inline bool roomCanPost(uint8_t permissions) {
+  return (permissions & 3) == ROOM_PERM_READ_WRITE || (permissions & 3) == ROOM_PERM_ADMIN;
+}
+inline bool roomPostRetryAllowed(uint8_t permissions, bool sameOwner, bool accepted,
+                                 uint32_t previous, uint32_t incoming) {
+  return roomCanPost(permissions) && sameOwner && accepted && previous == incoming;
+}
+
 // Beim Start (auch nach Update): Gast-Passwort auf "hello" setzen (ersetzt leere oder
 // zufaellige Werte aelterer Versionen) und Gast-Lesezugriff einschalten.
 // Liefert true, wenn die Einstellungen gespeichert werden muessen.

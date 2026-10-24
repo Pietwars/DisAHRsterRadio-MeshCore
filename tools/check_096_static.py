@@ -215,7 +215,7 @@ check("if (client->isAdmin())" in room_commands and "handleCommand(sender_timest
 check("send_ack = false; // and no ACK" in room_commands,
       "non-admin room moderation commands are rejected without acknowledgment")
 room_posts = room_rx.split("} else { // TXT_TYPE_PLAIN", 1)[1].split("uint32_t delay_millis;", 1)[0]
-check("(client->permissions & PERM_ACL_ROLE_MASK) == PERM_ACL_GUEST" in room_posts and
+check("!disaster::roomCanPost(client->permissions)" in room_posts and
       "addPost(client, (const char *)&data[5]);" in room_posts,
       "read-only room guests cannot publish posts")
 check("if (!is_retry)" in room_posts,
@@ -240,7 +240,8 @@ check("budget.count >= 6" in room_access and "600000UL" in room_access and "1500
 
 check("send_ack = post_accepted;" in room_posts,
       "room post ACK is sent only after accepted storage")
-check("room_last_accepted_timestamp[i] == sender_timestamp" in room_posts and
+check("roomPostRetryAllowed(client->permissions," in room_posts and
+      "memcmp(room_budget_owners[i].pub_key, client->id.pub_key, PUB_KEY_SIZE) == 0" in room_posts and
       "room_has_accepted_post[i] = true;" in room_posts,
       "room post retries are acknowledged only if original post was accepted")
 check("room_has_accepted_post[i] = false;" in room_posts,

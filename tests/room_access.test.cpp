@@ -1,5 +1,5 @@
 // Room-Server: oeffentliches Gast-Passwort "hello" (Lesen/Schreiben), ohne Passwort nur Lesen,
-// Admin-Anmeldung unveraendert.
+// Admin-/Gast-Kollisionen, Rollen und Sendelimits werden getrennt geprueft.
 #include <assert.h>
 #include <string.h>
 #include "../examples/simple_room_server/RoomAccess.h"
@@ -55,5 +55,16 @@ int main() {
   for (unsigned i=0;i<6;++i) assert(roomPostAllowed(quota,i*15000));
   assert(!roomPostAllowed(quota,90000)&&quota.count==6);
   assert(roomPostAllowed(quota,600000)&&quota.count==1);
+  for (unsigned perms=0;perms<256;++perms) {
+    bool writing=(perms&3)>=2;
+    assert(roomCanPost(uint8_t(perms))==writing);
+    assert(roomPostRetryAllowed(uint8_t(perms),true,true,42,42)==writing);
+    assert(!roomPostRetryAllowed(uint8_t(perms),false,true,42,42));
+    assert(!roomPostRetryAllowed(uint8_t(perms),true,false,42,42));
+    assert(!roomPostRetryAllowed(uint8_t(perms),true,true,42,43));
+  }
+  // Immediate write-right revocation also stops ACKs for formerly accepted posts.
+  assert(roomPostRetryAllowed(2,true,true,42,42));
+  assert(!roomPostRetryAllowed(1,true,true,42,42));
   return 0;
 }

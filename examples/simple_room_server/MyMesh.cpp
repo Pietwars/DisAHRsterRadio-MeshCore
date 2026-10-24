@@ -489,14 +489,19 @@ void MyMesh::onPeerDataRecv(mesh::Packet *packet, uint8_t type, int sender_idx, 
           send_ack = false; // and no ACK...  user shoudn't be sending these
         }
       } else { // TXT_TYPE_PLAIN
+#ifdef DISASTER_ROOM
+        if (!disaster::roomCanPost(client->permissions)) {
+#else
         if ((client->permissions & PERM_ACL_ROLE_MASK) == PERM_ACL_GUEST) {
+#endif
           temp[5] = 0;      // no reply
           send_ack = false; // no ACK
         } else {
           bool post_accepted = false;
 #ifdef DISASTER_ROOM
-          post_accepted = is_retry && room_has_accepted_post[i] &&
-                          room_last_accepted_timestamp[i] == sender_timestamp;
+          post_accepted = is_retry && disaster::roomPostRetryAllowed(client->permissions,
+              room_budget_owned[i] && memcmp(room_budget_owners[i].pub_key, client->id.pub_key, PUB_KEY_SIZE) == 0,
+              room_has_accepted_post[i], room_last_accepted_timestamp[i], sender_timestamp);
 #else
           post_accepted = is_retry;
 #endif
