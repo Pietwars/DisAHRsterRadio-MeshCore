@@ -62,6 +62,22 @@ check("return 9.0f" in mesh, "DAR airtime factor is fixed at 9")
 check("required_airtime" in dispatcher, "scheduler checks TX budget")
 check("TX_BUDGET_AIRTIME_MARGIN_NUM" in dispatcher, "TX reserve margin is present")
 
+# All outgoing mesh routes must converge on the budget-aware dispatcher.
+mesh_core = (ROOT / "src/Mesh.cpp").read_text(encoding="utf-8")
+for signature, next_signature in (
+    ("void Mesh::sendFlood(Packet* packet, uint32_t", "void Mesh::sendFlood(Packet* packet, uint16_t*"),
+    ("void Mesh::sendFlood(Packet* packet, uint16_t*", "void Mesh::sendDirect(Packet*"),
+    ("void Mesh::sendDirect(Packet*", "void Mesh::sendZeroHop(Packet* packet, uint32_t"),
+    ("void Mesh::sendZeroHop(Packet* packet, uint32_t", "void Mesh::sendZeroHop(Packet* packet, uint16_t*"),
+):
+    route = mesh_core.split(signature, 1)[1].split(next_signature, 1)[0]
+    check("sendPacket(packet," in route, f"{signature} uses shared TX scheduler")
+last_zero_hop = mesh_core.split("void Mesh::sendZeroHop(Packet* packet, uint16_t*", 1)[1]
+check("sendPacket(packet," in last_zero_hop,
+      "transport zero-hop packets use shared TX scheduler")
+check("sendPacket(a1," in mesh_core and "sendPacket(a2," in mesh_core,
+      "multipart forwarding also enters shared TX scheduler")
+
 # Public transports must never become privileged merely because a BLE PIN is configured.
 permission = access.split("inline bool allowCompanionCommand(", 1)[1].split("\n}", 1)[0]
 check("return !publicTransport || publicCompanionCommand(cmd);" in permission,
