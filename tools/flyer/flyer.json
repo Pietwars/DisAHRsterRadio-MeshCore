@@ -3,19 +3,19 @@
  "hero": "docs/flyer/disahrsterradio-hero.jpg",
  "title_html": "Dis<span>AHR</span>sterRadio MeshCore",
  "subtitle": "@VERSION@ · MeshCore 1.18 · WLAN-Oberfläche + Bluetooth · EU/UK Narrow",
- "intro": "<b>Das Ahrtal-Funknetz auf MeshCore-Basis.</b> Release @VERSION@ für <b>LILYGO T-Deck Plus</b> und <b>LILYGO T-Watch S3</b> (868 MHz). Das Display zeigt nur das DisAHRsterRadio-Logo und den Knopf <b>„Advert senden“</b>. Chatten und melden im Browser über offenes WLAN – ohne Anmeldung – oder per Bluetooth mit der MeshCore-App.",
+ "intro": "<b>Pre-Release @VERSION@ fürs Ahrtal.</b> T-Deck Plus Standalone mit Kanal-Chat und eigenem Tab <b>Privat</b> für gespeicherte Kontakte. Touch, Tastatur und Trackball. Separate WLAN/BLE-Pakete für T-Deck Plus und T-Watch S3. Hardwareabnahme dieser Version offen.",
  "features": [
-  "Geräte: T-Deck Plus, T-Watch S3",
-  "Display: Logo + „Advert senden“",
-  "Web-Oberfläche, offenes WLAN",
+  "T-Deck Plus: Standalone oder WLAN/BLE",
+  "T-Watch S3: WLAN/BLE",
+  "Standalone: Privat und Kanal-Chat",
   "Bluetooth: MeshCore-App",
-  "Funk: EU/UK Narrow",
-  "Chat, Meldungen, Brett, Karte"
+  "Karte, Standort und Schnellmeldung",
+  "Keine vollständige SOS-Funktion"
  ],
  "steps": [
-  "Firmware aus dem Release v@VERSION@ flashen (<b>factory.bin</b> an 0x0).",
-  "Offenes WLAN <b>DisAHRsterRadio-XXXXXX</b> (ohne Passwort) – oder MeshCore-App per Bluetooth koppeln (PIN steht beim Koppeln auf dem Display).",
-  "Im Browser <b>192.168.4.1</b> öffnen – ohne Anmeldung chatten und melden."
+  "Passendes Paket wählen. Daten sichern und SHA-256 prüfen.",
+  "Update: firmware.bin an 0x10000 ohne Löschen. Neuinstallation: factory.bin an 0x0, Flash löschen (Datenverlust).",
+  "Standalone direkt am T-Deck bedienen. WLAN/BLE: Browser 192.168.4.1 oder MeshCore-App."
  ],
  "repo": "https://github.com/Pietwars/DisAHRsterRadio-MeshCore",
  "extra_urls": [
@@ -45,7 +45,7 @@
  "qr_url": "@RELEASE@",
  "qr_label": "Release v@VERSION@",
  "demo": "https://pietwars.github.io/DisAHRsterRadio-MeshCore/",
- "gui": "docs/images/funktion-chat.jpg",
+ "gui": "docs/images/vorschau-chat.jpg",
  "gui_caption": "MeshAhrtal",
  "extra_css": ".hero{height:26mm}.phone img{height:42mm}h1{font-size:19pt}"
 }
