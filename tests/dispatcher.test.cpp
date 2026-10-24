@@ -76,5 +76,41 @@ int main() {
   c.now=5;assert(d.millisHasNowPassed(0xfffffff0UL));
   c.now=0xfffffff0UL;assert(!d.millisHasNowPassed(5));
   assert(d.futureMillis(32)==16);
-  puts("dispatcher: timeout, success, failed start, budget gate, transport length, parser and queue passed");
+  // A one-millisecond airtime estimate needs two milliseconds of reserve.
+  // Refill must retain sub-token elapsed time and unblock at the exact boundary.
+  {
+    static StaticPoolPacketManager edgePool(2);
+    Clock clock; Radio radio; Dispatcher edge(radio,clock,edgePool); edge.begin();
+    auto packet=edge.obtainNewPacket(); assert(packet);
+    packet->header=ROUTE_TYPE_FLOOD; packet->payload_len=10;
+    edge.sendPacket(packet,1); edge.loop(); assert(radio.starts==1);
+    clock.now+=1000; edge.loop();
+    assert(edge.getRemainingTxBudget()==0&&edge.failed==1);
+    radio.estimate=1;
+    packet=edge.obtainNewPacket(); assert(packet);
+    packet->header=ROUTE_TYPE_FLOOD; packet->payload_len=10;
+    edge.sendPacket(packet,1);
+    for(int i=0;i<19;++i) { ++clock.now; edge.loop(); assert(radio.starts==1); }
+    assert(edge.getRemainingTxBudget()==1&&edge.isTxBudgetWaiting());
+    ++clock.now; edge.loop();
+    assert(radio.starts==2&&edge.getRemainingTxBudget()==2);
+    radio.complete=true; ++clock.now; edge.loop();
+    assert(edge.getTotalAirTime()==1001&&edgePool.getFreeCount()==2);
+  }
+  // Real TX timeout and budget subtraction across the embedded 32-bit clock wrap.
+  {
+    static StaticPoolPacketManager wrapPool(2);
+    Clock clock; clock.now=0xfffffff0UL;
+    Radio radio; Dispatcher wrapped(radio,clock,wrapPool); wrapped.begin();
+    auto packet=wrapped.obtainNewPacket(); assert(packet);
+    packet->header=ROUTE_TYPE_FLOOD; packet->payload_len=10;
+    wrapped.sendPacket(packet,1); wrapped.loop(); assert(radio.starts==1);
+    clock.now=uint32_t(clock.now+149); wrapped.loop();
+    assert(wrapped.failed==0&&wrapPool.getFreeCount()==1);
+    clock.now=uint32_t(clock.now+1); wrapped.loop();
+    assert(wrapped.failed==1&&wrapped.success==0&&radio.finishes==1);
+    assert(wrapped.getTotalAirTime()==150&&wrapped.getRemainingTxBudget()==850);
+    assert(wrapPool.getFreeCount()==2);
+  }
+  puts("dispatcher: TX outcomes, exact budget boundary, clock wrap, parser and queue passed");
 }

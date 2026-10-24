@@ -296,7 +296,10 @@ void Dispatcher::checkSend() {
     budget_diagnostics.set(true, uint32_t(_ms->getMillis()));
     float duty_cycle = 1.0f / (1.0f + getAirtimeBudgetFactor());
     unsigned long needed = required_airtime - tx_budget_ms;
-    next_tx_time = futureMillis((unsigned long)(needed / duty_cycle));
+    // Refill retains fractional elapsed time since last_budget_update. Anchor
+    // the deadline there too, so frequent polling cannot keep moving it ahead.
+    uint32_t refill_wait = uint32_t(ceilf(needed / duty_cycle));
+    next_tx_time = uint32_t(uint32_t(last_budget_update) + refill_wait);
     return;
   }
   
