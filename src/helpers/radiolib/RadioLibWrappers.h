@@ -13,6 +13,7 @@ struct PacketMillis {
 
 class RadioLibWrapper : public mesh::Radio {
 protected:
+  bool _tx_power_valid = false;
   PhysicalLayer* _radio;
   mesh::MainBoard* _board;
   uint32_t n_recv, n_sent, n_recv_errors;
@@ -31,6 +32,8 @@ protected:
 public:
   RadioLibWrapper(PhysicalLayer& radio, mesh::MainBoard& board) : _radio(&radio), _board(&board), _preamble_sf(0) { n_recv = n_sent = 0; }
 
+  bool isTxConfigurationValid() const override { return _tx_power_valid; }
+  void prepareReconfiguration() override { idle(); }
   void begin() override;
   virtual void powerOff() { _radio->sleep(); }
   int recvRaw(uint8_t* bytes, int sz) override;
@@ -54,7 +57,10 @@ public:
   virtual float getCurrentRSSI() =0;
   virtual uint8_t getSpreadingFactor() const { return LORA_SF; }
   static uint16_t preambleLengthForSF(uint8_t sf) { return sf <= 8 ? 32 : 16; }
-  void updatePreamble(uint8_t sf) { _preamble_sf = sf; _radio->setPreambleLength(preambleLengthForSF(sf)); }
+  bool updatePreamble(uint8_t sf) {
+    if (_radio->setPreambleLength(preambleLengthForSF(sf)) != RADIOLIB_ERR_NONE) return false;
+    _preamble_sf = sf; return true;
+  }
   PacketMillis calcMaxPacketMillis(uint8_t sf, float bw, uint8_t cr, uint8_t preambleSymbols);
   virtual int16_t performChannelScan();
 

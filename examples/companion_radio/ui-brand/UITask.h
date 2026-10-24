@@ -13,6 +13,10 @@
 #include "../NodePrefs.h"
 #include "BattTrend.h"
 #include "../DarBuild.h"
+#if defined(LILYGO_TDECK) && defined(DISASTER_PORTAL)
+#include "../LocalRadioProfileEditor.h"
+#define DAR_WIFI_RADIO_EDITOR 1
+#endif
 #ifdef DAR_STANDALONE_UI
 #include "StandaloneUI.h"
 #include "TDeckTrackball.h"
@@ -77,6 +81,14 @@ class UITask : public AbstractUITask {
   int _touch_x = 0, _touch_y = 0;
 #endif
 
+#ifdef DAR_WIFI_RADIO_EDITOR
+  disaster::LocalRadioProfileEditor _radio_editor;
+  bool _radio_keyboard_present = false;
+  unsigned long _radio_keyboard_next = 0;
+  char _radio_feedback[49] = "";
+  void pollRadioKeyboard(unsigned long now);
+  void renderRadioProfiles();
+#endif
   void wake();
   void toggleDisplay();
   void requestAdvert();

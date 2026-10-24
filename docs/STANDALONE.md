@@ -128,6 +128,15 @@ angepasst; die Oberfläche ist kein Austausch des Funkprotokolls und keine pixel
   (`GpsShare.h`, Speicher-Haken in `MyMesh::savePrefs`).
 - T-Deck-GPS: Baudraten-Erkennung über gültige NMEA-Sätze (9600/38400/115200) aus #34, nur im Standalone.
 
+### Drei Funkprofile in 0.9.6 TEST
+Unter **Gerät → Funkprofil wählen** gibt es ausschließlich **Nah, Mittel, Fern**:
+869,525 MHz, 250 kHz, CR 4/5 mit SF7, SF9 bzw. SF11. Frische Konfigurationen nutzen
+Mittel. Alle Teilnehmer müssen dasselbe Profil wählen. Die Auswahl braucht eine
+zweite Bestätigung; BLE muss getrennt sein. Unpassende Altwerte sperren TX bis zur
+gültigen Auswahl. Sendefenster und Neustartschutz werden dadurch nicht zurückgesetzt.
+Bei der WLAN-Variante öffnet die physische Taste P die entsprechende Auswahl.
+Details und Grenzen: [096-RADIO-PROFILES.md](096-RADIO-PROFILES.md).
+
 ### Sendefenster und Neustartschutz in 0.9.6 TEST
 Nach einem Update mit unbekannter Sendehistorie oder einem unklaren Neustart
 bleibt RX aktiv, während neue TX für eine Stunde kontinuierlicher Laufzeit

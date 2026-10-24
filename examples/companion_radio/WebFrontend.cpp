@@ -66,7 +66,7 @@ void frontend::loop() {
     the_mesh.getReceiveAirTime(), the_mesh.getRemainingTxBudget(),
     the_mesh.isTxBudgetWaiting(), the_mesh.getTxBudgetWaitEvents(),
     the_mesh.getTxBudgetWaitSeconds(), the_mesh.getTxQueuePackets(),
-    the_mesh.getTxStartupWaitSeconds(), the_mesh.isTxStorageBlocked());
+    the_mesh.getTxStartupWaitSeconds(), the_mesh.isTxStorageBlocked(), the_mesh.isTxProfileBlocked());
 #if defined(DISASTER_GPS) && ENV_INCLUDE_GPS
   disaster_portal.setGps(true, nmea.isValid(), sensors.node_lat, sensors.node_lon);
 #endif

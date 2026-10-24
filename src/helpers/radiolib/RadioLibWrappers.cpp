@@ -51,7 +51,7 @@ void RadioLibWrapper::setTxPower(int8_t dbm) {
 #if defined(USE_LR2021)
   idle();
 #endif
-  _radio->setOutputPower(dbm);
+  _tx_power_valid = _radio->setOutputPower(dbm) == RADIOLIB_ERR_NONE;
 }
 
 void RadioLibWrapper::idle() {

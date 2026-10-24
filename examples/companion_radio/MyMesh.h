@@ -123,6 +123,8 @@ public:
   void loop();
   void handleCmdFrame(size_t len);
   bool advert();
+  int getDarRadioProfile() const;
+  bool setDarRadioProfile(unsigned index);
   bool floodAdvert();   // Advert als Flood ins ganze Mesh (wie "Advert (Flood)" in der App)
   void enterCLIRescue();
 
@@ -130,6 +132,7 @@ public:
 
 protected:
   float getAirtimeBudgetFactor() const override;
+  bool isTxProfileAllowed() const override;
   bool useTxWindowLimiter() const override {
 #if defined(DAR_MESH_POLICY) && defined(ESP32)
     return true;
@@ -270,7 +273,7 @@ private:
   }
 
   void checkCLIRescueCmd();
-  bool handleCommand(const char* text, uint32_t sender_timestamp, char* reply);
+  bool handleCommand(const char* text, uint32_t sender_timestamp, char* reply, bool local_radio_change = false);
   void checkSerialInterface();
   bool isValidClientRepeatFreq(uint32_t f) const;
 
@@ -280,6 +283,7 @@ private:
 
   DataStore* _store;
   NodePrefs _prefs;
+  int8_t _dar_active_radio_profile = -1;
   uint32_t pending_login;
   uint32_t pending_status;
   uint32_t pending_telemetry, pending_discovery;   // pending _TELEMETRY_REQ

@@ -108,6 +108,42 @@ tx_store = (ROOT / "src/helpers/esp32/Esp32TxWindowStore.h").read_text()
 check("nvs_commit(handle) == ESP_OK" in tx_store and "nvs_erase" not in tx_store,
       "TX activity marker requires explicit successful NVS commit without erase-on-error")
 
+check("!isTxProfileAllowed()" in check_send and
+      check_send.index("!isTxProfileAllowed()") < check_send.index("getNextOutbound("),
+      "unsupported radio profiles block all shared TX before dequeue")
+check("disaster::radioProfileIndex(freq, bw, sf, cr)" in mesh and "setDarRadioProfile(unsigned(selected))" in mesh,
+      "binary radio changes use the exact three-profile policy")
+check('disaster::dePreset(command + 10, profile)' in mesh,
+      "trusted CLI accepts only named Nah/Mittel/Fern radio profiles")
+check("_dar_active_radio_profile" in mesh and "_radio->isTxConfigurationValid()" in mesh,
+      "TX requires matching applied preferences and valid hardware configuration")
+check("if (!isfinite(_prefs.freq))" in mesh and "if (!isfinite(_prefs.bw))" in mesh,
+      "invalid saved radio floats cannot be passed unchecked to hardware")
+sx1262 = (ROOT / "src/helpers/radiolib/CustomSX1262Wrapper.h").read_text()
+for setter in ("setFrequency(freq)", "setSpreadingFactor(sf)", "setBandwidth(bw)", "setCodingRate(cr)"):
+    check(setter + " == RADIOLIB_ERR_NONE" in sx1262, "SX1262 checks " + setter)
+check("if (!updatePreamble(sf)) return;" in sx1262 and "_params_valid && RadioLibWrapper::isTxConfigurationValid()" in sx1262,
+      "SX1262 TX readiness includes preamble, profile and power results")
+
+check('disaster::radioProfileIndex(freq, bw, sf, cr)' in mesh and 'if (selected < 0 || !setDarRadioProfile' in mesh,
+      "DAR binary radio changes reject unsupported profiles before applying preferences")
+check('if (!local_radio_change)' in mesh and 'handleCommand(cli_command, 0, reply_buf, true)' in mesh,
+      "named radio/TX CLI changes require explicit local rescue context")
+check('handleCommand(text, sender_timestamp, reply)' in mesh,
+      "remote mesh CLI never receives local radio-edit context")
+
+wifi_ui = (ROOT / "examples/companion_radio/ui-brand/UITask.cpp").read_text()
+check("pollRadioKeyboard(now);" in wifi_ui and "_radio_editor.key(key, the_mesh.getDarRadioProfile())" in wifi_ui,
+      "T-Deck WiFi has a physical keyboard profile chooser")
+check("bluetooth_interface.isConnected()" in wifi_ui and "_radio_editor.resetConfirmation(); wake(); return;" in wifi_ui,
+      "WiFi profile chooser blocks connected BLE and invalidates confirmation on wake")
+for path, section in (("platformio.devices.ini", "[env:dar_LilyGo_TDeck_wifi]"),
+                      ("platformio.standalone.ini", "[env:LilyGo_TDeck_standalone]")):
+    config = (ROOT / path).read_text().split(section, 1)[1].split("\n[", 1)[0]
+    flags = config.split("build_flags =", 1)[1].split("build_src_filter", 1)[0].split("lib_deps", 1)[0]
+    check(all(flag in flags for flag in ("-D LORA_FREQ=869.525", "-D LORA_BW=250", "-D LORA_SF=9", "-D LORA_CR=5")),
+          section + " starts the radio with the Mittel profile")
+
 # SD configuration is inert at boot; only a physical local action imports it.
 standalone = (ROOT / "examples/companion_radio/StandaloneFrontend.cpp").read_text()
 loader = standalone.split("void loadConfig()", 1)[1].split("bool saveConfig(", 1)[0]

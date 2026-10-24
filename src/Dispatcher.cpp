@@ -305,7 +305,10 @@ void Dispatcher::checkSend() {
   }
   
   updateTxBudget();
-  
+  if (!isTxProfileAllowed()) {
+    budget_diagnostics.set(true, uint32_t(_ms->getMillis()));
+    return;
+  }
   Packet* candidate = _mgr->peekNextOutbound(candidate_time);
   if (candidate == NULL) return;
   uint32_t est_airtime = _radio->getEstAirtimeFor(candidate->getRawLength());

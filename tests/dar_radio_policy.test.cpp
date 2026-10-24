@@ -35,5 +35,6 @@ int main() {
   assert(accepted==3);
   assert(darTxPowerAllowed(-9)&&darTxPowerAllowed(10));
   assert(!darTxPowerAllowed(-10)&&!darTxPowerAllowed(11)&&!darTxPowerAllowed(255));
+  assert(!darTxPowerAllowed(4294967306LL)&&!darTxPowerAllowed(-4294967286LL));
   puts("dar_radio_policy: exactly three profiles, canonical floats, band edges and power cap passed");
 }

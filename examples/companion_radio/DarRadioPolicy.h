@@ -52,5 +52,5 @@ inline int radioProfileIndex(float freqMhz, float bwKhz, uint8_t sf, uint8_t cr)
   }
   return -1;
 }
-inline bool darTxPowerAllowed(int power) { return power >= -9 && power <= DAR_MAX_TX_DBM; }
+inline bool darTxPowerAllowed(int64_t power) { return power >= -9 && power <= DAR_MAX_TX_DBM; }
 }

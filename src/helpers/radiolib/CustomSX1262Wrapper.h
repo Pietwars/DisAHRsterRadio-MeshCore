@@ -9,18 +9,25 @@
 #endif
 
 class CustomSX1262Wrapper : public RadioLibWrapper {
+  bool _params_valid = false;
 public:
   CustomSX1262Wrapper(CustomSX1262& radio, mesh::MainBoard& board) : RadioLibWrapper(radio, board) { }
 
   void setParams(float freq, float bw, uint8_t sf, uint8_t cr) override {
-    ((CustomSX1262 *)_radio)->setFrequency(freq);
-    ((CustomSX1262 *)_radio)->setSpreadingFactor(sf);
-    ((CustomSX1262 *)_radio)->setBandwidth(bw);
-    ((CustomSX1262 *)_radio)->setCodingRate(cr);
-    updatePreamble(sf);
+    _params_valid = false;
+    bool freq_ok = ((CustomSX1262 *)_radio)->setFrequency(freq) == RADIOLIB_ERR_NONE;
+    bool sf_ok = ((CustomSX1262 *)_radio)->setSpreadingFactor(sf) == RADIOLIB_ERR_NONE;
+    bool bw_ok = ((CustomSX1262 *)_radio)->setBandwidth(bw) == RADIOLIB_ERR_NONE;
+    bool cr_ok = ((CustomSX1262 *)_radio)->setCodingRate(cr) == RADIOLIB_ERR_NONE;
+    if (!(freq_ok && sf_ok && bw_ok && cr_ok)) return;
+    if (!updatePreamble(sf)) return;
     PacketMillis pm = calcMaxPacketMillis(sf, bw, cr, preambleLengthForSF(sf));
     ((CustomSX1262 *)_radio)->setPreambleMillis(pm.preambleMillis);
     ((CustomSX1262 *)_radio)->setMaxPayloadMillis(pm.payloadMillis);
+    _params_valid = true;
+  }
+  bool isTxConfigurationValid() const override {
+    return _params_valid && RadioLibWrapper::isTxConfigurationValid();
   }
 
   bool isReceivingPacket() override { 

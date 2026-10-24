@@ -9,7 +9,8 @@ struct Clock : mesh::MillisecondClock {
   unsigned long getMillis() override { return now; }
 };
 struct Radio : mesh::Radio {
-  bool complete=false, startOK=true, busy=false;
+  bool complete=false, startOK=true, busy=false, configReady=true;
+  bool isTxConfigurationValid() const override { return configReady; }
   int starts=0, finishes=0, length=0, estimatedLength=0, receives=0;
   uint32_t estimate=100, startDelay=0;
   Clock* clock=nullptr;
@@ -45,10 +46,33 @@ struct WindowStore : mesh::TxWindowStore {
   bool saveClean() override { clean=true; return true; }
 };
 struct WindowDispatcher : Dispatcher {
+  bool profileAllowed=true;
+  bool isTxProfileAllowed() const override { return profileAllowed && _radio->isTxConfigurationValid(); }
   using Dispatcher::Dispatcher;
   bool useTxWindowLimiter() const override { return true; }
 };
 static void testWindowDispatch() {
+  // Unsupported profiles and failed hardware configuration cannot dequeue TX,
+  // consume durable marker writes, or bypass the hold with top priority.
+  static StaticPoolPacketManager blockedPool(2);
+  Clock blockedClock; Radio blockedRadio; WindowStore blockedStore;
+  WindowDispatcher blocked(blockedRadio,blockedClock,blockedPool);
+  blocked.setTxWindowStore(&blockedStore); blocked.begin();
+  auto blockedPacket=blocked.obtainNewPacket(); assert(blockedPacket);
+  blockedPacket->header=ROUTE_TYPE_FLOOD; blockedPacket->payload_len=10;
+  blocked.sendPacket(blockedPacket,0); blocked.profileAllowed=false; blocked.loop();
+  assert(blocked.isTxProfileBlocked()&&blockedRadio.starts==0&&blockedPool.getOutboundTotal()==1&&blockedStore.dirtyWrites==0);
+  blocked.profileAllowed=true; blockedRadio.configReady=false; blocked.loop();
+  assert(blocked.isTxProfileBlocked()&&blockedRadio.starts==0&&blockedStore.dirtyWrites==0);
+  blockedRadio.configReady=true; blocked.loop(); assert(blockedRadio.starts==1&&!blocked.isTxProfileBlocked());
+  blockedRadio.complete=true; blockedClock.now+=100; blocked.loop(); assert(blockedPool.getFreeCount()==2);
+  assert(blocked.getRemainingTxBudget()==850);
+  blockedPacket=blocked.obtainNewPacket(); assert(blockedPacket);
+  blockedPacket->header=ROUTE_TYPE_FLOOD; blockedPacket->payload_len=10; blocked.sendPacket(blockedPacket,0);
+  blocked.profileAllowed=false; blockedClock.now+=10000; blocked.loop(); assert(blockedRadio.starts==1);
+  blocked.profileAllowed=true; blocked.loop(); blockedClock.now+=100; blocked.loop();
+  assert(blocked.getRemainingTxBudget()==700&&blockedPool.getFreeCount()==2); // reapproval does not reset the window
+
   // Refilling tokens is insufficient while rolling-hour quota is occupied.
   static StaticPoolPacketManager pool(3);
   Clock clock; Radio radio; radio.complete=true; WindowStore store;

@@ -252,9 +252,19 @@ public:
     o.sdCard = sdReady(); o.sdArchive = sdReady(); o.sdConfig = sd_config; o.sdLog = log_on && sdReady();
     snprintf(o.sdNote, sizeof(o.sdNote), "%s", sd_note);
     o.txStartupWaitSeconds = the_mesh.getTxStartupWaitSeconds();
+    o.txProfileBlocked = the_mesh.isTxProfileBlocked();
     o.txStorageBlocked = the_mesh.isTxStorageBlocked(); o.txBudgetWaiting = the_mesh.isTxBudgetWaiting();
     o.txFlood = the_mesh.getNumSentFlood(); o.txDirect = the_mesh.getNumSentDirect();
     o.rxFlood = the_mesh.getNumRecvFlood(); o.rxDirect = the_mesh.getNumRecvDirect();
+  }
+  int radioProfile() const override { return the_mesh.getDarRadioProfile(); }
+  bool changeRadioProfile(unsigned index, char *status, size_t size) override {
+    if (bluetooth_interface.isConnected()) {
+      snprintf(status, size, "Bluetooth verbunden; zuerst trennen"); return false;
+    }
+    bool ok = the_mesh.setDarRadioProfile(index);
+    snprintf(status, size, "%s", ok ? "Funkprofil angewendet; Sendelimits bleiben aktiv" : "Funk beschaeftigt oder Profilfehler. Erneut pruefen");
+    return ok;
   }
   bool changeName(const char *name, char *status, size_t size) override {
     if (!devcfg::validName(name) || bluetooth_interface.isConnected()) {

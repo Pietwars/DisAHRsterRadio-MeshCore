@@ -24,6 +24,8 @@ public:
 class Radio {
 public:
   virtual void begin() { }
+  virtual bool isTxConfigurationValid() const { return true; }
+  virtual void prepareReconfiguration() {}
 
   /**
    * \brief  polls for incoming raw packet.
@@ -176,6 +178,7 @@ protected:
 
   virtual float getAirtimeBudgetFactor() const;
   virtual bool useTxWindowLimiter() const { return false; }
+  virtual bool isTxProfileAllowed() const { return true; }
   virtual int calcRxDelay(float score, uint32_t air_time) const;
   virtual uint32_t getCADFailRetryDelay() const;
   virtual uint32_t getCADFailMaxDuration() const;
@@ -190,6 +193,8 @@ public:
   // Attach before begin(). Public transports never receive this capability.
   void setTxWindowStore(TxWindowStore* store) { tx_window_store = store; }
   uint32_t getTxStartupWaitSeconds() const { return tx_window_enabled ? tx_window.startupSeconds() : 0; }
+  bool isTxInProgress() const { return outbound != nullptr; }
+  bool isTxProfileBlocked() const { return !isTxProfileAllowed(); }
   bool isTxStorageBlocked() const { return tx_window_enabled && tx_window.storageBlocked(); }
 
   Packet* obtainNewPacket();

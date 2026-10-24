@@ -26,9 +26,51 @@ unter den genannten Bedingungen alternativ höchstens 10 % Arbeitszyklus.
 Andere EU-Länder sind damit nicht pauschal geprüft oder freigegeben. Der Name
 EU868 und der Software-Leistungsdeckel ersetzen keine entsprechende Abnahme.
 
+## Anwendung und Migration
+
 `DarRadioPolicy.h` ist die gemeinsame Profiltabelle. Alte IDs `de-narrow`,
-`ahr-legacy`, `eu-legacy`, freie Parameter und nicht kanonische gespeicherte Werte
-sind keine zusätzlichen unterstützten Profile. Die nachfolgende Geräteintegration
-muss abweichende Altwerte ausdrücklich behandeln, TX bis zur gültigen Auswahl
-sperren und den Wechsel lokal bestätigen lassen. Im offenen Gast-WLAN bleiben
-Profiländerungen gesperrt; kein Admin-Button.
+`ahr-legacy`, `eu-legacy` sind keine auswählbaren Profile mehr. Bereits gespeicherte
+Parameter, die exakt einem der drei Profile entsprechen (z.B. ehemaliges EU-alt
+als Fern), bleiben gültig. Abweichende Werte wie Narrow werden nicht stillschweigend
+als neues TX-Profil gespeichert oder freigegeben. Sie sperren TX; für RX wird das
+begrenzte Mittel-Ersatzprofil an den Treiber übergeben. Nach gültiger lokaler
+Auswahl kann TX wieder zugelassen werden; Stundenfenster/Neustartschutz bleiben aktiv.
+
+- **Standalone:** Gerät → Funkprofil wählen. Mit 1/2/3, Trackball oder Touch
+  auswählen, dann zweimal prüfen/bestätigen. Auswahländerung, Abbruch oder
+  Tabwechsel verwirft die Bestätigung. Fehlgeschlagene Übernahme braucht eine
+  neue Bestätigung. Bei aktiver BLE-Verbindung ist die Änderung gesperrt.
+- **T-Deck WLAN:** P auf der physischen Tastatur öffnet die Profilseite; 1/2/3
+  wählen, zweimal Enter bestätigen. Esc/Backspace bricht ab. Auf dunklem Display
+  weckt die erste Taste nur; alte Bestätigung wird verworfen. Pairing beendet den
+  Editor, eine aktive BLE-Verbindung verhindert die Übernahme. Touch löst dort
+  keinen versteckten Advert aus. Logo, Akku und Advert bleiben außerhalb des
+  Editors erhalten.
+- **Gast-WLAN und BLE:** keine neue Konfigurationsberechtigung. Web zeigt nur die
+  drei Profile und den Sperrgrund, die Auswahl ist deaktiviert. Kein Admin-Button.
+- **Bestehender lokaler Rescue-CLI, falls am Target erreichbar:** `set radio nah`,
+  `set radio mittel`, `set radio fern`. Freie Zahlenparameter sind in DAR nicht
+  mehr erlaubt. Eine Remote-Mesh-CLI bekommt diese lokale Änderungsberechtigung
+  nicht, auch nicht durch einen manipulierten Zeitstempel.
+- **Vertrauenswürdiger interner Companion:** binäre Profiländerungen müssen exakt
+  einem der drei Tupel entsprechen. Öffentliche Transport-Positivlisten bleiben
+  davor unverändert wirksam. Leistung bleibt -9 bis 10 dBm; CLI-Duty-Cycle-Änderungen
+  können die feste 10-%-Politik nicht lockern.
+
+Die beiden T-Deck-Builds starten bereits den Funkchip mit Mittel; andere Upstream-
+Builddefaults werden dadurch nicht geändert. Frische DAR-Preferences verwenden
+Mittel. Nicht endliche gespeicherte Frequenz/Bandbreite wird abgefangen und bleibt
+TX-gesperrt, statt als NaN/Unendlich an den Treiber zu gelangen.
+
+Profiländerungen erfolgen im vorhandenen Arduino-Hauptloop, nicht in einem neuen
+Worker oder HTTP-Handler. Laufende TX bzw. erkannter RX verhindern die Übernahme.
+Für den T-Deck-SX1262 werden die Rückgaben von Frequenz-, SF-, Bandbreiten-, CR-,
+Präambel- und Leistungsänderung ausgewertet. Ein Fehler oder eine nur teilweise
+angewandte Konfiguration sperrt TX. Die angenommene Konfiguration muss zusätzlich
+mit den aktuell ausgewählten Preferences übereinstimmen.
+
+Speichern nutzt die bestehende `savePrefs()`-Schnittstelle ohne Erfolgsrückgabe;
+Flash-Persistenz, Stromunterbrechung, wirkliche Parameter/Leistung und
+Wiederaufnahme nach Fehler sind weiter am Gerät zu verifizieren. Auch I2C-Tastatur,
+Bluetooth-Parallelfälle, unveränderte Queues und Funkprofile im echten Netz bleiben
+Hardware-Abnahmepunkte. Keine Hardware-/EU-Zulassungsfreigabe aus Softwaretests.

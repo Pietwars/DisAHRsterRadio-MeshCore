@@ -12,6 +12,12 @@
   static MomentaryButton brand_btn(PIN_USER_BTN, BRAND_ADVERT_HOLD_MILLIS, true, false, false);
 #endif
 
+#ifdef DAR_WIFI_RADIO_EDITOR
+#include "LocalRadioProfileView.h"
+#include <Wire.h>
+extern SerialBLEInterface bluetooth_interface;
+#endif
+
 #define BRAND_LOGO_Y 2   // Bild oben, volle Breite
 
 #ifdef DAR_STANDALONE_UI
@@ -206,6 +212,9 @@ void UITask::render() {
   if(!_pairing && _touch_calibrating) {renderCalibration(); return;}
   if (!_pairing) { _sui.render(d); return; }      // boot logo or page; the PIN screen below stays as before
 #endif
+#ifdef DAR_WIFI_RADIO_EDITOR
+  if (!_pairing && _radio_editor.active()) { renderRadioProfiles(); return; }
+#endif
   d->startFrame(C_BG);
   d->nativeImage((W - BRAND_LOGO_W) / 2, BRAND_LOGO_Y, BRAND_LOGO_W, BRAND_LOGO_H, BRAND_LOGO);
   drawBattery(false);
@@ -232,7 +241,9 @@ void UITask::render() {
     d->nativeRect(bx, by, bw, bh, C_WHITE);
     int gap = (bh - hb - hs) / 3; if (gap < 1) gap = 1;
     centerText(d, W / 2, by + gap, big, C_BG, "Advert senden");
-#if defined(UI_HAS_TOUCH)
+#if defined(DAR_WIFI_RADIO_EDITOR)
+    centerText(d, W / 2, by + 2 * gap + hb, 1, C_BG, "P: Funkprofil | antippen: Advert");
+#elif defined(UI_HAS_TOUCH)
     centerText(d, W / 2, by + 2 * gap + hb, 1, C_BG, "antippen");
 #else
     centerText(d, W / 2, by + 2 * gap + hb, 1, C_BG, "Trackball 2,5 s halten");
@@ -284,7 +295,11 @@ void UITask::loop() {
         wake();                                   // erster Tipp weckt nur
       } else {
         int bx, by, bw, bh; buttonRect(bx, by, bw, bh);
-        if (!_pairing && _touch_x >= bx && _touch_x < bx + bw && _touch_y >= by && _touch_y < by + bh) requestAdvert();
+        if (!_pairing
+#ifdef DAR_WIFI_RADIO_EDITOR
+            && !_radio_editor.active()
+#endif
+            && _touch_x >= bx && _touch_x < bx + bw && _touch_y >= by && _touch_y < by + bh) requestAdvert();
         else _auto_off = now + BRAND_AUTO_OFF_MILLIS;
       }
     }
@@ -294,11 +309,17 @@ void UITask::loop() {
   bool pairing = ble_pairing_active();
   if (pairing != _pairing) {
     _pairing = pairing;
+#ifdef DAR_WIFI_RADIO_EDITOR
+    if (pairing) _radio_editor.cancel();
+#endif
     if (pairing) wake();                          // PIN nur waehrend der Kopplung zeigen
     _dirty = true;
   }
   if (_status && now >= _status_until) { _status = 0; _dirty = true; }
   sampleBattery(now);
+#ifdef DAR_WIFI_RADIO_EDITOR
+  pollRadioKeyboard(now);
+#endif
 #ifdef DAR_STANDALONE_UI
   pollKeyboard(now);
   pollTrackball(now);
@@ -499,5 +520,42 @@ void UITask::pollTrackball(unsigned long now) {
   int dy=action==TDeckTrackball::UP?-1:action==TDeckTrackball::DOWN?1:0;
   if(_sui.move(dx,dy))input();
   else _auto_off=now+BRAND_AUTO_OFF_MILLIS;
+}
+#endif
+
+#ifdef DAR_WIFI_RADIO_EDITOR
+void UITask::pollRadioKeyboard(unsigned long now) {
+  if ((long)(now - _radio_keyboard_next) < 0) return;
+  if (!_radio_keyboard_present) {
+    _radio_keyboard_next = now + 5000;
+    Wire.beginTransmission(0x55);
+    _radio_keyboard_present = Wire.endTransmission() == 0;
+    if (_radio_keyboard_present) {
+      Wire.beginTransmission(0x55); Wire.write(uint8_t(0x04)); Wire.endTransmission();
+    }
+    return;
+  }
+  _radio_keyboard_next = now + 30;
+  if (Wire.requestFrom(uint8_t(0x55), uint8_t(1)) != 1) {
+    _radio_keyboard_present = false; _radio_keyboard_next = now + 5000; return;
+  }
+  uint8_t key = Wire.read();
+  if (!key || _pairing) return;
+  if (!_display->isOn()) { _radio_editor.resetConfirmation(); wake(); return; }
+  auto action = _radio_editor.key(key, the_mesh.getDarRadioProfile());
+  if (action == disaster::LocalRadioProfileEditor::None) return;
+  _radio_feedback[0] = 0;
+  if (action == disaster::LocalRadioProfileEditor::Apply) {
+    if (bluetooth_interface.isConnected()) snprintf(_radio_feedback, sizeof(_radio_feedback), "Bluetooth zuerst trennen");
+    else {
+      bool ok = the_mesh.setDarRadioProfile(_radio_editor.selected());
+      snprintf(_radio_feedback, sizeof(_radio_feedback), "%s", ok ? "Profil angewendet; Sendelimits bleiben aktiv" : "Funk beschaeftigt/Fehler; erneut pruefen");
+    }
+  }
+  wake();
+}
+
+void UITask::renderRadioProfiles() {
+  ui::localRadioProfileView(_display, _radio_editor, _radio_feedback);
 }
 #endif

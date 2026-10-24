@@ -24,7 +24,7 @@
 // Raw, arbitrary companion commands and private keys are never exposed to HTTP.
 class DisasterPortal : public LocalCompanion {
   uint32_t txFlood=0, txDirect=0, rxFlood=0, rxDirect=0;
-  bool txBudgetWaiting=false, txStorageBlocked=false;
+  bool txBudgetWaiting=false, txStorageBlocked=false, txProfileBlocked=false;
   uint32_t txStartupWaitSeconds=0;
   bool gpsEnabled=false,gpsFix=false;double gpsLat=0,gpsLon=0;
   uint32_t txBudgetWaitEvents=0, txBudgetWaitSeconds=0;
@@ -119,10 +119,10 @@ public:
   void setRadioDiagnostics(uint32_t tf, uint32_t td, uint32_t rf, uint32_t rd,
                            unsigned long ta, unsigned long ra, unsigned long budget,
                            bool waiting, uint32_t events, uint32_t seconds, int queued,
-                           uint32_t startupSeconds=0, bool storageBlocked=false) {
+                           uint32_t startupSeconds=0, bool storageBlocked=false, bool profileBlocked=false) {
     txFlood=tf;txDirect=td;rxFlood=rf;rxDirect=rd;
     txAirMs=ta;rxAirMs=ra;txBudgetMs=budget;
-    txStartupWaitSeconds=startupSeconds;txStorageBlocked=storageBlocked;
+    txStartupWaitSeconds=startupSeconds;txStorageBlocked=storageBlocked;txProfileBlocked=profileBlocked;
     txBudgetWaiting=waiting;txBudgetWaitEvents=events;txBudgetWaitSeconds=seconds;txQueuePackets=queued;
   }
   void begin() {
@@ -183,7 +183,7 @@ public:
       s+=",\"resetReason\":"+String((int)esp_reset_reason())+",\"minHeapBytes\":"+String(ESP.getMinFreeHeap())+",\"largestHeapBlockBytes\":"+String(ESP.getMaxAllocHeap())+",\"heapWarn\":"+String((unsigned)HEAP_WARN_BYTES);
       s+=",\"wifiClients\":"+String(WiFi.softAPgetStationNum())+",\"txFlood\":"+String(txFlood)+",\"txDirect\":"+String(txDirect)+",\"rxFlood\":"+String(rxFlood)+",\"rxDirect\":"+String(rxDirect);
       s+=",\"txAirMs\":"+String(txAirMs)+",\"rxAirMs\":"+String(rxAirMs)+",\"txBudgetMs\":"+String(txBudgetMs)+",\"txBudgetWaiting\":"+String(txBudgetWaiting?"true":"false")+",\"txBudgetWaitEvents\":"+String(txBudgetWaitEvents)+",\"txBudgetWaitSeconds\":"+String(txBudgetWaitSeconds)+",\"txQueuePackets\":"+String(txQueuePackets);
-      s+=",\"txStartupWaitSeconds\":"+String(txStartupWaitSeconds)+",\"txStorageBlocked\":"+String(txStorageBlocked?"true":"false")+"}";
+      s+=",\"txStartupWaitSeconds\":"+String(txStartupWaitSeconds)+",\"txStorageBlocked\":"+String(txStorageBlocked?"true":"false")+",\"txProfileBlocked\":"+String(txProfileBlocked?"true":"false")+"}";
       // Optional board GPS: position only when the module reports a valid fix.
       s+=",\"gps\":{\"enabled\":"+String(gpsEnabled?"true":"false")+",\"fix\":"+String(gpsFix?"true":"false");
       if(gpsFix)s+=",\"lat\":"+String(gpsLat,5)+",\"lon\":"+String(gpsLon,5);
@@ -284,7 +284,7 @@ public:
       for(int i=0;i<16;i++){int a=nibble(key[2*i]),b=nibble(key[2*i+1]);if(a<0||b<0){http.send(400,"text/plain","Schluessel muss Hex sein");return;}p[34+i]=(a<<4)|b;}
       accept(p,50);
     });
-    // Funkprofil ohne Adminanmeldung (Peter, 0.9.1): nur die festen Deutschland-Profile aus dePreset().
+    // Guest WLAN remains denied; even trusted callers may use only the three named profiles.
     http.on("/api/radio",HTTP_POST,[this](){
       if(!requireAdmin())return;if(busy()){http.send(409,"text/plain","Knoten beschaeftigt");return;}
       disaster::RadioPreset preset;

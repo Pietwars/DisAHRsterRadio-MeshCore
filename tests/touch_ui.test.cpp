@@ -258,9 +258,30 @@ static void testTxGuardInfo() {
   api.storageWait=false; api.budgetWait=true; u.tick(1750);
   assert(u.pending()==sui::UI::FULL); draw(u);
   assert(screen.allText.find("Sendebudget")!=std::string::npos);
+  api.profileWait=true; u.tick(2000); assert(u.pending()==sui::UI::FULL); draw(u);
+  assert(screen.allText.find("Funkprofil pruefen")!=std::string::npos);
+}
+
+static void testRadioProfiles() {
+  api=FakeApi(); sui::UI u; start(u); tab(u,4);
+  for (int i=0;i<10;++i) u.move(0,1);
+  u.click(); assert(u.current()==sui::RADIO_PROFILE); draw(u);
+  assert(screen.allText.find("Nah")!=std::string::npos&&screen.allText.find("Mittel")!=std::string::npos&&screen.allText.find("Fern")!=std::string::npos);
+  u.key('1'); u.key('\n'); assert(api.profileChanges==0); // preview only
+  u.move(0,1); u.key('\n'); assert(api.profileChanges==0); // selection change invalidates confirmation
+  u.key('\n'); assert(api.profileChanges==1&&api.selectedProfile==1&&u.current()==sui::DEVICE);
+  u.click(); u.key('3'); u.key('\n'); tab(u,0); // cancel pending Fern
+  tab(u,4); u.click(); u.key('\n'); assert(api.profileChanges==1);
+  api.configOk=false; u.key('\n'); assert(api.profileChanges==2&&u.current()==sui::RADIO_PROFILE);
+  api.configOk=true; u.key('\n'); assert(api.profileChanges==2); // failed apply needs another confirmation
+  u.key('3'); draw(u); // touch selection must not apply by itself
+  tap(u,100,theme::NAV_H+16); assert(api.profileChanges==2); draw(u);
+  tap(u,100,theme::NAV_H+136); assert(api.profileChanges==2); draw(u);
+  tap(u,100,theme::NAV_H+136); assert(api.profileChanges==3&&api.selectedProfile==0);
 }
 
 int main() {
+  testRadioProfiles();
   testTxGuardInfo();
   testLocalConfig();
   testPinEditor();

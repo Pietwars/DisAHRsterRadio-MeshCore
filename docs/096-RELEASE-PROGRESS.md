@@ -20,12 +20,19 @@ und Anzeigen: `08b29150`, beide CI-Targets mit vollständigen Hosttests erfolgre
 Ein nachfolgender UI-Fix aktualisiert die angezeigte Restminute bzw. den Sperrgrund
 auch ohne neue Bedienaktion; dessen eigener finaler CI-Stand ist separat zu prüfen.
 
+Die Profilvorgabe wurde auf genau **Nah/Mittel/Fern** eingegrenzt:
+[Parameter, lokale Auswahl und Migration](096-RADIO-PROFILES.md). Die Tabelle und
+Webauswahl sind mit `ca506b09` auf beiden Targets inklusive Hosttests erfolgreich
+gebaut (Run 40057028391). Die folgende Geräte-/Treiberintegration benötigt ihren
+eigenen abschließenden CI-Nachweis; reale HF-/Antennenmessung bleibt offen.
+
 ## Reihenfolge und offene Ergebnisse
 
 1. **Lokale Konfiguration und Recovery**: Kanal-/Schlüsselverwaltung, Funkprofil und
    Wiederherstellung am Gerät definieren und implementieren. Standalone bietet bisher
-   PIN, Name und SD-Auswahl (Karte, Standortfreigabe, Ereignislog). WLAN-Target besitzt
-   noch keinen vollständigen geschützten Administrationsweg. USB darf die exklusive
+   PIN, Name, drei Funkprofile und SD-Auswahl (Karte, Standortfreigabe, Ereignislog).
+   Das T-Deck-WLAN-Target erhält ebenfalls eine physische Profilauswahl, besitzt aber
+   noch keinen vollständigen geschützten Administrations-/Recoveryweg. USB darf die exklusive
    LocalCompanion-Schnittstelle nicht parallel übernehmen. Persistenz-/Stromausfalltest
    bleibt nötig; mehrere NVS-Schreibvorgänge sind nicht atomar.
 2. **Funkprofil und Zeitfenster**: zulässige Region/Subbänder, gesamte belegte Bandbreite,

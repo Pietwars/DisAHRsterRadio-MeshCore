@@ -13,6 +13,7 @@ assert.match(html,/nav\{[^}]*position:fixed[^}]*grid-template-columns:repeat\(3,
 const guardContext=vm.createContext({});
 vm.runInContext(script.slice(script.indexOf('function txGuard('),script.indexOf('function renderInfo(')),guardContext);
 assert.equal(vm.runInContext('txGuard(null)',guardContext),'');
+assert.match(vm.runInContext('txGuard({txProfileBlocked:true,txStartupWaitSeconds:3600})',guardContext),/Funkprofil.*Nah\/Mittel\/Fern/);
 assert.match(vm.runInContext('txGuard({txStartupWaitSeconds:3600,txStorageBlocked:true})',guardContext),/60 min.*Empfang/);
 assert.match(vm.runInContext('txGuard({txStorageBlocked:true})',guardContext),/gesperrt.*Empfang/);
 assert.match(vm.runInContext('txGuard({txBudgetWaiting:true})',guardContext),/Sendebudget.*Empfang/);

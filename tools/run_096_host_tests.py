@@ -35,6 +35,15 @@ with tempfile.TemporaryDirectory(prefix='dar096-') as tmp:
     run(['g++','-std=c++11','-Wall','-Wextra','-Werror',
          '-fsanitize=address,undefined','tests/dar_radio_policy.test.cpp','-o',str(profile_binary)])
     run([str(profile_binary)])
+    editor_binary=Path(tmp)/'radio-profile-editor'
+    run(['g++','-std=c++11','-Wall','-Wextra','-Werror',
+         '-fsanitize=address,undefined','tests/radio_profile_editor.test.cpp','-o',str(editor_binary)])
+    run([str(editor_binary)])
+    profile_view_binary=Path(tmp)/'radio-profile-view'
+    run(['g++','-std=c++11','-Wall','-Wextra','-Werror','-Wno-unused-parameter',
+         '-fsanitize=address,undefined','-Itests/ui_fakes','-Isrc',
+         'tests/radio_profile_view.test.cpp','-o',str(profile_view_binary)])
+    run([str(profile_view_binary)])
     window_binary=Path(tmp)/'tx-window'
     run(['g++','-std=c++11','-Wall','-Wextra','-Werror',
          '-fsanitize=address,undefined','-Isrc','tests/tx_window.test.cpp','-o',str(window_binary)])

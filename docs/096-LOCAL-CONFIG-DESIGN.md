@@ -32,4 +32,5 @@ Status: **Lokale Teilimplementierung; USB-/Gesamtarchitektur und Hardwarefreigab
 - **Verhaltensänderung:** Eine SD-Datei allein aktiviert keine Standortfreigabe und überschreibt keinen Namen mehr. Bereits lokal gespeicherte Freigabe/Karte bleiben beim Start erhalten. Ereignislogging ist ohne zuvor bestätigten Import ausgeschaltet; Nachrichtenarchiv und Ereignislog sind getrennt.
 - Namensänderung/SD-Import werden bei bestehender BLE-Verbindung verweigert. Keine Freigabe über Gast-WLAN, kein Admin-Button und kein zweiter USB-Companion.
 - Mehrere NVS-Einträge bilden keine atomare Transaktion: bei Speicherfehler meldet der Import ausdrücklich „teilweise angewendet“ und bleibt wiederholbar. Stromausfall-/Persistenztests bleiben offen.
-- Noch offen: Kanal-/Schlüsselverwaltung, validierte Region-/Funkprofile, gesicherter Recovery-/Wartungsmodus und entsprechender Weg für das WLAN-Target. Dies ist **keine vollständige Konfigurationsfreigabe**.
+- Drei lokal bestätigte Funkprofile sind in [096-RADIO-PROFILES.md](096-RADIO-PROFILES.md) beschrieben; Frequenz-/ERP-Messung und weitere Länder bleiben offen.
+- Noch offen: Kanal-/Schlüsselverwaltung, gesicherter Recovery-/Wartungsmodus und entsprechender Weg für das WLAN-Target. Dies ist **keine vollständige Konfigurationsfreigabe**.

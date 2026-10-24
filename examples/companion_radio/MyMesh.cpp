@@ -3,6 +3,8 @@
 #include "AutoAddPolicy.h"
 #include "OpenAccess.h"
 #include "SharedQueue.h"
+#include "DarRadioPolicy.h"
+#include <math.h>
 
 #include <Arduino.h> // needed for PlatformIO
 #ifdef ENABLE_WIFI_INTERFACE
@@ -317,6 +319,44 @@ int MyMesh::getFromOfflineQueue(uint8_t frame[]) {
   return 0; // queue is empty
 }
 #endif
+
+int MyMesh::getDarRadioProfile() const {
+#ifdef DAR_MESH_POLICY
+  int selected = disaster::radioProfileIndex(_prefs.freq, _prefs.bw, _prefs.sf, _prefs.cr);
+  return selected == _dar_active_radio_profile ? selected : -1;
+#else
+  return -1;
+#endif
+}
+
+bool MyMesh::isTxProfileAllowed() const {
+#ifdef DAR_MESH_POLICY
+  return getDarRadioProfile() >= 0 && disaster::darTxPowerAllowed(_prefs.tx_power_dbm) &&
+         _radio->isTxConfigurationValid();
+#else
+  return true;
+#endif
+}
+
+bool MyMesh::setDarRadioProfile(unsigned index) {
+#ifdef DAR_MESH_POLICY
+  disaster::RadioPreset profile;
+  if (!disaster::radioProfileAt(index, profile) || isTxInProgress() || radio_driver.isReceiving()) return false;
+  _dar_active_radio_profile = -1; // a partial hardware configuration must never authorize TX
+  _radio->prepareReconfiguration();
+  radio_driver.setParams(float(profile.freq)/1000.0f, float(profile.bw)/1000.0f, profile.sf, profile.cr);
+  radio_driver.setTxPower(disaster::DAR_MAX_TX_DBM);
+  if (!radio_driver.isTxConfigurationValid()) return false;
+  _prefs.freq = float(profile.freq)/1000.0f; _prefs.bw = float(profile.bw)/1000.0f;
+  _prefs.sf = profile.sf; _prefs.cr = profile.cr;
+  _prefs.tx_power_dbm = disaster::DAR_MAX_TX_DBM; _prefs.airtime_factor = 9.0f;
+  _dar_active_radio_profile = int8_t(index);
+  savePrefs(); // unchanged persistence API; power-loss/readback verification remains a device test
+  return true;
+#else
+  (void)index; return false;
+#endif
+}
 
 float MyMesh::getAirtimeBudgetFactor() const {
 #ifdef DAR_MESH_POLICY
@@ -967,6 +1007,11 @@ MyMesh::MyMesh(mesh::Radio &radio, mesh::RNG &rng, mesh::RTCClock &rtc, SimpleMe
   _prefs.gps_enabled = 0;       // GPS disabled by default
   _prefs.gps_interval = 0;      // No automatic GPS updates by default
 #ifdef DAR_MESH_POLICY
+  disaster::RadioPreset default_profile;
+  disaster::radioProfileAt(disaster::DAR_DEFAULT_RADIO_PROFILE, default_profile);
+  _prefs.freq = float(default_profile.freq)/1000.0f; _prefs.bw = float(default_profile.bw)/1000.0f;
+  _prefs.sf = default_profile.sf; _prefs.cr = default_profile.cr;
+  _prefs.airtime_factor = 9.0f;
   // DisAHRsterRadio: only repeaters and room servers are added automatically, chat users stay
   // manual. Applies to fresh prefs only; a saved /prefs.json (man_add, auto_add) overrides it.
   _prefs.manual_add_contacts = autoadd::DISASTER_DEFAULT_MANUAL;
@@ -1036,6 +1081,10 @@ void MyMesh::begin() {
   _prefs.tx_delay_factor = constrain(_prefs.tx_delay_factor, 0, 2.0f);
   _prefs.direct_tx_delay_factor = constrain(_prefs.direct_tx_delay_factor, 0, 2.0f);
   _prefs.airtime_factor = constrain(_prefs.airtime_factor, 0, 9.0f);
+#ifdef DAR_MESH_POLICY
+  if (!isfinite(_prefs.freq)) _prefs.freq = 150.0f;
+  if (!isfinite(_prefs.bw)) _prefs.bw = 7.8f;
+#endif
   _prefs.freq = constrain(_prefs.freq, 150.0f, 2500.0f);
   _prefs.bw = constrain(_prefs.bw, 7.8f, 500.0f);
   _prefs.sf = constrain(_prefs.sf, 5, 12);
@@ -1052,7 +1101,16 @@ void MyMesh::begin() {
   addChannel("Public", PUBLIC_GROUP_PSK); // pre-configure public channel
   _store->loadChannels(this);
 
+#ifdef DAR_MESH_POLICY
+  _dar_active_radio_profile = disaster::radioProfileIndex(_prefs.freq, _prefs.bw, _prefs.sf, _prefs.cr);
+  disaster::RadioPreset startup_profile;
+  disaster::radioProfileAt(_dar_active_radio_profile >= 0 ? unsigned(_dar_active_radio_profile) : disaster::DAR_DEFAULT_RADIO_PROFILE, startup_profile);
+  // Unsupported saved values remain unapproved. Only use a bounded RX fallback;
+  // do not silently persist it as a selected TX profile.
+  radio_driver.setParams(float(startup_profile.freq)/1000.0f, float(startup_profile.bw)/1000.0f, startup_profile.sf, startup_profile.cr);
+#else
   radio_driver.setParams(_prefs.freq, _prefs.bw, _prefs.sf, _prefs.cr);
+#endif
   radio_driver.setTxPower(_prefs.tx_power_dbm);
   radio_driver.setRxBoostedGainMode(_prefs.rx_boosted_gain);
 
@@ -1524,16 +1582,18 @@ void MyMesh::handleCmdFrame(size_t len) {
       writeErrFrame(ERR_CODE_ILLEGAL_ARG);
     } else if (freq >= 150000 && freq <= 2500000 && sf >= 5 && sf <= 12 && cr >= 5 && cr <= 8 && bw >= 7000 &&
         bw <= 500000) {
+#ifdef DAR_MESH_POLICY
+      int selected = disaster::radioProfileIndex(freq, bw, sf, cr);
+      if (selected < 0 || !setDarRadioProfile(unsigned(selected))) {
+        writeErrFrame(ERR_CODE_ILLEGAL_ARG); return;
+      }
+      _prefs.setRepeatEn(repeat != 0); savePrefs(); writeOKFrame();
+#else
       _prefs.sf = sf;
       _prefs.cr = cr;
       _prefs.freq = (float)freq / 1000.0;
       _prefs.bw = (float)bw / 1000.0;
       _prefs.setRepeatEn(repeat != 0);
-#ifdef DAR_MESH_POLICY
-      _prefs.tx_power_dbm = 10;
-      _prefs.airtime_factor = 9.0f;
-      radio_driver.setTxPower(10);
-#endif
       savePrefs();
 
       radio_driver.setParams(_prefs.freq, _prefs.bw, _prefs.sf, _prefs.cr);
@@ -1541,6 +1601,7 @@ void MyMesh::handleCmdFrame(size_t len) {
                          (uint32_t)cr);
 
       writeOKFrame();
+#endif
     } else {
       MESH_DEBUG_PRINTLN("Error: CMD_SET_RADIO_PARAMS: f=%d, bw=%d, sf=%d, cr=%d", freq, bw, (uint32_t)sf,
                          (uint32_t)cr);
@@ -1548,12 +1609,22 @@ void MyMesh::handleCmdFrame(size_t len) {
     }
   } else if (cmd_frame[0] == CMD_SET_RADIO_TX_POWER) {
     int8_t power = (int8_t)cmd_frame[1];
-    if (power < -9 || power > MAX_LORA_TX_POWER) {
+    if (power < -9 || power > MAX_LORA_TX_POWER
+#ifdef DAR_MESH_POLICY
+        || !disaster::darTxPowerAllowed(power) || isTxInProgress()
+#endif
+    ) {
       writeErrFrame(ERR_CODE_ILLEGAL_ARG);
     } else {
+#ifdef DAR_MESH_POLICY
+      radio_driver.setTxPower(power);
+      if (!radio_driver.isTxConfigurationValid()) { writeErrFrame(ERR_CODE_ILLEGAL_ARG); return; }
+#endif
       _prefs.tx_power_dbm = power;
       savePrefs();
+#ifndef DAR_MESH_POLICY
       radio_driver.setTxPower(_prefs.tx_power_dbm);
+#endif
       writeOKFrame();
     }
   } else if (cmd_frame[0] == CMD_SET_TUNING_PARAMS) {
@@ -2160,7 +2231,7 @@ void MyMesh::enterCLIRescue() {
   Serial.println("========= CLI Rescue =========");
 }
 
-bool MyMesh::handleCommand(const char* command, uint32_t sender_timestamp, char* reply) {
+bool MyMesh::handleCommand(const char* command, uint32_t sender_timestamp, char* reply, bool local_radio_change) {
   while (*command == ' ') command++; // skip leading spaces
 
   if (strlen(command) > 4 && command[2] == '|') { // optional prefix (for companion radio CLI)
@@ -2169,6 +2240,31 @@ bool MyMesh::handleCommand(const char* command, uint32_t sender_timestamp, char*
     *reply = 0;
     command += 3;
   }
+
+#ifdef DAR_MESH_POLICY
+  if (!strncmp(command, "set radio ", 10)) {
+    if (!local_radio_change) { strcpy(reply, "ERROR: radio changes require local rescue mode"); return true; }
+    disaster::RadioPreset profile;
+    if (!disaster::dePreset(command + 10, profile)) { strcpy(reply, "ERROR: set radio nah|mittel|fern"); return true; }
+    int selected = disaster::radioProfileIndex(profile.freq, profile.bw, profile.sf, profile.cr);
+    strcpy(reply, setDarRadioProfile(unsigned(selected)) ? "OK - profile applied" : "ERROR: radio busy or configuration failed"); return true;
+  }
+  if (!strncmp(command, "set tx ", 7)) {
+    if (!local_radio_change) { strcpy(reply, "ERROR: TX changes require local rescue mode"); return true; }
+    char* end; long power = strtol(command + 7, &end, 10);
+    if (end == command + 7 || *end || !disaster::darTxPowerAllowed(power)) { strcpy(reply, "ERROR: TX must be -9..10 dBm"); return true; }
+    if (isTxInProgress()) { strcpy(reply, "ERROR: radio busy"); return true; }
+    radio_driver.setTxPower(int8_t(power));
+    if (!radio_driver.isTxConfigurationValid()) { strcpy(reply, "ERROR: radio configuration failed"); return true; }
+    _prefs.tx_power_dbm = int8_t(power); savePrefs(); strcpy(reply, "OK"); return true;
+  }
+  if (!strncmp(command, "set af ", 7) || !strncmp(command, "set dutycycle ", 14)) {
+    strcpy(reply, "ERROR: DAR airtime policy is fixed at 10 percent"); return true;
+  }
+  if (!strcmp(command, "get af")) { strcpy(reply, "> 9"); return true; }
+  if (!strcmp(command, "get dutycycle")) { strcpy(reply, "> 10.0%"); return true; }
+  if (!strcmp(command, "get tx")) { sprintf(reply, "> %d", int(_prefs.tx_power_dbm)); return true; }
+#endif
 
   if (_prefs.getRadioPrefs()->handleCommand(command, sender_timestamp, reply)) {  // is radio CLI command?
     if (_prefs.getRadioPrefs()->isDirty()) { savePrefs(); }
@@ -2332,7 +2428,7 @@ void MyMesh::checkCLIRescueCmd() {
     cli_command[len - 1] = 0;  // replace newline with C string null terminator
 
     reply_buf[0] = 0;
-    if (handleCommand(cli_command, 0, reply_buf)) {
+    if (handleCommand(cli_command, 0, reply_buf, true)) {
       // command was handled, print reply output
       Serial.print("  "); Serial.print(reply_buf); Serial.println();
     } else if (strcmp(cli_command, "rebuild") == 0) {

@@ -8,6 +8,7 @@
 #include <string.h>
 #include "../HistoryRecord.h"
 #include "../DeviceConfig.h"
+#include "../DarRadioPolicy.h"
 
 namespace dev {
 enum class Kind : uint8_t { Channel = 0, Chat = 1, Repeater = 2, Room = 3, Sensor = 4 };
@@ -32,7 +33,7 @@ struct Info {
   char sdNote[64] = "";
   uint32_t txFlood = 0, txDirect = 0, rxFlood = 0, rxDirect = 0;
   uint32_t txStartupWaitSeconds = 0;
-  bool txStorageBlocked = false, txBudgetWaiting = false;
+  bool txStorageBlocked = false, txBudgetWaiting = false, txProfileBlocked = false;
 };
 class Api {
 public:
@@ -56,6 +57,8 @@ public:
   virtual void info(Info &out) const = 0;
   // Physical device UI only; never expose these through public transports.
   virtual bool changeName(const char *, char *, size_t) { return false; }
+  virtual int radioProfile() const { return -1; }
+  virtual bool changeRadioProfile(unsigned, char *, size_t) { return false; }
   virtual bool importConfig(char *, size_t) { return false; }
   virtual bool configPreview(devcfg::Config &) const { return false; }
   virtual bool changeBlePin(uint32_t pin, char *status, size_t size) { (void)pin; (void)status; (void)size; return false; }
