@@ -143,6 +143,9 @@ for path, section in (("platformio.devices.ini", "[env:dar_LilyGo_TDeck_wifi]"),
     flags = config.split("build_flags =", 1)[1].split("build_src_filter", 1)[0].split("lib_deps", 1)[0]
     expected = ("-D LORA_FREQ=869.618", "-D LORA_BW=62.5", "-D LORA_SF=8", "-D LORA_CR=8") if "standalone" in section else ("-D LORA_FREQ=869.525", "-D LORA_BW=250", "-D LORA_SF=9", "-D LORA_CR=5")
     check(all(flag in flags for flag in expected), section + " starts with the target radio default")
+    unflags = config.split("build_unflags =",1)[1].split("build_flags =",1)[0] if "build_unflags =" in config else ""
+    removed = {line.strip() for line in unflags.splitlines()}
+    check(not any(flag in removed for flag in expected), section + " does not unflag its radio defaults")
 
 # SD configuration is inert at boot; only a physical local action imports it.
 standalone = (ROOT / "examples/companion_radio/StandaloneFrontend.cpp").read_text()
