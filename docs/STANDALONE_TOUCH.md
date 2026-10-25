@@ -1,18 +1,23 @@
-# T-Deck Plus: Touch-Bedienung (Standalone test6)
+# T-Deck Plus: Touch-Bedienung, Release 0.9.6
 
-Diese Weiterentwicklung baut auf PR #42 auf. Der Nutzer hat dessen Testartefakt
-aus Actions-Lauf 39546599293 am eigenen T-Deck getestet und bestaetigt, dass die
-Bedienung funktioniert und Nachrichten ankommen. Das ist Nutzerfeedback; wir
-haben selbst keinen Hardwaretest durchgefuehrt. Die neue Touch-Oberflaeche muss
-erneut am Geraet getestet werden. Kein Release, kein Merge.
+Öffentliche Standalone-Variante für T-Deck Plus. Die technische Dateikennung
+`standalone-test6` bleibt erhalten. Der Betreiber hat Privatversand sowie
+SD-Erkennung und Laden am eigenen T-Deck Plus bestätigt. Vollständige
+Hardwareabnahme und Tests der neuen WLAN-Integration werden nicht behauptet.
+[Verifizierungsstand](RELEASE-0.9.6.md).
+
+**Dokumentationskorrektur:** Der Kopfabsatz „Kein Release, kein Merge“ in der
+ursprünglich mit dem 0.9.6-ZIP gelieferten `BEDIENUNG.md` ist überholt.
+0.9.6 ist ein regulärer öffentlicher Release. Diese aktualisierte Anleitung
+ergänzt das unveränderte veröffentlichte Firmware-Paket.
 
 ## Bedienung
 
 | Bereich | Touch-Bedienung |
 |---|---|
-| Navigation | Oben zwischen Chat, Meldung, Brett, Karte und Geraet wechseln. Darunter links ist immer dieselbe Zurueck-Flaeche. Zurueck aus einer Unterhaltung fuehrt zur Liste, danach zum Kachelmenue. |
+| Navigation | Oben zwischen Chat, Privat, Meldung, Brett, Karte und Geraet wechseln. Darunter links ist immer dieselbe Zurueck-Flaeche. Zurueck aus einer Unterhaltung fuehrt zur Liste, danach zum Kachelmenue. |
 | Hauptmenue | Sechs grosse Kacheln in zwei Spalten; auch Standort ist direkt erreichbar. |
-| Chat / Brett | Vier getrennte Zeilen pro Bildschirm. Antippen oeffnet die Unterhaltung. Hoch/runter wischen blaettert mehrere Zeilen; der letzte Ausschnitt bleibt erhalten. |
+| Chat / Privat / Brett | Vier getrennte Zeilen pro Bildschirm. Antippen oeffnet die Unterhaltung. Hoch/runter wischen blaettert mehrere Zeilen; der letzte Ausschnitt bleibt erhalten. |
 | Unterhaltung | Nachrichtenverlauf vertikal wischen. Text mit der physischen Tastatur schreiben. Nur der separate grosse Senden-Button oder Enter/Trackball-Klick sendet. Im Brett ohne Text: Beitreten. |
 | Meldung | Vorlage, Ort oder Empfaenger antippen: eigene Auswahlliste. Wischen blaettert; eine Zeile waehlt aus. Zurueck schliesst zuerst die Auswahl. Texteingabe per Tastatur, Leeren ist separat. Meldung und reine Position haben getrennte Sendeaktionen. |
 | Karte | Mit einem Finger ziehen. Unten Zoom minus, Mein GPS, Zoom plus. Karte > waehlt die naechste Offline-Karte. Kein Pinch-Zoom noetig. |
@@ -22,7 +27,7 @@ erneut am Geraet getestet werden. Kein Release, kein Merge.
 Vom linken Bildschirmrand nach rechts wischen geht eine Ebene zurueck. Auf der
 Karte dient ein Zug im Kartenbereich zum Verschieben; der Rand bleibt fuer
 Zurueck reserviert. Tastatur, ALT+Backspace und Trackball funktionieren weiterhin.
-Die Touch-Bereiche sind auf das echte 320 x 240 Display abgestimmt: Tabs 60 x 32,
+Die Touch-Bereiche sind auf das echte 320 x 240 Display abgestimmt: sechs gleichmaessig verteilte Tabs,
 Listen und Einstellungsaktionen 312 x 34, Menuekacheln 154 x 48, Senden 86 x 40
 Pixel. Zwischen benachbarten Aktionen liegen freie Abstaende.
 
@@ -59,6 +64,6 @@ Am Geraet bitte pruefen: Fingergenauigkeit nach Kalibrierung, Wischen langer
 Listen, Kartenbewegung, Abbrechen von Sende-Gesten, Empfang waehrend Touchkontakt,
 Erhalt der Kalibrierung nach Neustart sowie Tastatur-/Trackballbedienung.
 
-## Privatchat ab 0.9.6-rc1
+## Privatchat in 0.9.6
 
-Oben **Privat** öffnen, einen gespeicherten persönlichen Kontakt wählen und die Nachricht mit der beschrifteten Sendeaktion verschicken. **Chat** enthält nur Kanäle. Kontakte werden aus dem maßgeblichen MeshCore-Speicher geladen. Beim ersten Öffnen des neuen Privatverlaufs werden ältere Direktnachrichten ausgeblendet; Kontakte und gemeinsamer Verlauf bleiben erhalten. Die Anzeige einer Übergabe ist keine menschliche Empfangsbestätigung. Hardwaretest und Parallelbetrieb mit der App sind offen.
+Oben **Privat** öffnen, einen gespeicherten persönlichen Kontakt wählen und die Nachricht mit der beschrifteten Sendeaktion verschicken. **Chat** enthält nur Kanäle. Kontakte werden aus dem maßgeblichen MeshCore-Speicher geladen. Beim ersten Öffnen des neuen Privatverlaufs werden ältere Direktnachrichten ausgeblendet; Kontakte und gemeinsamer Verlauf bleiben erhalten. Die Anzeige einer Übergabe ist keine menschliche Empfangsbestätigung. Privatversand ist vom Betreiber bestätigt; ein gesondert dokumentierter Parallelbetriebs-/Langzeittest steht noch aus.

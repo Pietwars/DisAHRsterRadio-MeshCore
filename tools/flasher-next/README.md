@@ -1,6 +1,6 @@
 # Web-Flasher: Konfiguration fürs nächste Release vorbereiten
 
-Hier wird die Web-Flasher-Konfiguration für ein neues Release vorbereitet; live ist immer `docs/flasher/` (bis zur Aktivierung weiterhin 0.9.4).
+Hier wird die Web-Flasher-Konfiguration für ein neues Release vorbereitet; live ist immer `docs/flasher/` (aktiviert: 0.9.6).
 LILYGO T-Deck Plus WLAN/BLE, LILYGO T-Watch S3 und LILYGO T-Deck Plus Standalone, je zwei Wege:
 
 | Knopf | Manifest | schreibt | Löschen |
@@ -24,6 +24,6 @@ Aktivieren (nach Veröffentlichung und Prüfung der Release-Pakete): `cp tools/f
 Wichtig: Das neue Release muss existieren, **bevor** die Konfiguration nach main übernommen wird – sonst findet der Pages-Lauf die ZIPs nicht
 (dann nach dem Release `gh workflow run pages.yml` erneut starten).
 
-## Aktiviert: 0.9.6-rc1
+## Aktiviert: 0.9.6
 
-Die Konfiguration enthält die tatsächlichen Firmware-/Factory-SHA-256-Werte der drei veröffentlichten ZIPs aus [Release-Lauf 40076135599](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/actions/runs/40076135599). Die heruntergeladenen Workflow-ZIPs wurden gegen die SHA-256-Digests der öffentlichen GitHub-Release-Assets geprüft. Alle sechs Manifestvarianten sind geprüft; docs/flasher/ enthält dieselbe Konfiguration.
+Die Konfiguration enthält die tatsächlichen Firmware-/Factory-SHA-256-Werte der drei veröffentlichten ZIPs aus [Release-Lauf 40126834170](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/actions/runs/40126834170). Die heruntergeladenen Workflow-ZIPs wurden gegen die SHA-256-Digests der öffentlichen GitHub-Release-Assets geprüft. Alle sechs Manifestvarianten sind geprüft; docs/flasher/ enthält dieselbe Konfiguration.

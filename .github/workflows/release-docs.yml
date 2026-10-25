@@ -1,0 +1,50 @@
+name: Release-Bedienung aktualisieren
+on:
+  push:
+    branches: [main]
+    paths: ['docs/STANDALONE_TOUCH.md', '.github/workflows/release-docs.yml']
+  workflow_dispatch:
+  workflow_run:
+    workflows: [Release]
+    types: [completed]
+    branches: [main]
+permissions:
+  contents: write
+concurrency:
+  group: release-docs
+  cancel-in-progress: false
+jobs:
+  manual:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - name: Aktuelle Bedienung ergaenzen, Firmware-Pakete unveraendert lassen
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION=$(python3 tools/version.py --get)
+          TAG="v$VERSION"
+          FILE="BEDIENUNG-$VERSION.md"
+          if ! gh release view "$TAG" --json body --jq '.body' > notes.md; then
+            echo "Release noch nicht vorhanden; nach erfolgreichem Release erneut ausfuehren."
+            exit 0
+          fi
+          cp docs/STANDALONE_TOUCH.md "$FILE"
+          if gh release view "$TAG" --json assets --jq '.assets[].name' | grep -Fxq "$FILE"; then
+            mkdir existing
+            gh release download "$TAG" --pattern "$FILE" --dir existing
+            cmp "$FILE" "existing/$FILE"
+          else
+            gh release upload "$TAG" "$FILE"
+          fi
+          if ! grep -Fq '## Aktualisierte Standalone-Bedienung' notes.md; then
+            printf '\n\n## Aktualisierte Standalone-Bedienung\n\n' >> notes.md
+            printf 'Der fruehere Hinweis "Kein Release, kein Merge" im Kopf der urspruenglichen BEDIENUNG.md ist ueberholt. Firmware-Pakete und ihre Pruefsummen bleiben unveraendert.\n\n' >> notes.md
+            printf '[Korrigierte Bedienung](https://github.com/%s/releases/download/%s/%s)\n' "$GITHUB_REPOSITORY" "$TAG" "$FILE" >> notes.md
+            gh release edit "$TAG" --notes-file notes.md
+          fi

@@ -29,7 +29,8 @@ Privilegierte Web-Einstellungen sind im offenen HTTP-Portal gesperrt. Standalone
 **DisAHRsterRadio mit MeshCore fürs Ahrtal: Weboberfläche MeshAhrtal im offenen WLAN und gleichzeitig die offizielle MeshCore-App per Bluetooth – Chat, Brett und Offlinekarten ohne Internet.**
 
 <p>
-<img src="docs/images/vorschau-chat.jpg" width="250" alt="MeshAhrtal: Chat">
+<img src="docs/images/vorschau-chat.jpg" width="250" alt="MeshAhrtal: Kanäle">
+<img src="docs/images/vorschau-privat.jpg" width="250" alt="MeshAhrtal: Privatnachrichten für hinzugefügte Kontakte">
 <img src="docs/images/vorschau-meldung.jpg" width="250" alt="MeshAhrtal: Schnellmeldung">
 <img src="docs/images/vorschau-karte.jpg" width="250" alt="MeshAhrtal: Offlinekarte">
 </p>
@@ -40,7 +41,7 @@ Privilegierte Web-Einstellungen sind im offenen HTTP-Portal gesperrt. Standalone
 
 **Weiterhin enthalten (seit 0.9.4):** Akku-Zeile am Gerät und automatische Flash-/Speicherprüfungen für beide Release-Boards. Messwerte und offene Hardwaretests: [Flash- und RAM-Prüfung](docs/SPEICHER.md).
 
-**[Release v0.9.6](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.6)** vom 24.10.2026. Nachrichten werden zwischen Weboberfläche und MeshCore-App geteilt. Der Standalone-Build bedient Chat, Meldung, Brett, Karte, Standort und Gerät direkt am T-Deck; er enthält kein WLAN/Webportal. [Hardwarestatus und Prüfungen](docs/RELEASE-0.9.6.md).
+**[Release v0.9.6](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.6)** vom 24.10.2026. Nachrichten werden zwischen Weboberfläche und MeshCore-App geteilt. Der Standalone-Build bedient Chat, Privat, Meldung, Brett, Karte, Standort und Gerät direkt am T-Deck; er enthält kein WLAN/Webportal. [Hardwarestatus und Prüfungen](docs/RELEASE-0.9.6.md).
 
 [![Release](https://img.shields.io/github/v/release/Pietwars/DisAHRsterRadio-MeshCore?label=Release)](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/latest)
 [![Live-Demo](https://img.shields.io/badge/Live--Demo-online-2ea44f)](https://pietwars.github.io/DisAHRsterRadio-MeshCore/)
@@ -50,7 +51,8 @@ Flyer (A5): [Druck-PDF mit QR-Codes](docs/flyer/DisAHRsterRadio-MeshCore-Flyer.p
 
 ## Was kann es
 
-- **Chat:** öffentlicher Kanal, eigene Kanäle und Direktnachrichten über MeshCore, Verlauf auf dem Board
+- **Chat:** öffentlicher Kanal und eigene Kanäle über MeshCore, Verlauf auf dem Board
+- **Privat:** eigener Bereich für hinzugefügte Chat-Kontakte, ohne Repeater und Roomserver; aktuelle Kontakte auch jenseits der früheren 64er-Grenze
 - **Schnellmeldungen:** Trinkwasser, Strom, Medikamente, Verletzt, Evakuierung – mit Ortsangabe
 - **Schwarzes Brett:** MeshCore-Room-Server, Beitritt automatisch mit dem öffentlichen Gast-Passwort `hello`
 - **Karte und Standort:** Offlinekarten des Ahrtals direkt aus der Firmware, Knoten und geteilte Positionen; Handy-GPS oder Ortsliste
@@ -154,3 +156,7 @@ Alle Demos sind simuliert.
 ## Lizenz
 
 [MeshCore](https://github.com/meshcore-dev/MeshCore) © Scott Powell / rippleradios.com und Mitwirkende, MIT (`license.txt`). WLAN-Portal und Weboberfläche von Pietwars, hier unter MIT; Weboberfläche aus [DisAHRsterRadio](https://github.com/Pietwars/DisAHRsterRadio). Kartendaten © OpenStreetMap-Mitwirkende, ODbL 1.0.
+
+## Nächstes Projekt
+
+[Pegel Heimersheim: Heltec-V2-Sensor-Node mit HC-SR04](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/issues/51) ist als nächstes Vorhaben mit vollständigem Auftrag vorgemerkt. Noch keine Implementierung oder Hardwarefreigabe.

@@ -1,81 +1,93 @@
 {
-  "version": "0.9.6-rc1",
+  "version": "0.9.6",
   "kind": "browser-demo",
   "hardware_approved": false,
-  "source_commit": "470ebdb016d9b9e00e3265721501288cb375a6b4",
-  "workflow_run": "https://github.com/Pietwars/DisAHRsterRadio-MeshCore/actions/runs/40075542317",
+  "source_commit": "9322126322158cb25cebe736d2197eb2d66e924a",
+  "workflow_run": "https://github.com/Pietwars/DisAHRsterRadio-MeshCore/actions/runs/40126834170",
   "images": [
     {
       "file": "vorschau-chat.jpg",
       "width": 390,
       "height": 844,
-      "sha256": "9327af38472f475c723a392cc1abdde618dbbc2b171809060ceaa535561a048e"
-    },
-    {
-      "file": "vorschau-meldung.jpg",
-      "width": 390,
-      "height": 844,
-      "sha256": "e192c238b1c3bdca312efc874a5fd0e4a8883f8b3b28d391c2ea0f902e0991bb"
-    },
-    {
-      "file": "vorschau-karte.jpg",
-      "width": 390,
-      "height": 844,
-      "sha256": "e9dd668fe0b7499c4b1efe7115fbc1bd28d5430ffe886000d043bbf2890f5f6a"
-    },
-    {
-      "file": "vorschau-board.jpg",
-      "width": 390,
-      "height": 844,
-      "sha256": "f7f43348146d4c2003d0010011089765674cbd176f7f1ccfd6ee06d5101840d4"
-    },
-    {
-      "file": "vorschau-info.jpg",
-      "width": 390,
-      "height": 844,
-      "sha256": "b90b233d18671e718cac10609cd78ca7d46821748c6f108a3ea2f5e437484ed0"
-    },
-    {
-      "file": "vorschau-loc.jpg",
-      "width": 390,
-      "height": 844,
-      "sha256": "69cc39aeb06fd3cf2e98e7d90eb543a069f1d8ee68b20437a534acf867073dfc"
+      "sha256": "a086e3dd3ebcd8285bb1e7ce4ea88f0f394331a44f6920d5396312e3914a198a"
     },
     {
       "file": "funktion-chat.jpg",
       "width": 390,
       "height": 844,
-      "sha256": "9327af38472f475c723a392cc1abdde618dbbc2b171809060ceaa535561a048e"
+      "sha256": "a086e3dd3ebcd8285bb1e7ce4ea88f0f394331a44f6920d5396312e3914a198a"
+    },
+    {
+      "file": "vorschau-meldung.jpg",
+      "width": 390,
+      "height": 844,
+      "sha256": "3f32a8e1c8a9a0f83998453902536c928cc26fa422288fba0e155e05050c234c"
     },
     {
       "file": "funktion-quick.jpg",
       "width": 390,
       "height": 844,
-      "sha256": "e192c238b1c3bdca312efc874a5fd0e4a8883f8b3b28d391c2ea0f902e0991bb"
+      "sha256": "3f32a8e1c8a9a0f83998453902536c928cc26fa422288fba0e155e05050c234c"
+    },
+    {
+      "file": "vorschau-karte.jpg",
+      "width": 390,
+      "height": 844,
+      "sha256": "02f1156be68bedb607079cd94ac94d2ea275b36d3ca62ec49a67630481b67623"
     },
     {
       "file": "funktion-map.jpg",
       "width": 390,
       "height": 844,
-      "sha256": "e9dd668fe0b7499c4b1efe7115fbc1bd28d5430ffe886000d043bbf2890f5f6a"
+      "sha256": "02f1156be68bedb607079cd94ac94d2ea275b36d3ca62ec49a67630481b67623"
+    },
+    {
+      "file": "vorschau-board.jpg",
+      "width": 390,
+      "height": 844,
+      "sha256": "e4121087f7e768323ae094b791a6199ff4ba08b792b4520ecbbe54d2d7a2476f"
     },
     {
       "file": "funktion-board.jpg",
       "width": 390,
       "height": 844,
-      "sha256": "f7f43348146d4c2003d0010011089765674cbd176f7f1ccfd6ee06d5101840d4"
+      "sha256": "e4121087f7e768323ae094b791a6199ff4ba08b792b4520ecbbe54d2d7a2476f"
     },
     {
-      "file": "funktion-info.jpg",
+      "file": "vorschau-loc.jpg",
       "width": 390,
       "height": 844,
-      "sha256": "b90b233d18671e718cac10609cd78ca7d46821748c6f108a3ea2f5e437484ed0"
+      "sha256": "419add7b592249fcc7098446118e7112bd11602a93856bfee0950f5f0950b94e"
     },
     {
       "file": "funktion-loc.jpg",
       "width": 390,
       "height": 844,
-      "sha256": "69cc39aeb06fd3cf2e98e7d90eb543a069f1d8ee68b20437a534acf867073dfc"
+      "sha256": "419add7b592249fcc7098446118e7112bd11602a93856bfee0950f5f0950b94e"
+    },
+    {
+      "file": "vorschau-info.jpg",
+      "width": 390,
+      "height": 844,
+      "sha256": "9835ea5ed8fd10e2c32593ee76f54824d5d3aeadebaaad800ffe5c92e9e37bc7"
+    },
+    {
+      "file": "funktion-info.jpg",
+      "width": 390,
+      "height": 844,
+      "sha256": "9835ea5ed8fd10e2c32593ee76f54824d5d3aeadebaaad800ffe5c92e9e37bc7"
+    },
+    {
+      "file": "vorschau-privat.jpg",
+      "width": 390,
+      "height": 844,
+      "sha256": "98ac937b8e6a2dca60e451a11d5ba471ea3cd4a8bde1f13abaaacebbd8346871"
+    },
+    {
+      "file": "funktion-private.jpg",
+      "width": 390,
+      "height": 844,
+      "sha256": "98ac937b8e6a2dca60e451a11d5ba471ea3cd4a8bde1f13abaaacebbd8346871"
     }
   ]
 }

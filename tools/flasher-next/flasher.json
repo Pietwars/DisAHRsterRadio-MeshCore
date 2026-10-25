@@ -1,27 +1,27 @@
 {
  "repo": "Pietwars/DisAHRsterRadio-MeshCore",
- "tag": "v0.9.6-rc1",
+ "tag": "v0.9.6",
  "devices": [
   {
    "id": "tdeck",
    "label": "LILYGO T-Deck Plus",
-   "asset": "DisAHRsterRadio-MeshCore-0.9.6-rc1-LilyGo_TDeck.zip",
+   "asset": "DisAHRsterRadio-MeshCore-0.9.6-LilyGo_TDeck.zip",
    "files": {
     "neu": {
-     "member": "DisAHRsterRadio-MeshCore-0.9.6-rc1-LilyGo_TDeck/DisAHRsterRadio-MeshCore-0.9.6-rc1-LilyGo_TDeck-factory.bin",
-     "sha256": "2276a54dd5d217e8ab32e54c169d41268ec23c12ece612a19dacb2af120d158a",
+     "member": "DisAHRsterRadio-MeshCore-0.9.6-LilyGo_TDeck/DisAHRsterRadio-MeshCore-0.9.6-LilyGo_TDeck-factory.bin",
+     "sha256": "22e69711f76a83da779570c06ac63c06cc3884152c170ee8d1d85e5b6acdcd9b",
      "out": "tdeck-neu-factory.bin"
     },
     "update": {
-     "member": "DisAHRsterRadio-MeshCore-0.9.6-rc1-LilyGo_TDeck/DisAHRsterRadio-MeshCore-0.9.6-rc1-LilyGo_TDeck-firmware.bin",
-     "sha256": "e9892bcc90a14356c3c9b2f7fa636db6344b098c7cfc3837a3fc599f6d2a69b2",
+     "member": "DisAHRsterRadio-MeshCore-0.9.6-LilyGo_TDeck/DisAHRsterRadio-MeshCore-0.9.6-LilyGo_TDeck-firmware.bin",
+     "sha256": "9bdbd8e97d366ed100da6a0888ae9a49ba63dbd2975adce68e0d7c887bb0fdcf",
      "out": "tdeck-update-firmware.bin"
     }
    },
    "modes": {
     "update": {
-     "name": "DisAHRsterRadio-MeshCore 0.9.6-rc1 · LILYGO T-Deck Plus · Update",
-     "version": "0.9.6-rc1",
+     "name": "DisAHRsterRadio-MeshCore 0.9.6 · LILYGO T-Deck Plus · Update",
+     "version": "0.9.6",
      "new_install_prompt_erase": true,
      "new_install_improv_wait_time": 0,
      "builds": [
@@ -37,8 +37,8 @@
      ]
     },
     "neu": {
-     "name": "DisAHRsterRadio-MeshCore 0.9.6-rc1 · LILYGO T-Deck Plus · Neuinstallation",
-     "version": "0.9.6-rc1",
+     "name": "DisAHRsterRadio-MeshCore 0.9.6 · LILYGO T-Deck Plus · Neuinstallation",
+     "version": "0.9.6",
      "new_install_prompt_erase": false,
      "new_install_improv_wait_time": 0,
      "builds": [
@@ -58,23 +58,23 @@
   {
    "id": "twatch",
    "label": "LILYGO T-Watch S3",
-   "asset": "DisAHRsterRadio-MeshCore-0.9.6-rc1-LilyGo_TWatchS3.zip",
+   "asset": "DisAHRsterRadio-MeshCore-0.9.6-LilyGo_TWatchS3.zip",
    "files": {
     "neu": {
-     "member": "DisAHRsterRadio-MeshCore-0.9.6-rc1-LilyGo_TWatchS3/DisAHRsterRadio-MeshCore-0.9.6-rc1-LilyGo_TWatchS3-factory.bin",
-     "sha256": "73ae6d45b07d353860558357b9ede1090e1c696ae7c34131e691346920798a02",
+     "member": "DisAHRsterRadio-MeshCore-0.9.6-LilyGo_TWatchS3/DisAHRsterRadio-MeshCore-0.9.6-LilyGo_TWatchS3-factory.bin",
+     "sha256": "562a9005c31159b06a0cfe9ae877bef6b7322262507aad7e7f4134d7c9bd8421",
      "out": "twatch-neu-factory.bin"
     },
     "update": {
-     "member": "DisAHRsterRadio-MeshCore-0.9.6-rc1-LilyGo_TWatchS3/DisAHRsterRadio-MeshCore-0.9.6-rc1-LilyGo_TWatchS3-firmware.bin",
-     "sha256": "663f8de8c47462e95fd3fee43537057fd4f12834f511a15ba90d736e2b747cab",
+     "member": "DisAHRsterRadio-MeshCore-0.9.6-LilyGo_TWatchS3/DisAHRsterRadio-MeshCore-0.9.6-LilyGo_TWatchS3-firmware.bin",
+     "sha256": "c2430163fb4f762ef3e0a0a76e41043bb096ef3d6064cff11cb9b4c773733c6a",
      "out": "twatch-update-firmware.bin"
     }
    },
    "modes": {
     "update": {
-     "name": "DisAHRsterRadio-MeshCore 0.9.6-rc1 · LILYGO T-Watch S3 · Update",
-     "version": "0.9.6-rc1",
+     "name": "DisAHRsterRadio-MeshCore 0.9.6 · LILYGO T-Watch S3 · Update",
+     "version": "0.9.6",
      "new_install_prompt_erase": true,
      "new_install_improv_wait_time": 0,
      "builds": [
@@ -90,8 +90,8 @@
      ]
     },
     "neu": {
-     "name": "DisAHRsterRadio-MeshCore 0.9.6-rc1 · LILYGO T-Watch S3 · Neuinstallation",
-     "version": "0.9.6-rc1",
+     "name": "DisAHRsterRadio-MeshCore 0.9.6 · LILYGO T-Watch S3 · Neuinstallation",
+     "version": "0.9.6",
      "new_install_prompt_erase": false,
      "new_install_improv_wait_time": 0,
      "builds": [
@@ -111,23 +111,23 @@
   {
    "id": "tdeck-standalone",
    "label": "LILYGO T-Deck Plus Standalone",
-   "asset": "DisAHRsterRadio-MeshCore-0.9.6-rc1-LilyGo_TDeck_standalone-test6.zip",
+   "asset": "DisAHRsterRadio-MeshCore-0.9.6-LilyGo_TDeck_standalone-test6.zip",
    "files": {
     "neu": {
-     "member": "DisAHRsterRadio-MeshCore-0.9.6-rc1-LilyGo_TDeck_standalone-test6/factory.bin",
-     "sha256": "c9cd07d56df0b97e572fe79cedc5fa76bfafdc44dbcb8054aaac0c474b463348",
+     "member": "DisAHRsterRadio-MeshCore-0.9.6-LilyGo_TDeck_standalone-test6/factory.bin",
+     "sha256": "99bfcca1a80506e3d6e5c6386a37fcd3fff248438709d287fb78181145d01a99",
      "out": "tdeck-standalone-neu-factory.bin"
     },
     "update": {
-     "member": "DisAHRsterRadio-MeshCore-0.9.6-rc1-LilyGo_TDeck_standalone-test6/firmware.bin",
-     "sha256": "b73773a90d2bddec184fe108309bbc4406da3378b3201b18f0b1d03982d86b94",
+     "member": "DisAHRsterRadio-MeshCore-0.9.6-LilyGo_TDeck_standalone-test6/firmware.bin",
+     "sha256": "bc0e17ff9988375a178242a4827a5a6d9b8806bad983dd9a0d2be0ed96b0d359",
      "out": "tdeck-standalone-update-firmware.bin"
     }
    },
    "modes": {
     "update": {
-     "name": "DisAHRsterRadio-MeshCore 0.9.6-rc1 · LILYGO T-Deck Plus Standalone · Update",
-     "version": "0.9.6-rc1",
+     "name": "DisAHRsterRadio-MeshCore 0.9.6 · LILYGO T-Deck Plus Standalone · Update",
+     "version": "0.9.6",
      "new_install_prompt_erase": true,
      "new_install_improv_wait_time": 0,
      "builds": [
@@ -143,8 +143,8 @@
      ]
     },
     "neu": {
-     "name": "DisAHRsterRadio-MeshCore 0.9.6-rc1 · LILYGO T-Deck Plus Standalone · Neuinstallation",
-     "version": "0.9.6-rc1",
+     "name": "DisAHRsterRadio-MeshCore 0.9.6 · LILYGO T-Deck Plus Standalone · Neuinstallation",
+     "version": "0.9.6",
      "new_install_prompt_erase": false,
      "new_install_improv_wait_time": 0,
      "builds": [

@@ -1,5 +1,8 @@
 # T-Deck Plus Standalone (Issue #35)
 
+> **Aktueller Stand 0.9.6:** öffentlicher Release mit Privatbereich und aktuellem gespeichertem Kontaktbestand, ursprünglicher MeshCore-Sendepolitik und Funkänderungen über die authentifizierte App. Privatversand sowie SD-Erkennung und Laden sind vom Betreiber bestätigt. Die folgenden Entwicklungsnotizen enthalten historische Zwischenstände; maßgeblich sind [Bedienung](STANDALONE_TOUCH.md) und [Verifizierungsstand](RELEASE-0.9.6.md).
+
+
 ## Privatnachrichten und Kontakte
 Der neue Reiter **PRIVAT** enthält ausschließlich im Funkkern gespeicherte persönliche
 Chat-Kontakte. Kanalnachrichten stehen unter CHAT, Room-Server unter BRETT. Repeater,

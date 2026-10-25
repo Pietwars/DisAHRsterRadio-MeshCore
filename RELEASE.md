@@ -1,24 +1,13 @@
 # Firmware veröffentlichen
 
-Aktuell: **0.9.4**, MeshCore 1.18.0, LILYGO T-Deck Plus und LILYGO T-Watch S3.
-Die ursprüngliche MeshCore-Anleitung steht in [README.meshcore.md](README.meshcore.md).
+Aktuell: **0.9.6**, MeshCore 1.18.0. Regulärer öffentlicher Release mit getrennten Paketen für T-Deck Plus WLAN/BLE, T-Watch S3 WLAN/BLE und T-Deck Plus Standalone. Die technische Standalone-Kennung `standalone-test6` bleibt bestehen.
 
-**Getrennt vom stabilen 0.9.4-Release:** Das experimentelle [T-Deck-Standalone-Prerelease `standalone-test5`](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/standalone-test5) ist veröffentlicht, aber **nicht auf echter Hardware abgenommen** und nicht im Web-Flasher. Hardwareabnahme: [Protokoll](docs/STANDALONE-ABNAHME.md) / [Issue #40](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/issues/40). Ein stabiler Standalone-Tag setzt dokumentierte Gerätetests und eine separate Freigabeentscheidung voraus.
+1. `VERSION` ändern, `python3 tools/version.py` und `python3 tools/embed_web.py` ausführen.
+2. Host-, Browser-, Firmware-, Flash-/Speicher- und Paketprüfungen müssen bestehen. Der Release-Workflow prüft alle drei Pakete und die aktuellen Demo-Vorschauen.
+3. Der geprüfte Stand wird auf `main` übernommen. Bei einer Versionsänderung erstellt der Release-Workflow den Tag und veröffentlicht die Pakete mit SHA256SUMS. Tags mit Bindestrich sind Pre-Releases. Vorhandene Firmware-Pakete werden nicht überschrieben.
+4. Veröffentlichte ZIPs herunterladen, die äußeren und inneren Prüfsummen sowie die Paketstruktur prüfen. Erst aus diesen Bytes `tools/flasher-next/aktualisieren.py` ausführen und die geprüfte Konfiguration nach `docs/flasher/` übernehmen.
+5. Erfolgreiche Pages-Bereitstellung und **sechs** Flash-Manifeste prüfen: drei Varianten, jeweils Update an `0x10000` und Neuinstallation an `0x0`. Ein Update schreibt weder SPIFFS noch NVS; Neuinstallation löscht Gerätedaten.
 
-1. `VERSION` ändern, `python3 tools/version.py` und `python3 tools/embed_web.py`
-   ausführen. README, CHANGELOG, Geräteanleitung und Hardwarestatus aktualisieren.
-2. Hosttests und beide Board-Builds prüfen; Flash-/Speicherprüfung ist im Build
-   und in `tools/build_device.sh` integriert. Details: [SPEICHER.md](docs/SPEICHER.md).
-3. Den geprüften Commit auf `main` mit `v<VERSION>` taggen und den Tag pushen.
-   Der Workflow `release.yml` baut beide Geräte, prüft die ZIPs und veröffentlicht
-   sie mit SHA256SUMS und Release-Text. Tags mit Bindestrich werden als Prerelease
-   veröffentlicht. Vorhandene Releases werden nicht überschrieben.
-4. Veröffentlichte ZIPs herunterladen und erneut mit `tools/verify_devices.py`
-   prüfen. Mit `tools/flasher-next/aktualisieren.py` die SHA256-Werte aus genau
-   diesen ZIPs übernehmen, Konfiguration prüfen und nach `docs/flasher/` kopieren.
-   Das Release muss vor der Aktivierung im Web-Flasher verfügbar sein.
-5. Pages-Lauf und vier Flasher-Manifeste prüfen: Update nur an `0x10000`,
-   Neuinstallation an `0x0`. Ein Update schreibt weder SPIFFS noch NVS.
+Die korrigierte [Standalone-Bedienung](docs/STANDALONE_TOUCH.md) wird zusätzlich zum unveränderten ursprünglichen 0.9.6-ZIP beim Release bereitgestellt. Der frühere Hinweis „Kein Release, kein Merge“ im Kopf der dort enthaltenen BEDIENUNG.md ist überholt.
 
-Hardware-Rückmeldungen und noch offene Tests werden ausdrücklich dokumentiert;
-ein erfolgreicher Compiler-Build ist keine vollständige Hardwareabnahme.
+Hardware-Rückmeldungen und offene Prüfungen stehen in [RELEASE-0.9.6.md](docs/RELEASE-0.9.6.md). Erfolgreiche Builds ersetzen keine vollständige Hardwareabnahme.
