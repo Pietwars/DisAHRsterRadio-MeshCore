@@ -8,6 +8,13 @@
 enum SeekMode { SeekSet = 0, SeekCur = 1, SeekEnd = 2 };
 #define FILE_READ "r"
 #define FILE_APPEND "a"
+struct FsFaults {
+  size_t writeLimit = size_t(-1);
+  bool failRead = false;
+  unsigned writes = 0;
+  void (*afterRead)(uint8_t *, size_t) = nullptr;
+};
+inline FsFaults &fsFaults() { static FsFaults faults; return faults; }
 struct File {
   std::vector<uint8_t> *data = nullptr; bool dir = false, valid = false; size_t pos = 0;
   explicit operator bool() const { return valid; }
@@ -23,13 +30,17 @@ struct File {
   size_t position() const { return pos; }
   size_t write(const uint8_t *p, size_t n) {
     if (!valid || dir) return 0;
+    ++fsFaults().writes;
+    n = std::min(n, fsFaults().writeLimit);
     if (data->size() < pos + n) data->resize(pos + n);
     memcpy(data->data() + pos, p, n); pos += n; return n;
   }
   size_t read(uint8_t *p, size_t n) {
-    if (!valid || dir) return 0;
+    if (!valid || dir || fsFaults().failRead) return 0;
     size_t k = pos >= data->size() ? 0 : std::min(n, data->size() - pos);
-    memcpy(p, data->data() + pos, k); pos += k; return k;
+    memcpy(p, data->data() + pos, k); pos += k;
+    if (fsFaults().afterRead) fsFaults().afterRead(p, k);
+    return k;
   }
 };
 struct FakeFs {
