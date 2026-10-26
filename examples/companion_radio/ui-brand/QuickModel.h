@@ -11,7 +11,7 @@ namespace quick {
 constexpr size_t TEXT_LIMIT = 100; // same UTF-8 byte limit as the web sender, including location
 constexpr int PRESET_COUNT = sizeof(PRESETS) / sizeof(PRESETS[0]);
 constexpr int PLACE_COUNT = sizeof(PLACES) / sizeof(PLACES[0]);
-enum Focus { Presets, Text, PlaceSelect, Target, Send, Position, Home, Clear, FOCUS_COUNT };
+enum Focus { Presets, Text, PlaceSelect, Target, Send, Position, Home, Clear, Sos, FOCUS_COUNT };
 enum class Result { Ready, Empty, NoFix, TooLong, InvalidTime };
 
 struct Fix {

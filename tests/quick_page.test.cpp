@@ -79,5 +79,13 @@ int main() {
   clear.key('X', stamp); clear.render(&screen);
   clear.key('\r', stamp); assert(clear.key(8, stamp)); // Backspace outside text returns Home
   assert(screen.outOfBounds == 0);
+  {TDeckQuickPage sos;sos.begin(&api);sos.setTarget("d010203040506");sos.tick(1000);
+   sos.tap(260,80,stamp);sos.render(&screen);assert(api.sosStarts==0);
+   sos.tap(20,190,stamp);sos.tap(200,190,stamp);assert(api.sosStarts==0); // no immediate double tap
+   sos.tap(20,190,stamp);sos.tick(2000);sos.tap(200,190,stamp);assert(api.sosStarts==1);
+   sos.render(&screen);assert(screen.outOfBounds==0);sos.tap(200,190,stamp);assert(api.sosCancels==0);sos.tick(3000);sos.tap(200,190,stamp);assert(api.sosCancels==1);
+   sos.closePicker();sos.tap(260,80,stamp);sos.tap(20,190,stamp);sos.tick(14000);sos.tap(200,190,stamp);
+   assert(api.sosStarts==1); // expired confirmation cannot start another mission
+  }
   puts("quick_page.test.cpp: keyboard, recipients, GPS sharing and explicit sending passed");
 }

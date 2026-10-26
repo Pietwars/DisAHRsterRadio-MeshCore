@@ -4,6 +4,7 @@
 // captive DNS and per-phone send budgets. Companion session, history, local send rules and room login are shared
 // with the T-Deck Plus standalone build.
 #include "LocalCompanion.h"
+#include "SosLocation.h"
 // 0.9.1 (Peter): private key export/import is compiled in. The portal never sends these commands;
 // OpenAccess.h allows them only over USB and PIN-paired Bluetooth, and MultiSerialInterface returns
 // the export reply only to the requesting USB/Bluetooth link (never WiFi, Ethernet or the portal).
@@ -27,7 +28,7 @@ class DisasterPortal : public LocalCompanion {
   uint32_t txFlood=0, txDirect=0, rxFlood=0, rxDirect=0;
   bool txBudgetWaiting=false, txStorageBlocked=false, txProfileBlocked=false;
   uint32_t txStartupWaitSeconds=0;
-  bool gpsEnabled=false,gpsFix=false;double gpsLat=0,gpsLon=0;
+  bool gpsEnabled=false,gpsFix=false;double gpsLat=0,gpsLon=0;uint32_t gpsUpdated=0;
   uint32_t txBudgetWaitEvents=0, txBudgetWaitSeconds=0;
   int txQueuePackets=0;
   struct ClientBudget { char id[16]; uint32_t lastMs=0, windowStart=0; uint8_t count=0; bool used=false; };
@@ -116,7 +117,7 @@ class DisasterPortal : public LocalCompanion {
   }
 public:
   // Snapshot existing MeshCore counters; does not issue Companion commands.
-  void setGps(bool enabled,bool fix,double lat,double lon){gpsEnabled=enabled;gpsFix=fix&&(lat!=0||lon!=0);gpsLat=lat;gpsLon=lon;}
+  void setGps(bool enabled,bool fix,double lat,double lon){gpsEnabled=enabled;gpsFix=fix&&(lat!=0||lon!=0);gpsLat=lat;gpsLon=lon;gpsUpdated=millis();}
   void setRadioDiagnostics(uint32_t tf, uint32_t td, uint32_t rf, uint32_t rd,
                            unsigned long ta, unsigned long ra, unsigned long budget,
                            bool waiting, uint32_t events, uint32_t seconds, int queued,
@@ -210,6 +211,28 @@ public:
       if(!f){http.send(404,"text/plain","Archiv nicht verfuegbar");return;}
       http.sendHeader("Content-Disposition","attachment; filename=disahrsterradio-archive.bin");
       http.streamFile(f,"application/octet-stream");f.close();
+    });
+    http.on("/api/sos",HTTP_GET,[this](){
+      if(!permitted())return;
+      const auto *r=sosRecord();String s="{\"storage\":"+String(sosStorageOK()?"true":"false");
+      if(r){char token[17];disaster::sosToken(*r,token);
+        s+=",\"id\":"+String(r->id)+",\"state\":"+String(r->state)+",\"attempts\":"+String(r->attempts)+",\"token\":\""+String(token)+"\",\"label\":\""+String(disaster::deliveryLabel(r->state))+"\"";
+      }else s+=",\"id\":0,\"state\":0,\"attempts\":0";
+      http.send(200,"application/json",s+"}");
+    });
+    http.on("/api/sos",HTTP_POST,[this](){
+      if(http.arg("action")=="cancel"){
+        if(!permitted())return;
+        bool ok=cancelSos(strtoul(http.arg("id").c_str(),nullptr,10));
+        http.send(ok?200:409,"text/plain",ok?"Wiederholungen gestoppt; Gesendetes kann noch ankommen":"Abbruch nicht gespeichert / Status pruefen");return;
+      }
+      if(!room())return;
+      if(http.arg("action")!="start"||http.arg("confirm")!="start"||http.arg("key").length()!=64){http.send(400,"text/plain","SOS zuerst vorbereiten und ausdruecklich bestaetigen");return;}
+      if(!allowClientSend())return;
+      char location[40],status[96];
+      disaster::sosLocation(http.arg("share")=="1",gpsEnabled&&gpsFix&&uint32_t(millis()-gpsUpdated)<2000,gpsLat,gpsLon,location,sizeof(location));
+      bool ok=localSosStart(http.arg("target").c_str(),delivery.now(),location,status,sizeof(status),http.arg("key").c_str());
+      http.send(ok?202:409,"text/plain",status);
     });
     http.on("/api/outbox",HTTP_GET,[this](){
       if(!permitted())return;String s="[";bool first=true;

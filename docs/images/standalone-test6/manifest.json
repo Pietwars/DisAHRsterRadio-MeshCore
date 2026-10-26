@@ -93,7 +93,7 @@
       "caption": "Schnellmeldung",
       "width": 320,
       "height": 240,
-      "sha256": "eac4048d3345da591a8d49b6c6278925d7d0397072feeab071e58a97fa678416"
+      "sha256": "1d780e8d2ce3e8e29c82d9473f2ea98aacdf9f807f5a03236cd2723541ef4397"
     },
     {
       "file": "vorschau-ort-auswahl.png",
@@ -141,14 +141,14 @@
   "sources": {
     "examples/companion_radio/ui-brand/StandaloneUI.cpp": "92a5e475d1bb9167aabb6965b61368fdb72f0dcdff1ef3dbf8278a3534d5c2dc",
     "examples/companion_radio/ui-brand/StandaloneUI.h": "0e8377b69c68313741199c845156e51aca6af97bd15226aa405b9d49995a7fc7",
-    "examples/companion_radio/ui-brand/TDeckQuickPage.cpp": "c2d7f6c17f0e507d82a55c9e349d81d6c9288688739a8d49ad5fd039ad91e2b0",
-    "examples/companion_radio/ui-brand/TDeckQuickPage.h": "ffabfd314fd59f6fb8c1c99e6d8d35598a397852154e05af4a821398e0a3bb83",
-    "examples/companion_radio/ui-brand/TouchLayout.h": "dd8bd68c5706bcc48fb7f6feb8c036f76e1cceff4c6070ac964c1201ddbaddaa",
+    "examples/companion_radio/ui-brand/TDeckQuickPage.cpp": "2d31a1aa7217c7bff8235b75b33ef5c8e6a9457069288dd72a260b865ddb604c",
+    "examples/companion_radio/ui-brand/TDeckQuickPage.h": "43aa5d86a7e3b78d3e608a29e0f84419e9945d3d0f27fc7ae9dc3f7f5bb86839",
+    "examples/companion_radio/ui-brand/TouchLayout.h": "730c6e5a68169e5807a5ce7c471df053a6c58d3182483a720b9476da8337d4b5",
     "examples/companion_radio/ui-brand/Theme.h": "b180057fd1d25a73bf39a734200498b9c8f86003b133237850c8ca8147d1d21b",
     "examples/companion_radio/ui-brand/Widgets.h": "f8d3b77977273272aa98f869b948851a82906e6fb913f8c47aa33d615effa497",
     "examples/companion_radio/ui-brand/MapView.h": "240f32b7b56cf555543ba9cb7bfdb43fbfd3f828df2bcbf404e9cd4ff11e107a",
     "tools/standalone_preview.cpp": "c8b2a5c468503b8daf1cdaa3fae8c9429960ffcc5fb43bdfa4a019187242e6e5",
-    "tests/ui_fakes/FakeApi.h": "c1d6940c99edcfb0a648dcfa994bdd6933e8a3323264e37d52fe1c98795c72ab",
+    "tests/ui_fakes/FakeApi.h": "f479811fd4dbe3c1de4daa9670c3d2cab9ede5ec4bd19ae990c16ee0e2a508b0",
     "platformio.standalone.ini": "1aae7d47d01496df3928eb2ac74b5c0b1b2addf8077dcfc4eddac047f070ba1c",
     "examples/companion_radio/DarRadioPolicy.h": "f5791bac7848ec5816a480ee24eb282b4c0927392c34dae3d1727bcaf1746f8d",
     "src/CompanionRadioMode.h": "0d682df815c380021e8e36ffc2b7fd7fd453c034594dcdf8f286945ac11b7d62"

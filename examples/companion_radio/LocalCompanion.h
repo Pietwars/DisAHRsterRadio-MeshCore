@@ -92,7 +92,7 @@ protected:
   }
   static int nibble(char c) { return disaster::hexNibble(c); }
   // Shared rules of the web and the device sender.
-  bool busy() const { return startup<12 || pendingLen || active || loginLen; }
+  bool busy() const { return startup<12 || pendingLen || active || loginLen || delivery.sosDue(); }
   bool sendPaused() const { return disaster::sendPaused(sentOnce,lastSend,millis()); }
   void queueCommand(const uint8_t *p,size_t n) { memcpy(pending,p,n); pendingLen=n; }
   // Remember an accepted text send: history record after the core's reply, pause, strictly increasing stamp.
@@ -171,6 +171,31 @@ public:
   const char *localStatus() const { return localOutcome; }
   const String &lastOutcome() const { return outcome; }
   uint32_t pauseLeftMs() const { return disaster::pauseLeftMs(sentOnce,lastSend,millis()); }
+
+  void setClockSource(uint32_t (*source)()){delivery.setClockSource(source);}
+  const disaster::OutboxRecord *sosRecord()const{return delivery.latestSos();}
+  bool sosStorageOK()const{return delivery.storageOK();}
+  bool cancelSos(uint32_t id){const auto *r=delivery.latestSos();return r&&r->id==id&&delivery.cancel(id);}
+  void receivedDirect(const uint8_t from[32],const char *text){delivery.acceptHuman(from,text);}
+  bool localSosStart(const char *id,uint32_t stamp,const char *location,char *status,size_t size,const char *expectedKey=nullptr){
+    if(!enabled||busy())return fail(status,size,"Knoten beschaeftigt / SOS steht an");
+    if(!disaster::validStamp(stamp))return fail(status,size,"Gueltige Geraetezeit erforderlich");
+    String target(id?id:"");target.toLowerCase();String contact;
+    if(!disaster::contactTarget(target.c_str()))return fail(status,size,"SOS braucht einen privaten Chat-Kontakt");
+    for(unsigned i=0;i<contactCount();++i){String c=contactHex(i);
+      if(c.length()>=264&&c.substring(2,14)==target.substring(1)){
+        if(contact.length())return fail(status,size,"Kontakt ist mehrdeutig");contact=c;
+      }
+    }
+    if(!contact.length()||contact.substring(66,68)!="01")return fail(status,size,"Nur bekannte private Chat-Kontakte");
+    if(expectedKey&&contact.substring(2,66)!=String(expectedKey))return fail(status,size,"Kontakt geaendert; SOS neu vorbereiten");
+    uint8_t key[32];for(int i=0;i<32;++i)key[i]=(nibble(contact[2+2*i])<<4)|nibble(contact[3+2*i]);
+    delivery.syncClock(stamp);
+    int slot=delivery.enqueueSos(key,stamp,location);
+    if(slot<0)return fail(status,size,slot==-3?"Ein SOS wartet bereits auf Annahme":slot==-1?"Nachrichtenausgang voll":"SOS nicht gespeichert / Uhr oder Speicher pruefen");
+    if(stamp>lastStamp)lastStamp=stamp;
+    if(size)snprintf(status,size,"SOS gespeichert; maximal vier Versuche");return true;
+  }
 
   // ---- local sending from the device (same serialized path as /api/send) ----
   bool localSend(const char *id,const char *text,uint32_t stamp,char *status,size_t size) {
