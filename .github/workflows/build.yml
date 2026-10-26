@@ -20,6 +20,7 @@ jobs:
         with:
           node-version: 22
       - run: node tests/web_regression.cjs
+      - run: node tests/offline_shell.test.cjs
       - name: Web-Flasher – Browser-Prüfsummen und negative Updatefälle
         run: node tests/flasher_integrity.test.mjs
       - name: Web-Flasher-Konfiguration (T-Deck Plus + T-Watch S3, Update + Neuinstallation)

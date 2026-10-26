@@ -44,7 +44,7 @@ Manifestteile, Download-/Hash-/Blobfehler und bytegleicher geprüfter Snapshot.
 verborgene/gesperrte Installation vor Prüfung, Fehler und Wiederholung sowie
 unveränderte Blobbytes bei nachträglich veränderter Netzwerkantwort. Der Test
 verwendet simulierte Downloads und ein ESP-Web-Tools-UI-Stub; kein USB-/Flash-Test.
-Chromium wird durch den bestehenden Vorschau-CI-Job installiert. Lokal fehlt die
+Der Vorschau-CI-Job nutzt das vorinstallierte Google Chrome des GitHub-Runners. Lokal fehlt die
 Chromium-Binärdatei; deshalb kein lokales Browser-PASS ohne CI-Nachweis.
 
 `tools/flasher_fetch.py --check` prüft die eingebettete Browserkonfiguration gegen
