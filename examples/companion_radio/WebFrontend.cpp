@@ -37,6 +37,8 @@ void frontend::begin(MultiSerialInterface& interfaces) {
   DIAG("portal.begin (softAP)");
   disaster_portal.setContactSource([]()->unsigned { return unsigned(the_mesh.getNumContacts()); },
     [](unsigned i)->String { ContactInfo c; return the_mesh.getContactByIdx(i+MAX_ANON_CONTACTS,c)?LocalCompanion::encodeContact(c):String(); });
+  disaster_portal.setClockSource([]()->uint32_t{return rtc_clock.getCurrentTime();});
+  the_mesh.setDirectMessageObserver([](const uint8_t *from,const char *text){disaster_portal.receivedDirect(from,text);});
   disaster_portal.begin();
   DIAG("portal ok");
   interfaces.addInterface(InterfaceType::Portal, &disaster_portal);
@@ -69,9 +71,13 @@ void frontend::loop() {
     the_mesh.isTxBudgetWaiting(), the_mesh.getTxBudgetWaitEvents(),
     the_mesh.getTxBudgetWaitSeconds(), the_mesh.getTxQueuePackets(),
     the_mesh.getTxStartupWaitSeconds(), the_mesh.isTxStorageBlocked(), the_mesh.isTxProfileBlocked());
-#if defined(DISASTER_GPS) && ENV_INCLUDE_GPS
-  disaster_portal.setGps(true, nmea.isValid(), sensors.node_lat, sensors.node_lon);
-#endif
+  {
+    auto *location=sensors.getLocationProvider();
+    const bool on=sensors.isGPSDetected()&&the_mesh.getNodePrefs()->gps_enabled;
+    disaster_portal.setGps(on,on&&location&&location->isValid()&&location->hasFreshFix(15000),
+      location?location->getLatitude()/1e6:0,location?location->getLongitude()/1e6:0);
+  }
+
 }
 
 #endif

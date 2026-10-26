@@ -11,6 +11,14 @@ ursprünglich mit dem 0.9.6-ZIP gelieferten `BEDIENUNG.md` ist überholt.
 0.9.6 ist ein regulärer öffentlicher Release. Diese aktualisierte Anleitung
 ergänzt das unveränderte veröffentlichte Firmware-Paket.
 
+## Aktueller Entwicklungsstand auf Basis 0.9.6
+
+Der Integrationsbranch ergänzt [SOS](SOS.md) unter Meldung sowie den
+[DE-Sendeschutz](DE-TX-GUARD.md). Diese Funktionen gehören noch nicht zu den
+oben genannten veröffentlichten ZIPs. Alte 22-dBm-Einstellungen sperren TX;
+über die authentifizierte App auf höchstens 10 dBm umstellen. Bei unbekannter
+Sendehistorie gilt eine volle stille Stunde, auch für SOS.
+
 ## Bedienung
 
 | Bereich | Touch-Bedienung |
@@ -58,7 +66,7 @@ einschliesslich Abbild-/Partitions- und WLAN-/Web-Ausschlusspruefung aus.
 `tools/standalone_preview.py` rendert denselben C++-Code mit Demodaten und der
 echten GFX-Schrift. Die PNGs werden dem CI-Testartefakt beigelegt. Sie zeigen das
 reale Layout, sind aber keine Fotos des Geraets. Die Firmwarekennung lautet
-`v1.18.0-dar0.9.5-standalone-test6`.
+`v1.18.0-dar0.9.6-standalone-test6`.
 
 Am Geraet bitte pruefen: Fingergenauigkeit nach Kalibrierung, Wischen langer
 Listen, Kartenbewegung, Abbrechen von Sende-Gesten, Empfang waehrend Touchkontakt,

@@ -260,10 +260,12 @@ private:
   // 0.9.3: Nachrichten zwischen lokalem Client (Weboberflaeche bzw. T-Deck-Anzeige im Standalone) und
   // MeshCore-App teilen.
   void queueWebEchoForApp(const uint8_t *cmd, size_t len);     // vom lokalen Client gesendet -> App sieht sie
+  void (*_direct_message_observer)(const uint8_t *from,const char *text)=nullptr;
   void (*_app_sent_observer)(const uint8_t *cmd, size_t len, const uint8_t *ack_tag) = nullptr;
   const char *_local_origin = "Web";                            // Herkunftsmarke im App-Echo
 public:
   // Wird aufgerufen, wenn die App (Bluetooth) eine Text-/Kanalnachricht erfolgreich abgeschickt hat.
+  void setDirectMessageObserver(void (*fn)(const uint8_t *,const char *)){_direct_message_observer=fn;}
   void setAppSentObserver(void (*fn)(const uint8_t *cmd, size_t len, const uint8_t *ack_tag)) { _app_sent_observer = fn; }
   // Herkunft der lokal gesendeten Nachrichten im App-Echo ("Web" in den Web-Builds, "T-Deck" im Standalone).
   void setLocalOrigin(const char *origin) { _local_origin = origin; }

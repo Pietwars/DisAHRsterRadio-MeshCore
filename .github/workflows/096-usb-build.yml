@@ -130,6 +130,8 @@ jobs:
       - run: npm install --no-save --package-lock=false playwright@1.62.1
       - name: Use preinstalled runner Chrome (no additional browser download)
         run: google-chrome --version
+      - name: SOS-Bedienung ohne Funkgerät prüfen
+        run: node tests/sos_browser.test.cjs
       - name: Offline-Vorschau im Browser prüfen
         run: node tests/offline_browser.test.cjs
       - name: Web-Flasher Browser-Prüfung ohne Gerät

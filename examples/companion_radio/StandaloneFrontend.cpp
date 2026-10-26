@@ -3,6 +3,7 @@
 // (ui-brand/StandaloneUI) through dev::Api, next to the MeshCore app over PIN Bluetooth. Adds the SD settings
 // file and event log (no PINs, no keys, no message texts in the log) and "Standort teilen" (GpsShare.h).
 #include "Frontend.h"
+#include "SosLocation.h"
 #ifdef DISASTER_STANDALONE
 
 #include <Arduino.h>
@@ -217,6 +218,20 @@ public:
     logEvent("Senden an %s (%u Byte): %s", id[0] == 'c' ? "Kanal" : "Kontakt", unsigned(strlen(text)), ok ? "vorgemerkt" : status);
     return ok;
   }
+  dev::Sos sos() const override {
+    dev::Sos out;out.storageOK=companion.sosStorageOK();const auto *r=companion.sosRecord();
+    if(r){out.id=r->id;out.expires=r->expires;out.state=r->state;out.attempts=r->attempts;
+      disaster::sosToken(*r,out.token);snprintf(out.text,sizeof(out.text),"%s",r->text);
+      snprintf(out.target,sizeof(out.target),"d%02x%02x%02x%02x%02x%02x",r->recipient[0],r->recipient[1],r->recipient[2],r->recipient[3],r->recipient[4],r->recipient[5]);}
+    return out;
+  }
+  bool sosStart(const char *id,char *status,size_t size) override {
+    const auto g=gps();char location[40];disaster::sosLocation(g.share,g.receiverOn&&g.fresh,g.lat,g.lon,location,sizeof(location));
+    return companion.localSosStart(id,now(),location,status,size);
+  }
+  bool sosCancel(uint32_t id,char *status,size_t size) override {
+    bool ok=companion.cancelSos(id);snprintf(status,size,"%s",ok?"Wiederholungen gestoppt; Gesendetes bleibt unterwegs":"Abbruch nicht gespeichert / Status pruefen");return ok;
+  }
   const char *sendStatus() const override { return companion.localStatus(); }
   bool roomLogin(const char *id, char *status, size_t size) override {
     bool ok = companion.localRoomLogin(id, now(), status, size);
@@ -334,6 +349,8 @@ void frontend::begin(MultiSerialInterface &interfaces) {
   log_on = nvs.getBool("log", false);
   share_on = nvs.getBool("share", false);       // off until the user switches it on
   map_index = nvs.getInt("map", 0);
+  companion.setClockSource([]()->uint32_t{return rtc_clock.getCurrentTime();});
+  the_mesh.setDirectMessageObserver([](const uint8_t *from,const char *text){companion.receivedDirect(from,text);});
   companion.beginLocal();                        // history, outbox, SD archive (mounts the card)
   cache.reserve(MAX_CONTACTS+8);
   companion.setContactSource([]()->unsigned { return unsigned(the_mesh.getNumContacts()); },

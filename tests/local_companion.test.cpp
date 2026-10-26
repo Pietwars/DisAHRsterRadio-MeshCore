@@ -73,7 +73,23 @@ static void testAuthoritativeContacts() {
   assert(!c.localSend("d450000000000","Weg",1792400001,status,sizeof(status)));
   sourceCount=70;
 }
+static void testSosNativePath(){
+  SPIFFS.files.clear();TestCompanion c;c.beginLocal();c.enable();startup(c);char status[96];uint8_t frame[MAX_FRAME_SIZE];
+  assert(!c.localSosStart("c0",1792400000,"ohne GPS",status,sizeof(status)));
+  assert(!c.localSosStart("d303132333435",1792400000,"ohne GPS",status,sizeof(status)));
+  assert(c.localSosStart("d101112131415",1792400000,"ohne GPS",status,sizeof(status)));
+  assert(!c.localSend("c0","normal",1792400001,status,sizeof(status))); // SOS first
+  assert(c.checkRecvFrame(frame)>13&&frame[0]==2&&frame[7]==0x10);
+  const auto *r=c.sosRecord();assert(r&&r->attempts==1);
+  const uint8_t accepted[]={6,0,1,2,3,4,0,0,0,0};c.writeFrame(accepted,sizeof(accepted));
+  uint8_t ack[9]={0x82,1,2,3,4};c.writeFrame(ack,sizeof(ack));
+  assert(c.sosRecord()->state==disaster::SOS_RECEIVED);
+  char token[17],reply[24];disaster::sosToken(*c.sosRecord(),token);snprintf(reply,sizeof(reply),"SOS OK %s",token);
+  uint8_t from[32];for(unsigned i=0;i<32;++i)from[i]=uint8_t(0x10+i);
+  c.receivedDirect(from,reply);assert(c.sosRecord()->state==disaster::SOS_ACCEPTED);
+}
 int main() {
+  testSosNativePath();SPIFFS.files.clear();fake_millis=1000;
   TestCompanion c; char st[96]; uint8_t f[MAX_FRAME_SIZE]; uint32_t stamp = 1792400000;
   assert(!c.localSend("c0", "x", stamp, st, sizeof(st)) && strstr(st, "beschaeftigt"));
   c.enable(); startup(c); assert(c.ready());

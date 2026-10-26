@@ -2,7 +2,8 @@
 
 Stand: 26.10.2026. Gilt für dar_LilyGo_TDeck_wifi,
 LilyGo_TDeck_standalone und dar_LilyGo_TWatchS3_wifi auf ESP32.
-Unabhängiger Fix auf main, ohne Abhängigkeit vom noch offenen SOS-PR #57.
+Ursprünglich unabhängiger Fix #58 auf main; im Integrationsbranch
+update/096-current gemeinsam mit SOS aus #57 geprüft.
 Keine automatische Veröffentlichung oder Hardwarefreigabe.
 
 ## Nachgewiesenes Problem und notwendige Kernausnahme

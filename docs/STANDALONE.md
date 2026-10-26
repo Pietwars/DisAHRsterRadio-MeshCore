@@ -1,6 +1,6 @@
 # T-Deck Plus Standalone (Issue #35)
 
-> **Aktueller Stand 0.9.6:** öffentlicher Release mit Privatbereich und aktuellem gespeichertem Kontaktbestand, ursprünglicher MeshCore-Sendepolitik und Funkänderungen über die authentifizierte App. Privatversand sowie SD-Erkennung und Laden sind vom Betreiber bestätigt. Die folgenden Entwicklungsnotizen enthalten historische Zwischenstände; maßgeblich sind [Bedienung](STANDALONE_TOUCH.md) und [Verifizierungsstand](RELEASE-0.9.6.md).
+> **Aktueller Entwicklungsstand auf Basis 0.9.6:** SOS und DE-Sendeschutz gemeinsam integriert; noch kein neuer öffentlicher Release oder Hardwareabnahme. Privatversand sowie SD-Erkennung und Laden wurden auf früherem Stand bestätigt. Maßgeblich sind [Bedienung](STANDALONE_TOUCH.md), [SOS](SOS.md), [DE-Sendeschutz](DE-TX-GUARD.md) und [Verifizierungsstand](RELEASE-0.9.6.md).
 
 
 ## Privatnachrichten und Kontakte
@@ -150,23 +150,15 @@ angepasst; die Oberfläche ist kein Austausch des Funkprotokolls und keine pixel
   (`GpsShare.h`, Speicher-Haken in `MyMesh::savePrefs`).
 - T-Deck-GPS: Baudraten-Erkennung über gültige NMEA-Sätze (9600/38400/115200) aus #34, nur im Standalone.
 
-### Funkparameter in 0.9.6 TEST
-Die Funkparameter werden am Standalone ausschließlich in der originalen MeshCore-App
-per Bluetooth geändert. Der Display-Editor samt Touch-/Tastatur-/Trackball-Eingaben entfällt.
-Standard für frische Einstellungen ist **EU/UK Narrow / Switzerland**:
-869,618 MHz, 62,5 kHz, SF8, CR 4/8. Bereits gespeicherte gültige Einstellungen bleiben
-erhalten; nach einem Update kann das gewünschte Profil in der App gewählt werden.
-Weitere App-Presets und freie, vom Funkchip unterstützte Parameter sind möglich.
-Funkleistung und Duty Cycle folgen der originalen MeshCore-Basis dieses Projekts
-und lassen sich über die App einstellen. Der T-Deck-Build verwendet wieder den
-originalen Leistungsstandard von 22 dBm. Gespeicherte Werte bleiben erhalten.
+### Funkparameter und TX-Budget im aktuellen Entwicklungsstand
 
-### TX-Budget: originales MeshCore-Verhalten
-Standalone nutzt die ursprüngliche MeshCore-Tokenbudget-Steuerung. Die DAR-
-Sonderregeln (feste 10 %, 10-dBm-Deckel, persistentes Stundenfenster und zusätzliche
-60-Minuten-Neustartsperre) sind dort deaktiviert. Die WLAN-Variante behält sie.
-Die DAR-Oberfläche und die PIN-authentifizierte App-Bedienung bleiben erhalten.
-Keine Aussage über tatsächliche HF-Leistung oder Hardwareabnahme.
+Funkparameter am Standalone über die PIN-authentifizierte MeshCore-App ändern.
+Frische Einstellungen: 869,618 MHz, 62,5 kHz, SF8, CR 4/8, 10 dBm.
+Gespeicherte Werte bleiben erhalten; unzulässige Altwerte (etwa 22 dBm) sperren TX.
+Beide ESP32-Companions teilen die [DE-Policy](DE-TX-GUARD.md) mit festem gleitendem
+10-%-Stundenbudget und persistentem Neustartschutz. Unbekannte Historie verlangt
+eine volle stille Stunde; Empfang und Bedienung bleiben verfügbar. SOS erhält
+keine Ausnahme. Das ersetzt keine reale HF-/Hardwareabnahme.
 
 ### Lokale Einstellungen in 0.9.6 TEST
 Unter **Gerät** stehen zusätzlich **Gerätenamen ändern** (mit zweiter Bestätigung) und
