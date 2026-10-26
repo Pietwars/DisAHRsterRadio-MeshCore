@@ -108,6 +108,8 @@ jobs:
           if-no-files-found: error
   previews:
     runs-on: ubuntu-latest
+    env:
+      DAR_BROWSER_CHANNEL: chrome
     steps:
       - uses: actions/checkout@v4
         with:
@@ -116,7 +118,8 @@ jobs:
         with:
           node-version: 22
       - run: npm install --no-save --package-lock=false playwright@1.62.1
-      - run: npx playwright install --with-deps chromium
+      - name: Use preinstalled runner Chrome (no additional browser download)
+        run: google-chrome --version
       - name: Private chat browser regression and current demo previews
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 --directory web > /tmp/preview-server.log 2>&1 &
