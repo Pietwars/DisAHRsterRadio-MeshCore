@@ -63,6 +63,18 @@ def check():
         if art: assert m.get('new_install_improv_wait_time') == 0, 'Firmware ohne Improv: new_install_improv_wait_time 0'
         assert f'manifest="{mfile}"' in html, f'index.html verweist nicht auf {mfile}'
         print('Flasher-Konfiguration OK:', d['tag'], mfile, ', '.join(f.get('member', d['asset']).split('/')[-1] for f in files))
+    if any('modes' in d for d in CFG.get('devices', [])):
+        embedded = re.search(r'<script id="flasher-integrity" type="application/json">(.*?)</script>', html, re.S)
+        assert embedded, 'Browser-Prüfsummen-Konfiguration fehlt'
+        pinned = json.loads(embedded.group(1))
+        expected = {mfile: {'file': mfile, 'sha256': files[0]['sha256'], 'manifest': m}
+                    for d, mfile, m, files, art in jobs()}
+        assert pinned == expected, 'Browser-Prüfsummen/Manifeste passen nicht zur Release-Konfiguration'
+        assert (CFGDIR / 'integrity.mjs').is_file(), 'Browser-Prüfmodul fehlt'
+        assert "from './integrity.mjs'" in html, 'Browser-Prüfmodul nicht eingebunden'
+        assert len(re.findall(r'<esp-web-install-button hidden data-manifest=', html)) == len(expected), 'Installation muss bis zur Prüfung verborgen bleiben'
+        assert len(re.findall(r'<button disabled slot="activate"', html)) == len(expected), 'Installation muss zunächst gesperrt sein'
+
 
 def fetch(out):
     out = Path(out); out.mkdir(parents=True, exist_ok=True)
