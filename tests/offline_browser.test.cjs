@@ -14,7 +14,7 @@ const server=http.createServer((req,res)=>{
 (async()=>{
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
  const base=`http://127.0.0.1:${server.address().port}/mesh/`;
- const browser=await chromium.launch({headless:true});
+ const browser=await chromium.launch({headless:true, ...(process.env.DAR_BROWSER_CHANNEL ? {channel: process.env.DAR_BROWSER_CHANNEL} : {})});
  try{
   const context=await browser.newContext();const page=await context.newPage();
   await page.goto(base+'?demo=1');

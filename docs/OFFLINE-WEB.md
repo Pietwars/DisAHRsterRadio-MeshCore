@@ -48,4 +48,4 @@ API-/POST-/Firmware-Anfragen.
 unter einem Unterpfad, Offline-Neuladen, alle fünf Karten und fehlschlagender
 Geräte-API-Zugriff statt Rückgabe eines alten Caches. Verwendet die erzeugte
 Pages-Demo und keinen echten Funkknoten. Lokale Chromium-Binärdatei fehlt in der
-Arbeitsumgebung; dieser Browsernachweis wird in CI geprüft.
+Arbeitsumgebung; dieser Browsernachweis wird in CI mit dem vorinstallierten Google Chrome geprüft.
