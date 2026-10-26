@@ -49,10 +49,10 @@ with tempfile.TemporaryDirectory(prefix='dar096-') as tmp:
         run(['g++','-std=c++17','-Wall','-Wextra','-Werror','-fsanitize=address,undefined',
              '-D'+mode,'-Itests/open_access_fakes','-Isrc','tests/open_access.test.cpp','-o',str(access_binary)])
         run([str(access_binary)])
-        tx_binary=Path(tmp)/('original-tx-'+mode)
+        tx_binary=Path(tmp)/('regional-tx-'+mode)
         run(['g++','-std=c++11','-Wall','-Wextra','-Wno-unused-parameter','-Wno-reorder',
              '-Wno-sign-compare','-fsanitize=address,undefined','-D'+mode,
-             '-Isrc','-Itest/mocks','tests/original_meshcore_tx.test.cpp','src/Dispatcher.cpp',
+             '-Isrc','-Itest/mocks','tests/dispatcher.test.cpp','src/Dispatcher.cpp',
              'src/Packet.cpp','src/helpers/StaticPoolPacketManager.cpp','-o',str(tx_binary)])
         run([str(tx_binary)])
     outbox_binary=Path(tmp)/'delivery-outbox'

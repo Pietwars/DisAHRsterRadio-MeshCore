@@ -67,6 +67,16 @@ inline bool radioParamsValid(float freq, float bw, uint8_t sf, uint8_t cr) {
   return freq>=150.0f && freq<=2500.0f && bw>=7.8f && bw<=500.0f &&
          sf>=5 && sf<=12 && cr>=5 && cr<=8;
 }
+// DE SRD Vfg. 91/2025 band 54 only. Use exact companion units (kHz/Hz)
+// rather than truncating float values across a subband edge. Technical driver
+// validation is still required. Nominal containment is not a spectrum/ERP test.
+inline bool deRadioParamsAllowed(float freq, float bw, uint8_t sf, uint8_t cr) {
+  if (!radioParamsValid(freq, bw, sf, cr)) return false;
+  uint32_t freqKhz = uint32_t(double(freq) * 1000.0 + 0.5);
+  uint32_t bwHz = uint32_t(double(bw) * 1000.0 + 0.5);
+  return freq == float(freqKhz) / 1000.0f && bw == float(bwHz) / 1000.0f &&
+         withinDeBand54(freqKhz, bwHz);
+}
 struct AppliedRadioConfig {
   float freq=0, bw=0;
   uint8_t sf=0, cr=0;

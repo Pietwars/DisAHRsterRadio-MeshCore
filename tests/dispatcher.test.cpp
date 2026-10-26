@@ -4,6 +4,9 @@
 #include <helpers/StaticPoolPacketManager.h>
 #include <cassert>
 #include <cstdio>
+#ifdef DAR_REGIONAL_TX_GUARD
+#include "../examples/companion_radio/DarRadioPolicy.h"
+#endif
 struct Clock : mesh::MillisecondClock {
   unsigned long now = 100;
   unsigned long getMillis() override { return now; }
@@ -47,7 +50,15 @@ struct WindowStore : mesh::TxWindowStore {
 };
 struct WindowDispatcher : Dispatcher {
   bool profileAllowed=true;
-  bool isTxProfileAllowed() const override { return profileAllowed && _radio->isTxConfigurationValid(); }
+  float freq=869.618f, bw=62.5f;
+  uint8_t sf=8, cr=8;
+  int8_t power=10;
+  bool isTxProfileAllowed() const override {
+#ifdef DAR_REGIONAL_TX_GUARD
+    if (!disaster::deRadioParamsAllowed(freq,bw,sf,cr) || !disaster::darTxPowerAllowed(power)) return false;
+#endif
+    return profileAllowed && _radio->isTxConfigurationValid();
+  }
   using Dispatcher::Dispatcher;
   bool useTxWindowLimiter() const override { return true; }
 };
@@ -62,11 +73,24 @@ static void testWindowDispatch() {
   blockedPacket->header=ROUTE_TYPE_FLOOD; blockedPacket->payload_len=10;
   blocked.sendPacket(blockedPacket,0); blocked.profileAllowed=false; blocked.loop();
   assert(blocked.isTxProfileBlocked()&&blockedRadio.starts==0&&blockedPool.getOutboundTotal()==1&&blockedStore.dirtyWrites==0);
+#ifdef DAR_REGIONAL_TX_GUARD
+  blocked.profileAllowed=true; blocked.freq=868.1f; blocked.bw=125.0f;
+  blocked.loop(); assert(blocked.isTxProfileBlocked()&&blockedRadio.starts==0&&blockedStore.dirtyWrites==0);
+  blocked.freq=869.618f; // bandwidth still overlaps the upper edge
+  blocked.loop(); assert(blockedRadio.starts==0&&blockedPool.getOutboundTotal()==1);
+  blocked.bw=62.5f; blocked.power=22; // persisted pre-guard power cannot authorize TX
+  blocked.loop(); assert(blocked.isTxProfileBlocked()&&blockedRadio.starts==0);
+  blocked.power=10;
+#endif
   blocked.profileAllowed=true; blockedRadio.configReady=false; blocked.loop();
   assert(blocked.isTxProfileBlocked()&&blockedRadio.starts==0&&blockedStore.dirtyWrites==0);
   blockedRadio.configReady=true; blocked.loop(); assert(blockedRadio.starts==1&&!blocked.isTxProfileBlocked());
   blockedRadio.complete=true; blockedClock.now+=100; blocked.loop(); assert(blockedPool.getFreeCount()==2);
   assert(blocked.getRemainingTxBudget()==850);
+#ifdef DAR_REGIONAL_TX_GUARD
+  blocked.freq=869.525f; blocked.bw=250.0f;
+  assert(!blocked.isTxProfileBlocked()&&blocked.getRemainingTxBudget()==850);
+#endif
   blockedPacket=blocked.obtainNewPacket(); assert(blockedPacket);
   blockedPacket->header=ROUTE_TYPE_FLOOD; blockedPacket->payload_len=10; blocked.sendPacket(blockedPacket,0);
   blocked.profileAllowed=false; blockedClock.now+=10000; blocked.loop(); assert(blockedRadio.starts==1);

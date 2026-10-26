@@ -17,6 +17,26 @@ int main() {
   RadioPreset p;
   assert(!radioProfileAt(DAR_RADIO_PROFILES,p)&&!radioProfileId(DAR_RADIO_PROFILES));
 #ifdef DAR_ORIGINAL_MESHCORE_TX
+  static_assert(DAR_REGIONAL_TX_GUARD == 1, "both companion targets require the DE guard");
+  assert(deRadioParamsAllowed(869.618f,62.5f,8,8));
+  assert(deRadioParamsAllowed(869.525f,250.0f,9,5));
+  assert(deRadioParamsAllowed(869.5f,125.0f,12,8));
+  assert(!deRadioParamsAllowed(868.1f,125.0f,12,8));
+  assert(!deRadioParamsAllowed(869.618f,125.0f,8,8)); // upper edge overlaps
+  assert(!deRadioParamsAllowed(869.4f,7.8f,8,8)); // lower edge overlaps
+  assert(!deRadioParamsAllowed(869.524f,250.0f,8,8));
+  assert(!deRadioParamsAllowed(869.526f,250.0f,8,8));
+  assert(!deRadioParamsAllowed(869.5251f,250.0f,8,8)); // no float truncation
+  assert(!deRadioParamsAllowed(std::numeric_limits<float>::quiet_NaN(),62.5f,8,8));
+  assert(!deRadioParamsAllowed(869.618f,std::numeric_limits<float>::infinity(),8,8));
+  // All canonical candidate channels are checked against independent Hz edges.
+  for (uint32_t f=869300; f<=869750; ++f) {
+    for (uint32_t b : {7800u,62500u,125000u,250000u,500000u}) {
+      bool contained = int64_t(f)*2000-int64_t(b)>=1738800000LL &&
+                       int64_t(f)*2000+int64_t(b)<=1739300000LL;
+      assert(deRadioParamsAllowed(float(f)/1000.0f,float(b)/1000.0f,8,8)==contained);
+    }
+  }
   AppliedRadioConfig applied;
   assert(radioParamsValid(868.1f,125.0f,12,8)); // custom app settings, not a named preset
   assert(!radioParamsValid(std::numeric_limits<float>::quiet_NaN(),125.0f,8,8));

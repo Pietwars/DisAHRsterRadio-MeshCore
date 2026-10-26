@@ -124,7 +124,7 @@ void Dispatcher::loop() {
 
   if (outbound) {  // waiting for outbound send to be completed
     if (_radio->isSendComplete()) {
-#ifdef DAR_ORIGINAL_MESHCORE_TX
+#if defined(DAR_ORIGINAL_MESHCORE_TX) && !defined(DAR_REGIONAL_TX_GUARD)
       completeOriginalMeshCoreTx();
 #else
       _radio->onSendFinished();
@@ -143,7 +143,7 @@ void Dispatcher::loop() {
 
       // A missing TX-done interrupt does not mean the radio was silent.
       _radio->onSendFinished();
-#ifndef DAR_ORIGINAL_MESHCORE_TX
+#if !defined(DAR_ORIGINAL_MESHCORE_TX) || defined(DAR_REGIONAL_TX_GUARD)
       // Include the driver's abort/finish interval before closing TX history.
       accountTxAirtime();
 #endif
@@ -304,7 +304,7 @@ void Dispatcher::processRecvPacket(Packet* pkt) {
 }
 
 void Dispatcher::checkSend() {
-#ifdef DAR_ORIGINAL_MESHCORE_TX
+#if defined(DAR_ORIGINAL_MESHCORE_TX) && !defined(DAR_REGIONAL_TX_GUARD)
   checkSendOriginalMeshCore(); return;
 #endif
   const uint32_t candidate_time = uint32_t(_ms->getMillis());
@@ -459,7 +459,7 @@ unsigned long Dispatcher::futureMillis(int millis_from_now) const {
   return uint32_t(uint32_t(_ms->getMillis()) + uint32_t(millis_from_now));
 }
 
-#ifdef DAR_ORIGINAL_MESHCORE_TX
+#if defined(DAR_ORIGINAL_MESHCORE_TX) && !defined(DAR_REGIONAL_TX_GUARD)
 #include "OriginalMeshCoreTx.inc"
 #endif
 

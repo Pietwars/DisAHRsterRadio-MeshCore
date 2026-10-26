@@ -149,8 +149,8 @@
     "examples/companion_radio/ui-brand/MapView.h": "240f32b7b56cf555543ba9cb7bfdb43fbfd3f828df2bcbf404e9cd4ff11e107a",
     "tools/standalone_preview.cpp": "c8b2a5c468503b8daf1cdaa3fae8c9429960ffcc5fb43bdfa4a019187242e6e5",
     "tests/ui_fakes/FakeApi.h": "c1d6940c99edcfb0a648dcfa994bdd6933e8a3323264e37d52fe1c98795c72ab",
-    "platformio.standalone.ini": "1aae7d47d01496df3928eb2ac74b5c0b1b2addf8077dcfc4eddac047f070ba1c",
-    "examples/companion_radio/DarRadioPolicy.h": "f5791bac7848ec5816a480ee24eb282b4c0927392c34dae3d1727bcaf1746f8d",
-    "src/CompanionRadioMode.h": "0d682df815c380021e8e36ffc2b7fd7fd453c034594dcdf8f286945ac11b7d62"
+    "platformio.standalone.ini": "2ccfd09615001f289d38040a1d0fcce4046915885146e2e9308a348c203419d6",
+    "examples/companion_radio/DarRadioPolicy.h": "f385368ee677d903334677e8df2207ea9b12f11ebdc2108f2581cfd4778cea43",
+    "src/CompanionRadioMode.h": "7bae76b0dc56ab59398a3a92422bd764e60f0af1757910b5c9c8b1996cf3ff2f"
   }
 }

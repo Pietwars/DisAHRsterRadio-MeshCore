@@ -103,7 +103,7 @@ check("peekNextOutbound(candidate_time)" in check_send and "getNextOutbound(cand
 check("tx_window.complete(" in dispatcher and "tx_window.tick(" in dispatcher,
       "TX outcomes charge the rolling window and monotonic time advances in the loop")
 check("the_mesh.setTxWindowStore(&tx_window_store);" in main,
-      "legacy DAR ESP32 startup retains optional persistent TX storage")
+      "DAR ESP32 startup attaches persistent TX storage")
 tx_store = (ROOT / "src/helpers/esp32/Esp32TxWindowStore.h").read_text()
 check("nvs_commit(handle) == ESP_OK" in tx_store and "nvs_erase" not in tx_store,
       "TX activity marker requires explicit successful NVS commit without erase-on-error")
@@ -111,10 +111,9 @@ check("nvs_commit(handle) == ESP_OK" in tx_store and "nvs_erase" not in tx_store
 check("!isTxProfileAllowed()" in check_send and
       check_send.index("!isTxProfileAllowed()") < check_send.index("getNextOutbound("),
       "unsupported radio profiles block all shared TX before dequeue")
-check("disaster::radioProfileIndex(freq, bw, sf, cr)" in mesh and "setDarRadioProfile(unsigned(selected))" in mesh,
-      "binary radio changes use the exact three-profile policy")
-check('disaster::dePreset(command + 10, profile)' in mesh,
-      "trusted CLI accepts only named Nah/Mittel/Fern radio profiles")
+check("!disaster::deRadioParamsAllowed(freq,bw,sf,cr)" in mesh and
+      'ERROR: use authenticated app radio settings (DE policy)' in mesh,
+      "radio writes use the DE policy adapter; unchecked CLI writes are blocked")
 check("_dar_active_radio_profile" in mesh and "_radio->isTxConfigurationValid()" in mesh,
       "TX requires matching applied preferences and valid hardware configuration")
 check("if (!isfinite(_prefs.freq))" in mesh and "if (!isfinite(_prefs.bw))" in mesh,
@@ -125,18 +124,10 @@ for setter in ("setFrequency(freq)", "setSpreadingFactor(sf)", "setBandwidth(bw)
 check("if (!updatePreamble(sf)) return;" in sx1262 and "_params_valid && RadioLibWrapper::isTxConfigurationValid()" in sx1262,
       "SX1262 TX readiness includes preamble, profile and power results")
 
-check('disaster::radioProfileIndex(freq, bw, sf, cr)' in mesh and 'if (selected < 0 || !setDarRadioProfile' in mesh,
-      "DAR binary radio changes reject unsupported profiles before applying preferences")
-check('if (!local_radio_change)' in mesh and 'handleCommand(cli_command, 0, reply_buf, true)' in mesh,
-      "named radio/TX CLI changes require explicit local rescue context")
 check('handleCommand(text, sender_timestamp, reply)' in mesh,
       "remote mesh CLI never receives local radio-edit context")
 
 wifi_ui = (ROOT / "examples/companion_radio/ui-brand/UITask.cpp").read_text()
-check("pollRadioKeyboard(now);" in wifi_ui and "_radio_editor.key(key, the_mesh.getDarRadioProfile())" in wifi_ui,
-      "T-Deck WiFi has a physical keyboard profile chooser")
-check("bluetooth_interface.isConnected()" in wifi_ui and "_radio_editor.resetConfirmation(); wake(); return;" in wifi_ui,
-      "WiFi profile chooser blocks connected BLE and invalidates confirmation on wake")
 for path, section in (("platformio.devices.ini", "[env:dar_LilyGo_TDeck_wifi]"),
                       ("platformio.standalone.ini", "[env:LilyGo_TDeck_standalone]")):
     config = (ROOT / path).read_text().split(section, 1)[1].split("\n[", 1)[0]
@@ -146,7 +137,7 @@ for path, section in (("platformio.devices.ini", "[env:dar_LilyGo_TDeck_wifi]"),
         # WiFi now inherits the original common radio defaults and the board power.
         flags += (ROOT / "platformio.ini").read_text()
         check("LORA_TX_POWER=10" not in config and "LORA_TX_POWER=22" not in config,
-              "T-Deck WiFi inherits board power instead of forcing a DAR cap")
+              "board capability remains unchanged; the application applies the DE power cap")
     check(all(flag in flags for flag in expected), section + " starts with the target radio default")
     unflags = config.split("build_unflags =",1)[1].split("build_flags =",1)[0] if "build_unflags =" in config else ""
     removed = {line.strip() for line in unflags.splitlines()}
@@ -307,15 +298,19 @@ print("STATIC CHECKS PASSED (limited scope)")
 mesh_header = (ROOT / "examples/companion_radio/MyMesh.h").read_text()
 standalone_config = (ROOT / "platformio.standalone.ini").read_text()
 original_tx = (ROOT / "src/OriginalMeshCoreTx.inc").read_text()
-check("#if defined(DAR_MESH_POLICY) && !defined(DAR_ORIGINAL_MESHCORE_TX)" in mesh and
-      "#if defined(DAR_MESH_POLICY) && defined(ESP32) && !defined(DAR_ORIGINAL_MESHCORE_TX)" in mesh_header,
-      "both companion frontends use saved airtime factor without the persistent DAR limiter")
-check("-D LORA_TX_POWER=22" in standalone_config and "LORA_TX_POWER=10" not in standalone_config,
-      "standalone restores original T-Deck power default")
-check("checkSendOriginalMeshCore(); return;" in dispatcher and
-      "est_airtime / MIN_TX_BUDGET_AIRTIME_DIV" in original_tx and
-      "updateOriginalMeshCoreTxBudget();" in original_tx,
-      "both companion frontends use the pinned original MeshCore TX budget and admission path")
+check("#if defined(DAR_MESH_POLICY)\n  return 9.0f;" in mesh and
+      "#if defined(DAR_MESH_POLICY)" in mesh_header,
+      "both companion frontends use fixed DE quota and the persistent limiter")
+check("defined(DAR_ORIGINAL_MESHCORE_TX) && !defined(DAR_REGIONAL_TX_GUARD)" in dispatcher and
+      "#define DAR_REGIONAL_TX_GUARD 1" in (ROOT / "src/CompanionRadioMode.h").read_text(),
+      "the DE guard selects conservative accounting instead of original token admission")
+check("disaster::deRadioParamsAllowed(_prefs.freq" in mesh and
+      "!disaster::deRadioParamsAllowed(freq,bw,sf,cr)" in mesh and
+      "if (af != 9000)" in mesh,
+      "DE policy gates saved settings, app radio writes and tuning writes")
+main_source = (ROOT / "examples/companion_radio/main.cpp").read_text()
+check("#if defined(DAR_MESH_POLICY)\n  the_mesh.setTxWindowStore(&tx_window_store);" in main_source,
+      "ESP32 companion setup attaches the persistent marker before begin")
 
 # Compare the restored admission path to the pinned original, ignoring formatting,
 # method extraction and the retained applied-hardware readiness guard.
@@ -326,7 +321,7 @@ restored_send = restored_send.replace("  if (!isTxProfileAllowed()) return; // r
 restored_send = restored_send.replace("updateOriginalMeshCoreTxBudget();", "updateTxBudget();")
 normalized_send = "\n".join(line.strip() for line in restored_send.strip().splitlines())
 check(hashlib.sha256(normalized_send.encode()).hexdigest() == "af41c228c0522a7de061abedc0db2cdeb25b4e8cd7709277a79d29497c713d06",
-      "standalone TX admission matches the pinned upstream implementation")
+      "retained unguarded TX implementation still matches the pinned baseline")
 
 check("PRIVATE_LIST" in ui_page and "kind==dev::Kind::Chat" in ui_page and
       "cache[8 + 64]" not in standalone and "startContactsIterator()" in standalone,
@@ -338,7 +333,7 @@ check("setContactSource" in standalone and "priv-v1-seq" in standalone and
 radio_mode = (ROOT / "src/CompanionRadioMode.h").read_text()
 check("defined(DISASTER_STANDALONE) || defined(DISASTER_PORTAL)" in radio_mode and
       "#define DAR_ORIGINAL_MESHCORE_TX 1" in radio_mode,
-      "both frontend flags select the original MeshCore policy")
+      "both frontend flags retain original companion compatibility with a DE guard")
 check("!defined(DAR_ORIGINAL_MESHCORE_TX)" in (ROOT / "examples/companion_radio/ui-brand/UITask.h").read_text(),
       "original-policy WiFi builds disable the old physical profile editor")
 

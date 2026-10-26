@@ -1,13 +1,9 @@
 # 0.9.6 TEST – gleitendes Sendefenster und Neustartschutz
 
-Aktueller Standalone-Stand: ursprüngliche MeshCore-Funk-/Duty-Cycle-Steuerung,
-kein zusätzlicher DAR-Neustartschutz und kein persistentes DAR-Stundenfenster.
-Die nachfolgenden DAR-Fenster-/10-%-Aussagen gelten für das WLAN-Target.
-Siehe [Funkprofile](096-RADIO-PROFILES.md). Hardwareabnahme bleibt offen.
-
-Status: Softwareimplementierung für die DAR-Companion-Targets auf ESP32.
-Keine Funkmessung, keine Hardwarefreigabe, keine vollständige Funkzulässigkeitsprüfung.
-Der feste Faktor 9 ersetzt weiterhin keine Region-/Subband-/Profilvalidierung.
+Beide DAR-ESP32-Companionvarianten aktivieren jetzt dasselbe persistente Fenster.
+Die bisherige Ausnahme für Original-TX ist aufgehoben. Grundlage, Migration und
+bewusste Grenzen stehen in [DE-TX-GUARD.md](DE-TX-GUARD.md).
+Keine Funkmessung oder Hardwarefreigabe aus Softwaretests ableiten.
 
 ## Sichtbares Verhalten
 
@@ -54,8 +50,9 @@ Differenzen. Es wird in jedem Dispatcher-Durchlauf fortgeschrieben, auch ohne
 wartende Pakete; normale 32-Bit-Überläufe werden berücksichtigt. Ein Thread, der
 für einen ganzen Millisekunden-Zählerumlauf nicht läuft, ist kein freigegebener
 Betriebsfall. Profile dürfen das Fenster nicht durch Neuinitialisierung umgehen.
-Band-/Regionwechsel sind weiterhin gesondert zu lösen; diese Änderung schafft
-keinen neuen Funkprofil-Editor und keine pauschale Länderfreigabe.
+Alle freigegebenen Einstellungen liegen im selben DE-Subband und teilen dieselbe
+Historie; ein Profilwechsel initialisiert das Fenster nicht neu. Andere Regionen
+sind nicht freigeschaltet.
 
 ## Dauerhafter Aktivitätsmarker
 
@@ -65,7 +62,8 @@ belegt eine zuvor beobachtete stille Stunde. Fehlender Schlüssel, falscher Typ,
 unbekannter Wert oder Lesefehler gelten als unbekannte Vorgeschichte.
 
 Vor dem Entfernen eines Pakets aus der Queue und vor `startSendRaw()` muss ein
-Dirty-Marker erfolgreich mit `nvs_set_u32()` **und `nvs_commit()`** gesichert sein.
+Dirty-V2-Marker erfolgreich mit `nvs_set_u32()`, **`nvs_commit()` und identischem
+Readback** gesichert sein. Historische V1-Clean-Marker gelten als unbekannt.
 Bei Fehler bleibt das Paket mit Priorität und Fälligkeit in der Queue. Wiederholte
 Schreibfehler werden höchstens einmal pro Sekunde erneut versucht. Beim erfolgreichen
 laufenden Senden wird der Marker wiederverwendet, statt für jedes Paket Flash zu
