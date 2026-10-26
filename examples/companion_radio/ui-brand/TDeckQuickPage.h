@@ -15,6 +15,11 @@ class TDeckQuickPage {
   char target[14] = "c0", targetName[64] = "# Oeffentlich";
   char status[96] = "Vorlage, Ort und Ziel antippen / Tastatur: Text";
   unsigned targetIndex = 0;
+  bool sosPanel=false,sosArmed=false,sosConfirmFocus=false,sosActionSeen=false;
+  uint32_t sosArmMs=0,sosRevision=0,currentMs=0,sosActionMs=0;
+  char sosTarget[14]="";
+  void sosAction(bool confirm);
+  void renderSos(DisplayDriver *d);
   bool submitted = false, lastFix = false, placeChosen = false;
   long lastSatellites = -1;
   uint32_t nextGps = 0, nextStatus = 0;
@@ -38,7 +43,7 @@ public:
   void begin(dev::Api* a) { api = a; enter(); }
   // On opening the page: default place "Mein Standort" only while sharing is on, else "Ohne Standort"
   // (until the user picks a place himself).
-  void enter() { if (!placeChosen) model.place = api && api->gps().share ? 0 : -1; }
+  void enter() { sosArmed=false; if (!placeChosen) model.place = api && api->gps().share ? 0 : -1; }
   quick::Fix gpsFix() const;
   bool activate(uint32_t stamp); // true=request return to the main menu
   bool key(uint8_t key, uint32_t stamp);
@@ -51,6 +56,7 @@ public:
   int touchTarget(int x, int y) const;
   bool swipe(int dy);
   bool closePicker() {
+    if(sosPanel){sosPanel=false;sosArmed=false;return true;}
     if (picker < 0) return false;
     picker = -1;
     return true;

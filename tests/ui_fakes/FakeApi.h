@@ -62,6 +62,15 @@ struct FakeApi : dev::Api {
       std::vector<uint8_t> a = {0x82}; put32(a, tag); record(a);
     }
   }
+  int sosStarts=0,sosCancels=0;dev::Sos sosInfo;
+  dev::Sos sos()const override{return sosInfo;}
+  bool sosStart(const char *id,char *status,size_t size)override{
+    ++sosStarts;lastId=id;sosInfo.id=1;sosInfo.state=disaster::SOS_QUEUED;
+    snprintf(status,size,"SOS gespeichert");return true;
+  }
+  bool sosCancel(uint32_t,char *status,size_t size)override{
+    ++sosCancels;sosInfo.state=disaster::SOS_CANCELLED;snprintf(status,size,"SOS gestoppt");return true;
+  }
   int pinChanges = 0; uint32_t changedPin = 0;
   bool changeBlePin(uint32_t pin, char *status, size_t size) override {
     ++pinChanges; changedPin = pin;

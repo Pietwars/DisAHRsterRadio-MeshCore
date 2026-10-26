@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <string.h>
 #include "../HistoryRecord.h"
+#include "../OutboxRecord.h"
 #include "../DeviceConfig.h"
 #include "../DarRadioPolicy.h"
 
@@ -22,6 +23,10 @@ struct Target {
 struct Gps {
   bool detected = false, receiverOn = false, fresh = false, share = false;
   long sats = 0; double lat = 0, lon = 0;
+};
+struct Sos {
+ uint32_t id=0,expires=0;uint8_t state=0,attempts=0;bool storageOK=true;
+ char token[17]="",text[101]="",target[14]="";
 };
 struct Room { char id[14]; uint8_t rights; bool pending; };
 struct Info {
@@ -48,6 +53,9 @@ public:
   virtual void historyScan(bool start) const { (void)start; }       // around a full historyRecord() pass
   virtual uint32_t now() const = 0;                                // unix time of the device clock
   virtual bool send(const char *id, const char *text, char *status, size_t size) = 0;
+  virtual Sos sos() const {return {};}
+  virtual bool sosStart(const char *,char *,size_t){return false;}
+  virtual bool sosCancel(uint32_t,char *,size_t){return false;}
   virtual const char *sendStatus() const = 0;
   virtual bool roomLogin(const char *id, char *status, size_t size) = 0;
   virtual Room room() const = 0;
