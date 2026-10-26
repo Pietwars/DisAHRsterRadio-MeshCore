@@ -20,6 +20,8 @@ jobs:
         with:
           node-version: 22
       - run: node tests/web_regression.cjs
+      - name: Web-Flasher – Browser-Prüfsummen und negative Updatefälle
+        run: node tests/flasher_integrity.test.mjs
       - name: Web-Flasher-Konfiguration (T-Deck Plus + T-Watch S3, Update + Neuinstallation)
         run: python3 tools/flasher_fetch.py --check
       - name: Versionsprüfung (VERSION ist die einzige Quelle)

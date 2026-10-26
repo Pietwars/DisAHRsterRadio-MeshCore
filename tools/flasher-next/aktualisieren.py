@@ -53,13 +53,15 @@ def html(cfg, ver):
               if d['id'] == 'twatch' else 'T-Deck Plus per USB-C-<b>Daten</b>kabel an den Computer, einschalten')
         karten.append(f'''<div class="card">
 <h2>{d['label']}</h2>
-<p>Antenne anschrauben. {an}. Dann in <b>Chrome oder Edge am Computer</b> einen der beiden Knöpfe wählen, Port wählen (meist „USB JTAG/serial debug unit“ bzw. <code>usbmodem</code>/<code>ttyACM</code>), warten bis „Installation complete“, Gerät neu starten.</p>
+<p>Antenne anschrauben. {an}. Dann in <b>Chrome oder Edge am Computer</b> die passende Datei laden und prüfen. Nach erfolgreicher Prüfung den Installationsknopf drücken, Port wählen (meist „USB JTAG/serial debug unit“ bzw. <code>usbmodem</code>/<code>ttyACM</code>), warten bis „Installation complete“, Gerät neu starten.</p>
 <div class="mode upd">
 <h3>Update – Einstellungen bleiben <span class="tag">empfohlen</span></h3>
 <p>Für Geräte, auf denen schon DisAHRsterRadio-MeshCore 0.9.x läuft. Schreibt nur die Firmware (<code>…-firmware.bin</code> an <b>0x10000</b>). <b>Knotenidentität, Kontakte, Kanäle, Chatverlauf, Name, Funkprofil und eigene Bluetooth-PIN bleiben erhalten.</b></p>
 <p class="hint">Im Fenster „Erase device“ das Kästchen <b>NICHT</b> anhaken, dann „Next“ → „Install“.</p>
-<esp-web-install-button manifest="manifest-{d['id']}-update.json">
- <button slot="activate" class="b-upd">Update auf {ver} – {d['label']} (Einstellungen bleiben)</button>
+<button class="b-upd" data-prepare="manifest-{d['id']}-update.json" aria-describedby="check-{d['id']}-update">Update-Datei laden und prüfen</button>
+<p id="check-{d['id']}-update" role="status" aria-live="polite"></p>
+<esp-web-install-button hidden data-manifest="manifest-{d['id']}-update.json" manifest="manifest-{d['id']}-update.json">
+ <button disabled slot="activate" class="b-upd">Update auf {ver} – {d['label']} (Einstellungen bleiben)</button>
  <span slot="unsupported">Dieser Browser kann keine USB-Geräte ansprechen (Web Serial fehlt). Bitte Chrome oder Edge am Computer verwenden – oder manuell flashen (siehe unten).</span>
  <span slot="not-allowed">Der Flasher braucht eine sichere Verbindung (https).</span>
 </esp-web-install-button>
@@ -68,15 +70,20 @@ def html(cfg, ver):
 <div class="mode neu">
 <h3>Neuinstallation – alles löschen</h3>
 <p>Für neue Geräte, Geräte mit anderer Firmware oder wenn das Update nicht startet. <b>Achtung: löscht den ganzen Speicher</b> – Knotenidentität (neuer Schlüssel, neue Kennung), Kontakte, Kanäle, Chatverlauf und alle Einstellungen sind danach weg. Schreibt <code>…-factory.bin</code> an <b>0x0</b>.</p>
-<esp-web-install-button manifest="manifest-{d['id']}-neu.json">
- <button slot="activate" class="b-neu">Neuinstallation – {d['label']} (alles löschen)</button>
+<button class="b-neu" data-prepare="manifest-{d['id']}-neu.json" aria-describedby="check-{d['id']}-neu">Neuinstallationsdatei laden und prüfen</button>
+<p id="check-{d['id']}-neu" role="status" aria-live="polite"></p>
+<esp-web-install-button hidden data-manifest="manifest-{d['id']}-neu.json" manifest="manifest-{d['id']}-neu.json">
+ <button disabled slot="activate" class="b-neu">Neuinstallation – {d['label']} (alles löschen)</button>
  <span slot="unsupported">Dieser Browser kann keine USB-Geräte ansprechen (Web Serial fehlt). Bitte Chrome oder Edge am Computer verwenden.</span>
  <span slot="not-allowed">Der Flasher braucht eine sichere Verbindung (https).</span>
 </esp-web-install-button>
 <p class="sha">Datei <code>{n['member'].split('/')[-1]}</code>, SHA-256 <code>{n['sha256']}</code></p>
 </div>
-<p class="sha">Beide Dateien aus <code>{d['asset']}</code> im <a href="{rel}">Release {cfg['tag']}</a>; der Flasher prüft die SHA-256-Werte beim Bereitstellen.</p>
+<p class="sha">Beide Dateien aus <code>{d['asset']}</code> im <a href="{rel}">Release {cfg['tag']}</a>; SHA-256 wird beim Bereitstellen und vor der Installation im Browser geprüft. Eine Prüfsumme bestätigt keine Herausgeberidentität.</p>
 </div>''')
+    specs = {f"manifest-{d['id']}-{mode}.json": {'file': f"manifest-{d['id']}-{mode}.json", 'sha256': d['files'][mode]['sha256'], 'manifest': manifest}
+             for d in cfg['devices'] for mode, manifest in d['modes'].items()}
+    integrity_json = json.dumps(specs, ensure_ascii=False).replace('<', '\\u003c')
     return f'''<!doctype html>
 <html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>DisAHRsterRadio-MeshCore · Web-Flasher {ver} (T-Deck Plus, T-Watch S3)</title>
@@ -91,7 +98,8 @@ h1{{font-size:28px;margin:0 0 4px}}h1 span{{color:#b9f48d}}h2{{font-size:20px;co
 .hint{{background:#0005;border-radius:6px;padding:6px 10px}}
 .warn{{border-left:5px solid #e07a3d;background:#2a1a12;border-radius:8px;padding:12px 14px;margin:16px 0}}.warn b{{color:#ffb38a}}
 a{{color:#b9f48d}}code{{background:#0006;padding:1px 5px;border-radius:4px;font-size:14px}}.sha{{font-size:13px;word-break:break-all;margin:6px 0 0}}
-esp-web-install-button button[slot=activate]{{border:0;border-radius:10px;padding:14px 20px;font:700 17px system-ui,sans-serif;cursor:pointer}}
+[hidden]{{display:none!important}}
+button[data-prepare],esp-web-install-button button[slot=activate]{{border:0;border-radius:10px;padding:14px 20px;font:700 17px system-ui,sans-serif;cursor:pointer}}
 .b-upd{{background:#4ef08a;color:#07130f}}.b-neu{{background:#3a2216;color:#ffb38a;border:2px solid #e07a3d!important;font-size:15px!important}}
 li{{margin:4px 0}}
 </style></head><body><main>
@@ -112,6 +120,9 @@ li{{margin:4px 0}}
 {'' if ver == '0.9.2' else '<p class="hint">'+hardware_hint+'</p>'+chr(10)}<p>Manuell flashen (esptool) und Einzelheiten: <a href="https://github.com/{cfg['repo']}/blob/main/docs/FLASHEN.md">Anleitung „Flashen“</a> · <a href="{rel}">Release {cfg['tag']}</a>.</p>
 <div class="warn"><b>Prototyp, kein zertifiziertes Notrufsystem.</b> Im Notfall immer 112.</div>
 <p style="font-size:13px"><a href="../">Live-Demo</a> · <a href="https://github.com/{cfg['repo']}">Quellcode</a> · Flasher: <a href="https://github.com/esphome/esp-web-tools">ESP Web Tools</a> 10.4.0 (Apache-2.0)</p>
+<script id="flasher-integrity" type="application/json">{integrity_json}</script>
+<script type="module">import {{mountFlasher}} from './integrity.mjs'; mountFlasher();</script>
+<noscript>JavaScript ist für Prüfsummenprüfung und USB-Installation erforderlich. Bitte die manuelle Flash-Anleitung verwenden.</noscript>
 </main></body></html>
 '''
 
