@@ -89,6 +89,7 @@ section h2,section p,.row label{text-shadow:0 1px 3px #000,0 0 8px #000}
 <div class="row"><select id="cslot"></select><input id="cname" maxlength="24" placeholder="Kanalname"><input id="ckey" maxlength="32" placeholder="Schlüssel (32 Hex)"></div><div class="row"><button class="b b2" id="setch" type="button">Kanal speichern</button></div>
 <h2>Verlauf</h2><div class="row"><button class="b b2" id="wipe" type="button">Nachrichtenverlauf auf dem Gerät löschen</button></div>
 <p class="muted" id="ifb"></p>
+<p class="muted" id="offline-state" role="status" hidden></p>
 <p class="muted" id="uiver">Weboberfläche DisAHRsterRadio-MeshCore 0.9.6 · MeshCore v1.18.0</p>
 <p class="muted">MeshCore (MIT) · Oberfläche aus <a href="https://github.com/Pietwars/DisAHRsterRadio" style="color:var(--sage)">DisAHRsterRadio</a>.</p></section>
 </main>
@@ -240,5 +241,34 @@ function demoApi(path){const t=now()-3600;const J=o=>({json:async()=>o,text:asyn
   '5:'+roomMsg('c3d4e5f6a7b8','a1b2c3d4',t-7200,'WICHTIG: Trinkwasser-Ausgabe am Bürgerhaus Heimersheim 14–17 Uhr 50.5426,7.1761'),'6:'+roomMsg('c3d4e5f6a7b8','b2c3d4e5',t-3000,'Apotheke Bad Neuenahr Notdienst bis 20 Uhr'),'7:'+roomMsg('c3d4e5f6a7b8','a1b2c3d4',t+100,'Brücke Bachstraße gesperrt, Umweg über Lohrsdorf.')].join('\n'));
  return J('Demo: nicht gesendet')}
 targets();poll();setInterval(poll,4000);if(DEMO&&!me)me=[50.5440,7.1700];
+// Offline cache is for the HTTPS demo, never for live HTTP device requests.
+async function setupOfflineDemo(){
+ if(!DEMO||!isSecureContext||!('serviceWorker' in navigator))return;
+ const note=$('#offline-state');note.hidden=false;
+ note.textContent='Offline-Vorschau wird vorbereitet …';
+ try{
+  const scope=new URL('./',location.href).href;
+  let registration=await navigator.serviceWorker.getRegistration(scope);
+  if(registration&&registration.scope!==scope)registration=null;
+  if(!registration||!registration.active||navigator.onLine){
+   try{registration=await navigator.serviceWorker.register('sw.js',{scope:'./'});}
+   catch(error){if(!registration||!registration.active)throw error;}
+  }
+  if(!registration.active&&registration.installing){
+   const worker=registration.installing;
+   await new Promise((resolve,reject)=>{
+    const check=()=>{if(worker.state==='activated'){worker.removeEventListener('statechange',check);resolve();}
+     else if(worker.state==='redundant'){worker.removeEventListener('statechange',check);reject(Error('Offline-Installation fehlgeschlagen'));}};
+    worker.addEventListener('statechange',check);check();
+   });
+  }
+  await navigator.serviceWorker.ready;
+  const status=()=>note.textContent=navigator.onLine
+   ? 'Offline-Vorschau bereit: Oberfläche und fünf Karten gespeichert. Nur simulierte Daten.'
+   : 'Offline-Vorschau: gespeicherte Karten und simulierte Daten. Kein Versand an ein Funkgerät.';
+  status();addEventListener('online',status);addEventListener('offline',status);
+ }catch(error){note.textContent='Offline-Vorschau nicht verfügbar. Beim nächsten Online-Aufruf erneut versuchen.';}
+}
+setupOfflineDemo();
 const h0=location.hash.slice(1);if(h0){const b=document.querySelector('nav button[data-tab="'+h0+'"]');if(b)b.click()}
 </script></body></html>

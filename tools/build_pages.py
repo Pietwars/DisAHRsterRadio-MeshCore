@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Baut die Live-Demo (GitHub Pages): Weboberflaeche im Demo-Modus, Karten entpackt, Hinweisbanner."""
-import gzip,shutil,sys
+import gzip,hashlib,shutil,sys
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 SRC=ROOT/'web'; OUT=Path(sys.argv[1] if len(sys.argv)>1 else ROOT/'_site')
@@ -20,6 +20,18 @@ html=html.replace('<head>','<head>'+force,1)
 i=html.index('<body'); j=html.index('>',i)+1
 html=html[:j]+banner+html[j:]
 (OUT/'index.html').write_text(html,encoding='utf-8')
+# A new shell or map set gets its own atomic service-worker cache. Scope is also
+# part of the runtime cache name, so other deployments on the host are untouched.
+assets = ['index.html', 'app.webmanifest', 'app-icon.png', 'bg.webp']
+assets += [str(p.relative_to(OUT)) for p in sorted((OUT/'map').glob('*.json*'))]
+fingerprint = hashlib.sha256()
+for name in assets + ['sw.js']:
+    fingerprint.update(name.encode())
+    fingerprint.update((OUT/name).read_bytes())
+sw = (OUT/'sw.js').read_text(encoding='utf-8')
+assert "const VERSION = 'development';" in sw
+(OUT/'sw.js').write_text(sw.replace("const VERSION = 'development';", "const VERSION = '" + fingerprint.hexdigest()[:20] + "';"), encoding='utf-8')
+
 if (ROOT/'docs/flyer').is_dir(): shutil.copytree(ROOT/'docs/flyer',OUT/'flyer')
 if (ROOT/'docs/flasher').is_dir(): shutil.copytree(ROOT/'docs/flasher',OUT/'flasher')  # Firmware holt tools/flasher_fetch.py im Pages-Workflow
 if (ROOT/'docs/standalone').is_dir():

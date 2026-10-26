@@ -16,6 +16,7 @@ def run(args):
 run([sys.executable, 'tools/check_096_static.py'])
 run([sys.executable, 'tests/portal_routes.test.py'])
 run(['node', 'tests/web_regression.cjs'])
+run(['node', 'tests/offline_shell.test.cjs'])
 run(['node', 'tests/flasher_integrity.test.mjs'])
 # Reuse every existing host compile/run block, rather than maintaining a second list.
 # Only literal run blocks from this checked-in workflow are executed.
