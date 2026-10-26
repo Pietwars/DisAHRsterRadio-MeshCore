@@ -3,6 +3,15 @@
 Stand: 26.10.2026. Bezug: #52, #47, #48. Untersucht: main
 `cda6f6675f259c0b219a765e5c3288e62f4e73b5`.
 
+## Nachfolgende begründete Ausnahme (#47)
+
+Der folgende Audit beschreibt den historischen main-Stand oben. Die separate
+[DE-Sendepolicy](DE-TX-GUARD.md) hebt anschließend die Original-TX-Ausnahme für
+beide DAR-Companions gezielt auf: Ohne diese Änderung waren Timeout-Airtime,
+Neustarts und gleitende regionale Grenzen ungesichert. Dispatcher.cpp/.h wählen
+nun den bereits vorhandenen konservativen Pfad, mit einem eigenen Policy-Flag.
+Kein neues Paketformat, keine Änderung an Mesh.cpp, Packet oder Kryptografie.
+
 ## Nachgewiesene Herkunft
 
 Quelle: https://github.com/meshcore-dev/MeshCore

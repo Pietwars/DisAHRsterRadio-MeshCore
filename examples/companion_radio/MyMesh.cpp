@@ -331,8 +331,9 @@ int MyMesh::getDarRadioProfile() const {
 
 bool MyMesh::isTxProfileAllowed() const {
 #ifdef DAR_ORIGINAL_MESHCORE_TX
-  return _dar_applied_radio.matches(_prefs.freq, _prefs.bw, _prefs.sf, _prefs.cr) &&
-         _prefs.tx_power_dbm>=-9 && _prefs.tx_power_dbm<=MAX_LORA_TX_POWER && _radio->isTxConfigurationValid();
+  return disaster::deRadioParamsAllowed(_prefs.freq, _prefs.bw, _prefs.sf, _prefs.cr) &&
+         _dar_applied_radio.matches(_prefs.freq, _prefs.bw, _prefs.sf, _prefs.cr) &&
+         disaster::darTxPowerAllowed(_prefs.tx_power_dbm) && _radio->isTxConfigurationValid();
 #elif defined(DAR_MESH_POLICY)
   return getDarRadioProfile() >= 0 && disaster::darTxPowerAllowed(_prefs.tx_power_dbm) &&
          _radio->isTxConfigurationValid();
@@ -343,7 +344,7 @@ bool MyMesh::isTxProfileAllowed() const {
 
 #ifdef DAR_ORIGINAL_MESHCORE_TX
 bool MyMesh::setDarRadioParameters(float freq, float bw, uint8_t sf, uint8_t cr) {
-  if (!disaster::radioParamsValid(freq,bw,sf,cr) || isTxInProgress() || radio_driver.isReceiving()) return false;
+  if (!disaster::deRadioParamsAllowed(freq,bw,sf,cr) || isTxInProgress() || radio_driver.isReceiving()) return false;
   _dar_applied_radio.invalidate();
   _dar_active_radio_profile = -1;
   _radio->prepareReconfiguration();
@@ -382,7 +383,7 @@ bool MyMesh::setDarRadioProfile(unsigned index) {
 }
 
 float MyMesh::getAirtimeBudgetFactor() const {
-#if defined(DAR_MESH_POLICY) && !defined(DAR_ORIGINAL_MESHCORE_TX)
+#if defined(DAR_MESH_POLICY)
   return 9.0f; // fixed internal 10% budget, including existing saved preferences
 #else
   return _prefs.airtime_factor;
@@ -1034,9 +1035,8 @@ MyMesh::MyMesh(mesh::Radio &radio, mesh::RNG &rng, mesh::RTCClock &rtc, SimpleMe
   disaster::radioProfileAt(disaster::DAR_DEFAULT_RADIO_PROFILE, default_profile);
   _prefs.freq = float(default_profile.freq)/1000.0f; _prefs.bw = float(default_profile.bw)/1000.0f;
   _prefs.sf = default_profile.sf; _prefs.cr = default_profile.cr;
-  #ifndef DAR_ORIGINAL_MESHCORE_TX
   _prefs.airtime_factor = 9.0f;
-  #endif
+  _prefs.tx_power_dbm = disaster::DAR_MAX_TX_DBM;
   // DisAHRsterRadio: only repeaters and room servers are added automatically, chat users stay
   // manual. Applies to fresh prefs only; a saved /prefs.json (man_add, auto_add) overrides it.
   _prefs.manual_add_contacts = autoadd::DISASTER_DEFAULT_MANUAL;
@@ -1248,7 +1248,11 @@ void MyMesh::handleCmdFrame(size_t len) {
     out_frame[i++] = RESP_CODE_SELF_INFO;
     out_frame[i++] = ADV_TYPE_CHAT; // what this node Advert identifies as (maybe node's pronouns too?? :-)
     out_frame[i++] = _prefs.tx_power_dbm;
+#ifdef DAR_REGIONAL_TX_GUARD
+    out_frame[i++] = disaster::DAR_MAX_TX_DBM;
+#else
     out_frame[i++] = MAX_LORA_TX_POWER;
+#endif
     memcpy(&out_frame[i], self_id.pub_key, PUB_KEY_SIZE);
     i += PUB_KEY_SIZE;
 
@@ -1656,7 +1660,7 @@ void MyMesh::handleCmdFrame(size_t len) {
 #if defined(DAR_MESH_POLICY) && !defined(DAR_ORIGINAL_MESHCORE_TX)
         || !disaster::darTxPowerAllowed(power) || isTxInProgress()
 #elif defined(DAR_ORIGINAL_MESHCORE_TX)
-        || isTxInProgress()
+        || !disaster::darTxPowerAllowed(power) || isTxInProgress()
 #endif
     ) {
       writeErrFrame(ERR_CODE_ILLEGAL_ARG);
@@ -1679,12 +1683,15 @@ void MyMesh::handleCmdFrame(size_t len) {
     i += 4;
     memcpy(&af, &cmd_frame[i], 4);
     i += 4;
+#ifdef DAR_REGIONAL_TX_GUARD
+    if (af != 9000) { writeErrFrame(ERR_CODE_ILLEGAL_ARG); return; }
+#endif
     _prefs.rx_delay_base = ((float)rx) / 1000.0f;
     _prefs.airtime_factor = ((float)af) / 1000.0f;
     savePrefs();
     writeOKFrame();
   } else if (cmd_frame[0] == CMD_GET_TUNING_PARAMS) {
-    uint32_t rx = _prefs.rx_delay_base * 1000, af = _prefs.airtime_factor * 1000;
+    uint32_t rx = _prefs.rx_delay_base * 1000, af = getAirtimeBudgetFactor() * 1000;
     int i = 0;
     out_frame[i++] = RESP_CODE_TUNING_PARAMS;
     memcpy(&out_frame[i], &rx, 4); i += 4;
@@ -2309,6 +2316,19 @@ bool MyMesh::handleCommand(const char* command, uint32_t sender_timestamp, char*
   if (!strcmp(command, "get af")) { strcpy(reply, "> 9"); return true; }
   if (!strcmp(command, "get dutycycle")) { strcpy(reply, "> 10.0%"); return true; }
   if (!strcmp(command, "get tx")) { sprintf(reply, "> %d", int(_prefs.tx_power_dbm)); return true; }
+#endif
+
+#ifdef DAR_REGIONAL_TX_GUARD
+  // CommonRadioPrefs remains available for reads and unrelated preferences.
+  // Radio changes must pass the same policy/driver adapter as app commands.
+  if (!strncmp(command, "set af ", 7) || !strncmp(command, "set dutycycle ", 14)) {
+    strcpy(reply, "ERROR: DE airtime policy is fixed at 10 percent"); return true;
+  }
+  if (!strcmp(command, "get af")) { strcpy(reply, "> 9"); return true; }
+  if (!strcmp(command, "get dutycycle")) { strcpy(reply, "> 10.0%"); return true; }
+  if (!strncmp(command, "set radio ", 10) || !strncmp(command, "set tx ", 7)) {
+    strcpy(reply, "ERROR: use authenticated app radio settings (DE policy)"); return true;
+  }
 #endif
 
   if (_prefs.getRadioPrefs()->handleCommand(command, sender_timestamp, reply)) {  // is radio CLI command?

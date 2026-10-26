@@ -138,7 +138,7 @@ protected:
   float getAirtimeBudgetFactor() const override;
   bool isTxProfileAllowed() const override;
   bool useTxWindowLimiter() const override {
-#if defined(DAR_MESH_POLICY) && defined(ESP32) && !defined(DAR_ORIGINAL_MESHCORE_TX)
+#if defined(DAR_MESH_POLICY)
     return true;
 #else
     return false;
