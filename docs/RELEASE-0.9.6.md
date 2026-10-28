@@ -24,11 +24,42 @@ verweisen weiterhin auf die bisherigen Releasebytes.
   den gemeinsamen Transportmanager keine privilegierten Befehle. T-Deck/T-Watch
   verwenden ESP32; alte Bonds, Wiederverbindung und Rechteentzug bleiben Gerätetests.
 
-Gemeinsame CI-Ergebnisse sind dem konkreten Integrationscommit zuzuordnen.
-Die bisherigen Einzel-PR-Ergebnisse ersetzen diese Prüfung nicht. Neue SOS-
-und HF-Abnahme sowie Zuordnung der Dauerlauf-/Recovery-Nachweise bleiben offen;
-#47 wird durch diese Integration nicht geschlossen. Frühere Nutzerabnahmen
-bleiben anerkannt, werden aber nicht auf neue SOS-/Funkfunktionen übertragen.
+## Standalone-Geräteabnahme vom 28.10.2026
+
+Der Betreiber bestätigt zum bereitgestellten T-Deck-Plus-Standalone-Testpaket:
+„Test Ergebnis positiv alles bestätigt ✅“. Dies wird als positive Nutzerabnahme
+der zuletzt angeleiteten Funktionsprüfungen erfasst: Senden nach der stillen
+Stunde, SOS an einen privaten Kontakt mit Antwort `SOS OK <Kennung>`, Abbruch
+und Neustart. Es werden keine zusätzlichen Messwerte oder Einzelprotokolle
+unterstellt.
+
+Zuordnung des bereitgestellten Pakets:
+
+- Firmwarekennung: `v1.18.0-dar0.9.6-standalone-test6`.
+- Quellcommit: `6ae5daba38d40fd8e00d9e1d1a2c713208c829e5`.
+- CI-Lauf: https://github.com/Pietwars/DisAHRsterRadio-MeshCore/actions/runs/40340693448
+- Artefakt: `dev-LilyGo_TDeck_standalone`, ID `12658459092`.
+- SHA-256 des äußeren CI-Artefakt-ZIPs laut GitHub:
+  `ad4994435a197d8d07b9f4750a527e34498ad00696301d0c2041413bcd2d54c4`.
+  Dies ist keine Prüfsumme einer einzelnen Firmware-BIN.
+
+Die zuvor hochgeladenen Bilder zeigen gestartete Standalone-Firmware,
+Nachrichtenempfang, eine BLE-App-Verbindung, angezeigte 10 dBm im Narrow-Profil,
+die Neustartsperre und die SOS-Oberfläche. Die anschließende ausdrückliche
+Testbestätigung ergänzt diese Bilder um die oben genannte Funktionsabnahme.
+
+Alle fünf CI-Workflows für den anschließenden Branchstand
+`b3313ff58439d81ced6878ed0454245c3ba46dff` sind erfolgreich: reguläre Builds,
+Open-access-Regression, Gerätekonfigurationen, zusätzliche Companion-/Browser-
+Prüfungen und Release-Paketprüfung. Gegenüber dem getesteten Quellcommit wurde
+nur die Browserauswahl der Release-CI auf vorinstalliertes Chrome umgestellt;
+der Firmwarequellcode blieb gleich.
+
+Die positive Nutzerabnahme gilt für dieses Standalone-Paket. Separate
+WLAN-/T-Watch-Geräteabnahme sowie messtechnische HF-Nachweise werden daraus
+nicht abgeleitet. Messwerte für ERP, Spektrum und reale Airtime sowie die genaue
+Zuordnung weiterer Dauerlauf-/Recovery-Nachweise bleiben gesondert zu erfassen.
+#47 wird durch die Dokumentation dieser Rückmeldung nicht automatisch geschlossen.
 
 ## Veröffentlichter Stand vom 24.10.2026
 
