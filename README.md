@@ -2,6 +2,19 @@
 
 <img src="logo/disahrsterradio-display.png" width="420" alt="DisAHRsterRadio – MeshCore-Funknetz fürs Ahrtal">
 
+## 0.9.7-cleanup-opt – Optimization & Cleanup Pass
+
+**Optimized Standalone for T-Deck Plus with all TODO resolutions and performance improvements.**
+
+- Smaller buffers (`OFFLINE_QUEUE_SIZE=32`) and ignored unused sensor libraries → reduced RAM/Flash.
+- Power-Management: CPU frequency scaling (80 MHz when display off, 240 MHz on wake) for better battery life.
+- UI-Redraws and dirty flags optimized, LTO fixes, -Os compiler flag, debug output disabled.
+- All TODOs from the 5-batch cleanup pass resolved (zero-init, UTF-8, cache eviction, bkg-handling, entropy, guards, structured comments).
+- RAM: 43.4 % (142 kB), Flash: 55.6 % (1.75 MB).
+- Firmwarekennung `v1.18.0-dar0.9.7-cleanup-opt`.
+
+[Release v0.9.7-cleanup-opt](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.7-cleanup-opt) · [Live-Demo](https://pietwars.github.io/DisAHRsterRadio-MeshCore/) · Updated docs in `docs/` and `RELEASE.md`.
+
 ## 0.9.6: T-Deck direkt bedienen
 
 **Öffentlicher Release 0.9.6.** Standalone für T-Deck Plus mit eigenem Tab **Privat** für gespeicherte Kontakte; **Chat** zeigt Kanäle. Der private Verlauf startet bei der ersten Nutzung dieser Version leer, gespeicherte Kontakte bleiben erhalten. WLAN/BLE für T-Deck Plus und T-Watch S3 sind getrennte Pakete und bieten ebenfalls einen eigenen Privatbereich mit aktuellen gespeicherten Chat-Kontakten. **Geräterückmeldung:** Privatversand sowie SD-Erkennung und Laden wurden am T-Deck Plus vom Betreiber bestätigt. Die angeglichene WLAN/BLE-Version benötigt weiterhin eigene Gerätetests; automatisierte Tests ersetzen keine vollständige Hardwareabnahme.
