@@ -5,8 +5,8 @@
 //   DISASTER_STANDALONE  LILYGO T-Deck Plus standalone (platformio.standalone.ini): MeshCore over PIN Bluetooth,
 //                        display/keyboard on the device, no WLAN, no web server. WebFrontend.cpp is removed from
 //                        that build by build_src_filter, so no web code is compiled in.
-// Both companion frontends default to EU/UK Narrow and use the original MeshCore TX policy.
-// Authenticated Bluetooth supports driver-valid radio parameters, board power and saved airtime factor;
+// Both companion frontends default to Narrow with the separately reviewed DE TX guard.
+// Authenticated Bluetooth settings must pass DE band/power policy and driver validation;
 // only repeaters/room servers are added automatically, an explicitly set location is shared in adverts.
 #if defined(DISASTER_PORTAL) && defined(DISASTER_STANDALONE)
 #error "DISASTER_STANDALONE must not contain the web layer (DISASTER_PORTAL)"

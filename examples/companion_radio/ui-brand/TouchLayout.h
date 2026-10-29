@@ -25,7 +25,7 @@ inline Rect mapControl(int n) {
 inline Rect quickControl(int n) {
   switch (n) {
   case 0:
-    return { 4, 68, 312, 30 }; // template picker
+    return { 4, 68, 232, 30 }; // template picker
   case 1:
     return { 4, 102, 256, 38 }; // physical keyboard text field
   case 2:
@@ -36,8 +36,10 @@ inline Rect quickControl(int n) {
     return { 162, 144, 154, 32 }; // recipient picker
   case 5:
     return { 4, 180, 154, 38 }; // message
-  default:
+  case 6:
     return { 162, 180, 154, 38 }; // position only
+  default:
+    return { 240, 68, 76, 30 }; // explicit SOS panel
   }
 }
 } // namespace touchui

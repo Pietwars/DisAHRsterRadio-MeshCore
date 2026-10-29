@@ -83,7 +83,45 @@ void TDeckQuickPage::submit(bool position, uint32_t stamp) {
   submitted = api && api->send(target, text, status, sizeof(status));
 }
 
+void TDeckQuickPage::sosAction(bool confirm) {
+  if(!api)return;
+  const auto current=api->sos();
+  if(disaster::awaitingHuman(current.state)){
+    if(confirm&&(!sosActionSeen||uint32_t(currentMs-sosActionMs)>=1000)){api->sosCancel(current.id,status,sizeof(status));sosArmed=false;}
+    return;
+  }
+  if(!confirm){
+    dev::Target recipient;
+    if(!dev::findTarget(*api,target,recipient)||recipient.kind!=dev::Kind::Chat){snprintf(status,sizeof(status),"Zurueck: privaten Chat-Kontakt als Ziel waehlen");return;}
+    snprintf(sosTarget,sizeof(sosTarget),"%s",target);sosRevision=api->targetRevision();sosArmMs=currentMs;sosArmed=true;
+    snprintf(status,sizeof(status),"Ziel pruefen, dann rechts Jetzt SOS (10 Sekunden)");return;
+  }
+  if(!sosArmed||uint32_t(currentMs-sosArmMs)<750||uint32_t(currentMs-sosArmMs)>10000||
+     strcmp(sosTarget,target)||sosRevision!=api->targetRevision()){
+    sosArmed=false;snprintf(status,sizeof(status),"SOS nicht gestartet; neu vorbereiten");return;
+  }
+  sosArmed=false;if(api->sosStart(sosTarget,status,sizeof(status))){sosActionSeen=true;sosActionMs=currentMs;}
+}
+
+void TDeckQuickPage::renderSos(DisplayDriver *d){
+  d->startFrame(BG);ui::statusLine(d,"Meldung",true,unreadChat+unreadBoard);
+  const auto s=api?api->sos():dev::Sos();char line[128];
+  ui::text(d,8,70,FOCUS,"SOS / privater Chat-Kontakt",48);
+  snprintf(line,sizeof(line),"Ziel: %s",targetName);ui::text(d,8,88,WHITE,line,48);
+  ui::text(d,8,106,WHITE,s.id?disaster::deliveryLabel(s.state):"Noch kein SOS gestartet",48);
+  snprintf(line,sizeof(line),"Versuche %u/4 | Annahme != Geraetequittung",unsigned(s.attempts));ui::text(d,8,122,GREY,line,48);
+  if(s.id){snprintf(line,sizeof(line),"Antwort: SOS OK %s",s.token);ui::text(d,8,138,WHITE,line,48);}
+  else ui::text(d,8,138,GREY,"GPS nur frisch und bei Standortfreigabe",48);
+  ui::text(d,8,154,GREY,s.storageOK?"Max. 4 Versuche / 30 Minuten / Abbruch moeglich":"SPEICHERFEHLER / keine weiteren Versuche",49);
+  ui::button(d,4,180,154,38,"Vorbereiten",!sosConfirmFocus,false);
+  ui::button(d,162,180,154,38,disaster::awaitingHuman(s.state)?"SOS stoppen":sosArmed?"Jetzt SOS":"Bestaetigen",sosConfirmFocus,true);
+  displayText(d,4,222,FOCUS,status);
+  if(strlen(status)>52)displayText(d,4,231,FOCUS,status+52);
+  d->endFrame();
+}
+
 bool TDeckQuickPage::activate(uint32_t stamp) {
+  if(sosPanel){sosAction(sosConfirmFocus);return false;}
   if (picker >= 0) {
     choose(pickerSel);
     return false;
@@ -95,6 +133,7 @@ bool TDeckQuickPage::activate(uint32_t stamp) {
     case quick::Target: selectTarget(1); break;
     case quick::Send: submit(false, stamp); break;
     case quick::Position: submit(true, stamp); break;
+    case quick::Sos: sosPanel=true;sosArmed=false;sosConfirmFocus=false;break;
     case quick::Home: return true;
     case quick::Clear: model.text[0] = 0; model.focus = quick::Text; draftChanged(); break;
     default: break;
@@ -103,6 +142,12 @@ bool TDeckQuickPage::activate(uint32_t stamp) {
 }
 
 bool TDeckQuickPage::key(uint8_t key, uint32_t stamp) {
+  if(sosPanel){
+    if(key==27||key==8){sosPanel=false;sosArmed=false;return false;}
+    if(key==12||key=='\t'){sosConfirmFocus=!sosConfirmFocus;return false;}
+    if(key=='\r'||key=='\n')sosAction(sosConfirmFocus);
+    return false;
+  }
   // The original keyboard has no TAB/ESC keys. Its documented ALT+C sends 0x0C.
   if (picker >= 0) {
     if (key == 27 || key == 8) {
@@ -144,6 +189,7 @@ bool TDeckQuickPage::key(uint8_t key, uint32_t stamp) {
 }
 
 bool TDeckQuickPage::move(int dx, int dy) {
+  if(sosPanel){if(dx||dy)sosConfirmFocus=!sosConfirmFocus;return bool(dx||dy);}
   if (picker >= 0) {
     int n = int(choiceCount()), dir = dy ? dy : dx;
     if (!dir || !n) return false;
@@ -199,12 +245,13 @@ void TDeckQuickPage::choose(int index) {
   picker = -1;
 }
 int TDeckQuickPage::touchTarget(int x, int y) const {
+  if(sosPanel){if(touchui::quickControl(5).contains(x,y))return 230;if(touchui::quickControl(6).contains(x,y))return 231;return -1;}
   if (picker >= 0) {
     for (int r = 0; r < pickerRows; ++r)
       if (touchui::row(r).contains(x, y)) return 200 + r;
     return -1;
   }
-  for (int i = 0; i < 7; ++i)
+  for (int i = 0; i < 8; ++i)
     if (touchui::quickControl(i).contains(x, y)) return 210 + i;
   return -1;
 }
@@ -221,6 +268,7 @@ bool TDeckQuickPage::swipe(int dy) {
 bool TDeckQuickPage::tap(int x, int y, uint32_t stamp) {
   int hit = touchTarget(x, y);
   if (hit < 0) return false;
+  if(sosPanel){sosAction(hit==231);return false;}
   if (picker >= 0) {
     int row = hit - 200, index = pickerTop + row;
     if (picker == 2) {
@@ -266,6 +314,8 @@ bool TDeckQuickPage::tap(int x, int y, uint32_t stamp) {
     model.focus = quick::Send;
     activate(stamp);
     break;
+  case 7:
+    sosPanel=true;sosArmed=false;sosConfirmFocus=false;break;
   case 6:
     model.focus = quick::Position;
     activate(stamp);
@@ -306,6 +356,8 @@ void TDeckQuickPage::renderPicker(DisplayDriver *d) {
 }
 
 bool TDeckQuickPage::tick(uint32_t now) {
+  currentMs=now;
+  if(sosPanel){if(sosArmed&&uint32_t(currentMs-sosArmMs)>10000)sosArmed=false;if(int32_t(now-nextStatus)>=0){nextStatus=now+250;return true;}return false;}
   bool changed = false;
   if (int32_t(now - nextGps) >= 0) {
     nextGps = now + 1000;
@@ -346,6 +398,7 @@ void TDeckQuickPage::displayText(DisplayDriver* d, int x, int y, uint16_t color,
 }
 
 void TDeckQuickPage::render(DisplayDriver* d) {
+  if(sosPanel){renderSos(d);return;}
   d->startFrame(BG);
   if (picker >= 0) {
     renderPicker(d);
@@ -359,6 +412,7 @@ void TDeckQuickPage::render(DisplayDriver* d) {
   };
   snprintf(line, sizeof(line), "Vorlage: %s  >", quick::PRESETS[model.preset].label);
   button(0, line, model.focus == quick::Presets, false);
+  button(7,"SOS",model.focus==quick::Sos,true);
   auto text = touchui::quickControl(1);
   ui::button(d, text.x, text.y, text.w, text.h, "", model.focus == quick::Text);
   // Two physical-keyboard lines, cut only at complete UTF-8 character boundaries.

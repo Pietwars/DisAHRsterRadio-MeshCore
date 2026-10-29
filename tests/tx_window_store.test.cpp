@@ -6,12 +6,18 @@ int main() {
   fakeNvs::reset();
   mesh::Esp32TxWindowStore store;
   assert(!store.loadClean()); // missing marker is unknown history, never clean
+  fakeNvs::present=true; fakeNvs::persisted=0x54574331u;
+  assert(!store.loadClean()); // historical V1 clean marker cannot bypass migration pause
   assert(store.saveClean()&&store.loadClean()&&fakeNvs::commits==1);
   fakeNvs::commitOK=false;
   assert(!store.saveDirty()&&fakeNvs::commits==2);
   assert(store.loadClean()); // staging without a successful commit is insufficient
   fakeNvs::commitOK=true;
   assert(store.saveDirty()&&!store.loadClean());
+  fakeNvs::readOK=false;
+  assert(!store.saveDirty()); // successful commit without readback cannot admit RF
+  fakeNvs::readOK=true;
+  assert(!store.loadClean());
   fakeNvs::setOK=false;
   unsigned commits=fakeNvs::commits;
   assert(!store.saveClean()&&fakeNvs::commits==commits);

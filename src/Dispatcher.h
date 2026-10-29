@@ -144,7 +144,7 @@ class Dispatcher {
   void updateTxBudget();
   uint32_t budgetWaitMillis(uint64_t missing) const;
   void accountTxAirtime();
-#ifdef DAR_ORIGINAL_MESHCORE_TX
+#if defined(DAR_ORIGINAL_MESHCORE_TX) && !defined(DAR_REGIONAL_TX_GUARD)
   void checkSendOriginalMeshCore();
   void updateOriginalMeshCoreTxBudget();
   void completeOriginalMeshCoreTx();

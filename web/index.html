@@ -58,7 +58,13 @@ section h2,section p,.row label{text-shadow:0 1px 3px #000,0 0 8px #000}
 <div class="tgt"><select id="private-target" aria-label="Privater Kontakt"></select><button class="b b2" id="private-reload" type="button" title="Kontakte neu lesen">↻</button></div>
 <div id="private-log"></div>
 <form id="private-form"><input id="private-msg" maxlength="100" autocomplete="off" placeholder="Privatnachricht (max. 100 Byte) …"><button class="b" id="private-send">Senden</button></form>
-<p class="muted" id="private-feedback"></p></section>
+<p class="muted" id="private-feedback"></p>
+<h2>SOS an den gewählten privaten Kontakt</h2>
+<p class="muted">Maximal vier Versuche in 30 Minuten. Gerätequittung und Annahme sind getrennt. Abbruch stoppt nur weitere Versuche.</p>
+<label><input type="checkbox" id="sos-share"> Frisches Geräte-GPS für dieses SOS freigeben</label>
+<div class="row"><button type="button" class="b b2" id="sos-prepare">SOS vorbereiten</button><button type="button" class="b" id="sos-start" disabled>Jetzt SOS senden</button><button type="button" class="b b2" id="sos-cancel" disabled>SOS stoppen</button></div>
+<p class="muted" id="sos-status" role="status">Kein SOS gestartet.</p>
+<p class="muted" id="sos-feedback" role="status"></p></section>
 <section id="quick"><h2>Schnellmeldung</h2><p class="muted">Vorlage antippen, Ort wählen, prüfen, dann an das gewählte Ziel senden (Standard: öffentlicher Kanal).</p>
 <div class="quick-grid" id="qg"></div>
 <textarea id="qtext" rows="3" maxlength="100"></textarea>
@@ -121,7 +127,7 @@ function decodeRecord(hex){const p=bytes(hex);if(!p.length)return null;const c=p
  else if((c===0xf2&&p.length>=13)||(c===0xf4&&p.length>=17)){at=c===0xf4?17:13;stamp=u32(p,3);t='d'+hex.slice(14,26);own=true}
  else return null;
  return {t,stamp,own,room:c===16&&p[11]===2,author:c===16&&p[11]===2?hex.slice(32,40):null,body:txt(p,at)}}
-function contacts(kind){return (state?.contacts||[]).map(h=>{const p=bytes(h);if(p.length<132)return null;return{id:'d'+h.slice(2,14),type:p[33],name:txt(p,100,132),lat:p.length>=144?i32(p,136)/1e6:0,lon:p.length>=144?i32(p,140)/1e6:0}}).filter(c=>c&&(!kind||c.type===kind))}
+function contacts(kind){return (state?.contacts||[]).map(h=>{const p=bytes(h);if(p.length<132)return null;return{id:'d'+h.slice(2,14),key:h.slice(2,66),type:p[33],name:txt(p,100,132),lat:p.length>=144?i32(p,136)/1e6:0,lon:p.length>=144?i32(p,140)/1e6:0}}).filter(c=>c&&(!kind||c.type===kind))}
 function channels(){return (state?.channels||[]).map((h,i)=>{if(!h)return null;const p=bytes(h);return{id:'c'+i,name:txt(p,2,34)||('Kanal '+i)}}).filter(Boolean)}
 function nameOf(t){if(t[0]=='c'){const c=channels().find(x=>x.id==t);return c?'# '+c.name:'Kanal '+t.slice(1)}const c=contacts().find(x=>x.id==t);return c?c.name:t.slice(1,7)}
 /* ---------- Chat ---------- */
@@ -151,6 +157,35 @@ function renderPrivate(){
  l.scrollTop=1e9;
 }
 $('#private-form').onsubmit=async e=>{e.preventDefault();const v=$('#private-msg').value.trim();if(!v||!contacts(1).some(c=>c.id===privateTarget))return;try{$('#private-feedback').textContent=await send(privateTarget,v);$('#private-msg').value='';setTimeout(poll,1500)}catch(x){$('#private-feedback').textContent='Nicht gesendet: '+x.message}};
+let sosDraft=null,sosCurrent=null;
+function disarmSos(){sosDraft=null;$('#sos-start').disabled=true;}
+$('#sos-prepare').onclick=()=>{
+ disarmSos();const peers=contacts(1).filter(c=>c.id===privateTarget);
+ if(DEMO){$('#sos-feedback').textContent='Demo: kein echtes SOS und kein Funkversand.';return;}
+ if(peers.length!==1){$('#sos-feedback').textContent='Einen eindeutigen privaten Chat-Kontakt wählen.';return;}
+ sosDraft={id:peers[0].id,key:peers[0].key,share:$('#sos-share').checked,at:performance.now()};
+ $('#sos-start').disabled=false;$('#sos-feedback').textContent='SOS an '+peers[0].name+' prüfen und innerhalb von 10 Sekunden mit Jetzt SOS senden bestätigen.';
+ setTimeout(()=>{if(sosDraft&&performance.now()-sosDraft.at>=10000)disarmSos()},10000);
+};
+$('#sos-start').onclick=async()=>{
+ const draft=sosDraft;disarmSos();
+ if(!draft||performance.now()-draft.at<750||performance.now()-draft.at>10000||draft.id!==privateTarget||draft.share!==$('#sos-share').checked){$('#sos-feedback').textContent='SOS nicht gestartet; bitte neu vorbereiten.';return;}
+ try{const r=await api('sos',{action:'start',confirm:'start',target:draft.id,key:draft.key,share:draft.share?'1':'0'});$('#sos-feedback').textContent=await r.text();await pollSos();}
+ catch(error){$('#sos-feedback').textContent='SOS nicht bestätigt: '+error.message;}
+};
+$('#sos-cancel').onclick=async()=>{
+ if(!sosCurrent?.id)return;
+ try{const r=await api('sos',{action:'cancel',id:sosCurrent.id});$('#sos-feedback').textContent=await r.text();await pollSos();}
+ catch(error){$('#sos-feedback').textContent=error.message;}
+};
+async function pollSos(){
+ if(DEMO)return;
+ try{const r=await api('sos');sosCurrent=await r.json();const s=sosCurrent;
+  $('#sos-status').textContent=s.storage===false?'Speicherfehler: keine weiteren SOS-Versuche.':s.id?(s.label+' · '+s.attempts+'/4 Versuche · Antwort: SOS OK '+s.token):'Kein SOS gestartet.';
+  $('#sos-cancel').disabled=!(s.state>=6&&s.state<=9);
+ }catch(error){$('#sos-status').textContent='SOS-Status nicht abrufbar; vor erneutem Start Verbindung prüfen.';}
+}
+setInterval(pollSos,4000);pollSos();
 async function send(t,text){if(enc.encode(text).length>100)throw Error('max. 100 Byte');const r=await api('send',{target:t,text,time:now()});return r.text()}
 $('#f').onsubmit=async e=>{e.preventDefault();const v=$('#msg').value.trim();if(!v)return;try{$('#fb').textContent=await send(target,v);$('#msg').value='';setTimeout(poll,1500)}catch(x){$('#fb').textContent='Nicht gesendet: '+x.message}};
 /* ---------- Schnellmeldung ---------- */

@@ -1,6 +1,13 @@
 # Änderungen
 
-## 0.9.6 – öffentlicher Release
+## 0.9.6 – aktueller Entwicklungsstand, noch nicht veröffentlicht
+
+- Gemeinsamer Stand aus SOS (#57) und DE-Sendeschutz (#58), zusätzlich zu den integrierten Outbox-, Webflasher- und Offline-Fixes (#54–56).
+- SOS als verschlüsselte Direktnachricht: zweistufiger Start, höchstens vier Übergaben innerhalb 30 Minuten, Abbruch, getrennte Gerätequittung und ausdrückliche Annahme. Standort nur nach Freigabe mit frischem Fix.
+- Beide ESP32-Companions verwenden DE-Bandprüfung, höchstens 10 dBm Chip-Einstellung, festes gleitendes 10-%-Budget, vollständige Fehlerabrechnung und persistenten Neustartschutz. Unzulässige Altwerte bleiben gespeichert und sperren TX; unbekannte Historie verlangt eine volle stille Stunde.
+- Gemeinsame Software-/Firmwareprüfung und neue SOS-/HF-Geräteabnahme separat erforderlich. Bereits veröffentlichte 0.9.6-Pakete und Prüfsummen bleiben unverändert. Details: [Release und Entwicklungsstand](docs/RELEASE-0.9.6.md).
+
+## 0.9.6 – öffentlicher Release (24.10.2026)
 
 - WLAN/BLE und Standalone verwenden denselben ursprünglichen MeshCore-Sendeweg, freie treibergültige Funkparameter und den gespeicherten Airtime-Faktor. Frische Einstellungen starten mit EU/UK Narrow; die zusätzliche DAR-Leistungsgrenze und Neustartsperre entfallen in beiden Companion-Varianten. Gespeicherte Einstellungen bleiben erhalten.
 - Eigener Privatbereich auch in der Weboberfläche: nur gespeicherte Chat-Kontakte; Kanäle, Repeater und Roomserver sind getrennt. Der private Verlauf startet einmal leer, ohne den gemeinsamen Verlauf zu löschen. Kontaktänderungen werden direkt aus dem Funkkern gelesen, auch jenseits von 64 Kontakten.

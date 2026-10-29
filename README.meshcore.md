@@ -1,4 +1,4 @@
-> Original upstream MeshCore documentation. For DisAHRsterRadio-MeshCore 0.9.4, supported boards, battery display and downloads, see [README.md](README.md).
+> Original upstream MeshCore documentation. For DisAHRsterRadio-MeshCore 0.9.6, supported boards, battery display and downloads, see [README.md](README.md).
 
 ## About MeshCore
 

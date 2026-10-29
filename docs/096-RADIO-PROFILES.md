@@ -1,36 +1,35 @@
-# 0.9.6 TEST – Funkprofile und Standalone-App-Bedienung
+# Companion-Funkprofile mit DE-Sendeschutz
 
-Standalone: kein Funkparameter-Editor auf dem Display. Änderungen erfolgen über
-die originale MeshCore-App per Bluetooth. Frische Einstellungen und der Hardware-
-Builddefault verwenden EU/UK Narrow / Switzerland: **869,618 MHz, 62,5 kHz, SF8,
-CR 4/8**. Quelle: [MeshCore Switzerland](https://www.meshcore.ch/settings/).
+Für beide ESP32-Companions (Standalone und WLAN) gilt die separate
+[DE-Sendepolicy](DE-TX-GUARD.md): nominal vollständig innerhalb
+869,4–869,65 MHz, höchstens 10 dBm eingestellte Chip-Sendeleistung, festes
+10-%-Softwarebudget und persistentes gleitendes Stundenfenster.
 
-Gespeicherte gültige Einstellungen werden beim Update beibehalten. Die drei bisherigen
-Tupel Nah/Mittel/Fern (869,525 MHz, 250 kHz, CR 4/5, SF7/9/11) bleiben zusätzlich
-akzeptiert, damit bestehende Geräte nicht durch das Update TX-gesperrt werden.
-Auch freie App-Parameter und andere vom Funkchip unterstützte Presets sind erlaubt.
-Die WLAN-Variante behält ihre drei Profile, den Standard Mittel und den physischen
-Tastatur-Editor.
+Neue Einstellungen verwenden Narrow: 869,618 MHz, 62,5 kHz, SF8, CR 4/8,
+10 dBm. Nah/Mittel/Fern bleiben als kompatible Tupel erhalten
+(869,525 MHz, 250 kHz, CR 4/5, SF7/9/11). Die breite Variante liegt nominal
+exakt an beiden Bandgrenzen und benötigt besonders eine reale Spektrumsprüfung.
+Freie App-Parameter sind nur innerhalb der DE-Policy und nach erfolgreicher
+Treiberprüfung möglich; Frequenz auf ganze kHz, Bandbreite auf ganze Hz.
+Das ist keine Freigabe für andere Länder oder Subbänder.
 
-Standalone-App-Befehle prüfen Wertebereiche und anschließend den Funkchip-Erfolg.
-TX erfordert eine exakt zu den Preferences passende erfolgreich angewandte Konfiguration.
-Nicht endliche Werte, ungültige SF/CR-Kombinationen und unvollständig
-angewandte Hardwarekonfigurationen autorisieren keinen TX.
+Gespeicherte Funkparameter und Leistung werden nicht automatisch auf ein
+anderes Profil umgeschrieben. Ein Altgerät mit 22 dBm oder außerhalb des Bands
+kann empfangen, darf aber nicht senden. Die vorhandene Funk-Sperranzeige bleibt
+aktiv. In der PIN-authentifizierten MeshCore-App ein passendes Profil und
+höchstens 10 dBm einstellen. Die App erhält 10 dBm als zulässige Maximalleistung.
+CLI-Schreibbefehle für Funk, Leistung und Duty Cycle werden abgewiesen;
+Statusabfragen bleiben möglich. Neue Tuning-Schreibbefehle akzeptieren nur
+Faktor 9; Leseantworten zeigen die wirksame Policy statt alter Preferences.
 
-Standalone folgt für Leistung, einstellbaren Duty Cycle und TX-Tokenbudget wieder
-der originalen MeshCore-Basis (Upstream 81dbae592ffad40b4212bc0b37e82b38da08f4bc).
-Kein zusätzlicher DAR-Leistungsdeckel, kein festes 10-%-Limit und kein persistentes
-DAR-Stundenfenster oder 60-Minuten-Neustartschutz am Standalone. Der T-Deck-
-Leistungsstandard ist wieder 22 dBm. Vorhandene Preferences bleiben erhalten.
-WLAN behält seine bisherige DAR-Politik. Parser- und Hardwarefehlerprüfungen bleiben.
-Die bestehende CLI verwendet am Standalone wieder die originale CommonRadioPrefs-
-Behandlung. Zugriffe aus der App erfordern weiterhin die authentifizierte Verbindung;
-Remote-Mesh-CLI setzt die vorhandene Kontaktberechtigung voraus.
+Das MeshCore-Paketformat, Routing, Verschlüsselung und native App-Kommandos
+bleiben unverändert. Die notwendige Ausnahme am Dispatcher aktiviert vorhandene
+konservative Abrechnung, Reservierung und Persistenz für beide Frontends.
+Der ursprüngliche TX-Code bleibt als nachvollziehbare Baseline erhalten.
 
-Die Profilnamen ersetzen keine regionale Freigabe oder HF-Messung. Antennenleistung,
-Spektrum, Funkabschluss/Abbruch, Stromausfall während Speicherung, App-Readback und
-Wiederaufnahme müssen am realen T-Deck Plus geprüft werden. Keine Hardwarefreigabe
-und kein Release aus Hosttests oder Builds.
+Chip-Leistung ist keine gemessene ERP. Antennengewinn, Spektrum, reale Airtime,
+Abbruch und Interoperabilität müssen am Gerät geprüft werden. Die Software wird
+nicht als hardwareabgenommen oder allgemein regional zugelassen ausgegeben.
 
 ## Bluetooth-Autorisierung (Standalone)
 Alle vorhandenen App-Einstellungsbefehle werden für den authentifizierten Besitzer
