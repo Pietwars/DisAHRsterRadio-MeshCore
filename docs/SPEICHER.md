@@ -1,5 +1,12 @@
 # Flash- und RAM-Prüfung
 
+**Ab 0.9.8:** Zusätzlich wird LILYGO T3-S3 v1.3 mit SX1262 als Release-Board
+geprüft: ESP32-S3, **4 MiB Flash**, 327.680 Byte Linker-RAM-Budget, App ab
+0x10000 und SPIFFS ab 0x310000. Der Vertrag steht unabhängig von den
+PlatformIO-Vorgaben in `tools/release_boards.json`. Die folgenden Messwerte
+beziehen sich weiterhin auf den ausdrücklich genannten älteren Release;
+aktuelle Werte stehen im jeweiligen ZIP. [Hardwarestatus 0.9.8](RELEASE-0.9.8.md).
+
 **Release 0.9.4** enthält die Akku-Anzeige aus PR #31 und die Flash-/Speicherprüfungen
 aus PR #32, gemeinsam nach `main` übernommen. Die Akku-Testversion 0.9.4-test wurde
 vom Nutzer erfolgreich erprobt. Die noch offenen Hardwaretests der finalen

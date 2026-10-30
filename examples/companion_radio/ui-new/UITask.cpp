@@ -3,7 +3,11 @@
 #include "../MyMesh.h"
 #include "target.h"
 #include <time.h>
-#ifdef ENABLE_WIFI_INTERFACE
+#ifdef DAR_OLED_PAIRING
+  #include <helpers/esp32/SerialBLEInterface.h>
+  #include "PairingScreen.h"
+#endif
+#if defined(ENABLE_WIFI_INTERFACE) || defined(DISASTER_PORTAL)
   #include <WiFi.h>
 #endif
 
@@ -280,6 +284,18 @@ public:
     }
 
     if (_page == HomePage::FIRST) {
+#ifdef DISASTER_PORTAL
+      display.setColor(UIColor::primary_txt);
+      display.setTextSize(1);
+      display.drawTextEllipsized(0, 22, display.width(), WiFi.softAPSSID().c_str());
+      snprintf(tmp, sizeof(tmp), "Web: %s", WiFi.softAPIP().toString().c_str());
+      display.drawTextCentered(display.width() / 2, 34, tmp);
+      snprintf(tmp, sizeof(tmp), "MSG: %d", _task->getMsgCount());
+      display.drawTextCentered(display.width() / 2, 45, tmp);
+      display.drawTextCentered(display.width() / 2, 56,
+        !_task->isBluetoothEnabled() ? "Bluetooth aus" :
+        "App: BT koppeln");
+#else
       display.setColor(UIColor::primary_txt);
       #ifdef ENABLE_WIFI_INTERFACE
       // smaller unread message ui for wifi variants
@@ -328,6 +344,7 @@ public:
         display.drawTextCentered(display.width() / 2, 43, tmp);
         #endif
       }
+#endif
     } else if (_page == HomePage::RECENT) {
       the_mesh.getRecentlyHeard(recent, UI_RECENT_LIST_SIZE);
       display.setColor(UIColor::primary_txt);
@@ -921,6 +938,16 @@ bool UITask::isButtonPressed() const {
 }
 
 void UITask::loop() {
+#ifdef DAR_OLED_PAIRING
+  const bool pairing = ble_pairing_active() && the_mesh.getBLEPin() != 0;
+  if (pairing != _pairing) {
+    _pairing = pairing;
+    _alert_expiry = 0;
+    _next_refresh = 0;
+    if (_display != NULL && pairing) _display->turnOn();
+    _auto_off = millis() + AUTO_OFF_MILLIS;
+  }
+#endif
   char c = 0;
 #if UI_HAS_JOYSTICK
   int ev = user_btn.check();
@@ -951,7 +978,7 @@ void UITask::loop() {
   if (ev == BUTTON_EVENT_CLICK) {
     c = checkDisplayOn(KEY_ENTER);
   } else if (ev == BUTTON_EVENT_LONG_PRESS) {
-    display.turnOff();
+    if (!_pairing) display.turnOff();
   } else if (ev == BUTTON_EVENT_DOUBLE_CLICK) {
     c = handleDoubleClick(KEY_SELECT);
   } else if (ev == BUTTON_EVENT_TRIPLE_CLICK) {
@@ -1006,7 +1033,7 @@ void UITask::loop() {
   }
 #endif
 
-  if (c != 0 && curr) {
+  if (c != 0 && curr && !_pairing) {
     curr->handleInput(c);
     _auto_off = millis() + AUTO_OFF_MILLIS;   // extend auto-off timer
     _next_refresh = 100;  // trigger refresh
@@ -1018,13 +1045,18 @@ void UITask::loop() {
   if (buzzer.isPlaying())  buzzer.loop();
 #endif
 
-  if (curr) curr->poll();
+  if (curr && !_pairing) curr->poll();
 
   if (_display != NULL && _display->isOn()) {
     if (millis() >= _next_refresh && curr) {
       _display->startFrame();
-      int delay_millis = curr->render(*_display);
-      if (millis() < _alert_expiry) {  // render alert popup
+      int delay_millis = 250;
+#ifdef DAR_OLED_PAIRING
+      if (_pairing) renderPairingScreen(*_display, the_mesh.getBLEPin());
+      else
+#endif
+      delay_millis = curr->render(*_display);
+      if (!_pairing && millis() < _alert_expiry) {  // render alert popup
         _display->setTextSize(1);
         int y = _display->height() / 3;
         int p = _display->height() / 32;
@@ -1049,6 +1081,7 @@ void UITask::loop() {
       _auto_off = millis() + AUTO_OFF_MILLIS;
     }
 #endif
+    if (_pairing) _auto_off = millis() + AUTO_OFF_MILLIS;
     if (millis() > _auto_off) {
       _display->turnOff();
     }
@@ -1094,6 +1127,7 @@ char UITask::checkDisplayOn(char c) {
 }
 
 char UITask::handleLongPress(char c) {
+  if (_pairing) return 0;
   if (millis() - ui_started_at < 8000) {   // long press in first 8 seconds since startup -> CLI/rescue
     the_mesh.enterCLIRescue();
     c = 0;   // consume event

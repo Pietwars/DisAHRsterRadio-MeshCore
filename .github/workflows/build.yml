@@ -44,8 +44,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # 0.9.2: nur LILYGO T-Deck Plus und LILYGO T-Watch S3; übrige Profile bleiben im Code
-        env: [dar_LilyGo_TDeck_wifi, dar_LilyGo_TWatchS3_wifi]
+        # Reguläre WLAN/BLE-Release-Geräte, jeweils mit unabhängig geprüftem Flashvertrag.
+        env: [dar_LilyGo_TDeck_wifi, dar_LilyGo_TWatchS3_wifi, disaster_t3s3_sx1262_wifi]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

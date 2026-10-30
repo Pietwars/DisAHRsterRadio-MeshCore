@@ -48,7 +48,7 @@ void SerialBLEInterface::begin(const char* prefix, char* name, uint32_t pin_code
 
   BLESecurity  sec;
   if (pin_code) {
-    // TEST pin123456: static passkey, MITM-protected pairing (PIN must be entered on the phone)
+    // Display the configured device PIN; the phone must enter it (MITM protection).
     sec.setStaticPIN(pin_code);
     sec.setAuthenticationMode(ESP_LE_AUTH_REQ_SC_MITM_BOND);
   } else {
@@ -86,12 +86,12 @@ uint32_t SerialBLEInterface::onPassKeyRequest() {
 }
 
 void SerialBLEInterface::onPassKeyNotify(uint32_t pass_key) {
-  BLE_DEBUG_PRINTLN("onPassKeyNotify(%u)", pass_key);
+  BLE_DEBUG_PRINTLN("onPassKeyNotify()");
   s_pair_notify_at = millis() | 1;
 }
 
 bool SerialBLEInterface::onConfirmPIN(uint32_t pass_key) {
-  BLE_DEBUG_PRINTLN("onConfirmPIN(%u)", pass_key);
+  BLE_DEBUG_PRINTLN("onConfirmPIN()");
   return true;
 }
 
@@ -203,6 +203,8 @@ void SerialBLEInterface::enable() {
 
 void SerialBLEInterface::disable() {
   _isEnabled = false;
+  s_pair_notify_at = 0;
+  s_conn_unauth = false;
   portENTER_CRITICAL(&_auth_mux);
   _frame_auth.disconnect();
   _received_auth_token = 0;

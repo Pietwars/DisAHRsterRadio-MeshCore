@@ -21,6 +21,11 @@
 
 #include "../AbstractUITask.h"
 #include "../NodePrefs.h"
+#include "../DarBuild.h"
+
+#if defined(DISASTER_PORTAL) && defined(ESP32) && defined(BLE_PIN_CODE)
+#define DAR_OLED_PAIRING 1
+#endif
 
 #ifdef UI_NO_DISCOVER_SCREEN
   #error "UI_NO_DISCOVER_SCREEN is obsolete - use -D UI_DISCOVER_SCREEN=0 instead"
@@ -56,6 +61,7 @@ class UITask : public AbstractUITask {
   GenericVibration vibration;
 #endif
   unsigned long _next_refresh, _auto_off;
+  bool _pairing = false;
   NodePrefs* _node_prefs;
   char _alert[80];
   unsigned long _alert_expiry;

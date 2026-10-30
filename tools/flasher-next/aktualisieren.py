@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Schreibt flasher.json und index.html des vorbereiteten Web-Flashers neu (SHA-256 aus den getesteten Paketen).
 
-Aufruf: python3 tools/flasher-next/aktualisieren.py <Paket-T-Deck.zip> <Paket-T-Watch.zip> <Paket-Standalone.zip>
+Aufruf: python3 tools/flasher-next/aktualisieren.py <Paket-T-Deck.zip> <Paket-T-Watch.zip> <Paket-Standalone.zip> [<Paket-T3-S3-SX1262.zip>]
 Danach: python3 tools/flasher_fetch.py --cfg tools/flasher-next --check
 """
 import hashlib, json, re, sys, zipfile
@@ -9,10 +9,10 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 REPO = 'Pietwars/DisAHRsterRadio-MeshCore'
-GERAETE = [('tdeck', 'LILYGO T-Deck Plus', 'LilyGo_TDeck'), ('twatch', 'LILYGO T-Watch S3', 'LilyGo_TWatchS3'), ('tdeck-standalone', 'LILYGO T-Deck Plus Standalone', 'LilyGo_TDeck_standalone-test6')]
+GERAETE = [('tdeck', 'LILYGO T-Deck Plus', 'LilyGo_TDeck'), ('twatch', 'LILYGO T-Watch S3', 'LilyGo_TWatchS3'), ('tdeck-standalone', 'LILYGO T-Deck Plus Standalone', 'LilyGo_TDeck_standalone-test6'), ('t3s3-sx1262', 'LILYGO T3-S3 v1.3 SX1262 · 868 MHz', 'LilyGo_T3S3_sx1262')]
 
 def main(zips):
-    assert len(zips) == len(GERAETE), "Drei Pakete erforderlich: T-Deck WLAN, T-Watch, T-Deck Standalone"
+    assert len(zips) in (3, 4), "Pakete: T-Deck WLAN, T-Watch, T-Deck Standalone, optional T3-S3 SX1262"
     devs = []
     versions = set()
     for (gid, label, dev), z in zip(GERAETE, zips):
@@ -44,13 +44,14 @@ def main(zips):
         for art, f in d['files'].items(): print(d['id'], art, f['member'].split('/')[-1], f['sha256'])
 
 def html(cfg, ver):
-    hardware_hint = f"{'Pre-Release' if '-' in ver else 'Release'} {ver}: T-Deck-Privatversand sowie SD-Erkennung und Laden vom Betreiber bestätigt. Neue WLAN-Integration und T-Watch benötigen eigene Gerätetests."
+    hardware_hint = f"{'Pre-Release' if '-' in ver else 'Release'} {ver}: Der Betreiber bestätigt die Funktion des vorherigen T3-S3-OLED-Testpakets sowie frühere T-Deck-Tests. Die neu gebauten Release-Dateien benötigen eigene Gerätetests."
     rel = f"https://github.com/{cfg['repo']}/releases/tag/{cfg['tag']}"
     karten = []
     for d in cfg['devices']:
         u, n = d['files']['update'], d['files']['neu']
         an = ('T-Watch S3 per USB-C-<b>Daten</b>kabel an den Computer (Seitentaste kurz drücken, falls sie aus ist)'
-              if d['id'] == 'twatch' else 'T-Deck Plus per USB-C-<b>Daten</b>kabel an den Computer, einschalten')
+              if d['id'] == 'twatch' else 'T3-S3 v1.3 mit SX1262 per USB-C-<b>Daten</b>kabel an den Computer; nicht für SX1276 oder SX1280'
+              if d['id'] == 't3s3-sx1262' else 'T-Deck Plus per USB-C-<b>Daten</b>kabel an den Computer, einschalten')
         karten.append(f'''<div class="card">
 <h2>{d['label']}</h2>
 <p>Antenne anschrauben. {an}. Dann in <b>Chrome oder Edge am Computer</b> die passende Datei laden und prüfen. Nach erfolgreicher Prüfung den Installationsknopf drücken, Port wählen (meist „USB JTAG/serial debug unit“ bzw. <code>usbmodem</code>/<code>ttyACM</code>), warten bis „Installation complete“, Gerät neu starten.</p>
@@ -86,7 +87,7 @@ def html(cfg, ver):
     integrity_json = json.dumps(specs, ensure_ascii=False).replace('<', '\\u003c')
     return f'''<!doctype html>
 <html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>DisAHRsterRadio-MeshCore · Web-Flasher {ver} (T-Deck Plus, T-Watch S3)</title>
+<title>DisAHRsterRadio-MeshCore · Web-Flasher {ver} (T-Deck Plus, T-Watch S3, T3-S3 SX1262)</title>
 <script type="module" src="https://unpkg.com/esp-web-tools@10.4.0/dist/web/install-button.js?module"></script>
 <style>
 body{{margin:0;background:#07130f;color:#e8f0e4;font:16px/1.5 system-ui,"Noto Sans",sans-serif}}
@@ -104,13 +105,14 @@ button[data-prepare],esp-web-install-button button[slot=activate]{{border:0;bord
 li{{margin:4px 0}}
 </style></head><body><main>
 <h1>Dis<span>AHR</span>sterRadio MeshCore</h1>
-<p><b>Web-Flasher · Version {ver} · LILYGO T-Deck Plus und LILYGO T-Watch S3</b> (ESP32-S3)</p>
+<p><b>Web-Flasher · Version {ver} · LILYGO T-Deck Plus, T-Watch S3 und T3-S3 SX1262</b> (ESP32-S3)</p>
 <p>Pro Gerät gibt es zwei Wege: <b>Update</b> (Standard, Einstellungen bleiben) und <b>Neuinstallation</b> (löscht alles). T-Deck: WLAN/BLE oder Standalone bewusst wählen. Nur das passende Gerät anschließen und den Knopf für genau dieses Gerät verwenden.</p>
 {chr(10).join(karten)}
 <h2>Kein Port zu sehen?</h2>
 <ul><li>Anderes USB-Kabel probieren (viele Kabel laden nur).</li>
 <li>T-Deck Plus: <b>Trackball gedrückt halten</b>, einschalten, Trackball loslassen, dann erneut klicken.</li>
 <li>T-Watch S3: USB-C neu einstecken und erneut versuchen.</li>
+<li>T3-S3 v1.3: BOOT halten, RST kurz drücken, BOOT loslassen und erneut verbinden. Nach der Installation RST drücken.</li>
 <li>Linux: Benutzer in die Gruppe <code>dialout</code> (bzw. <code>uucp</code>) aufnehmen und neu anmelden.</li></ul>
 <h2>Update startet nicht richtig?</h2>
 <p>Bleibt das Display nach dem Update dunkel oder startet das Gerät immer wieder neu, lief vorher eine andere Firmware (andere Speicheraufteilung). Dann die <b>Neuinstallation</b> verwenden – dabei gehen Identität und Kontakte verloren.</p>
@@ -127,5 +129,5 @@ li{{margin:4px 0}}
 '''
 
 if __name__ == '__main__':
-    if len(sys.argv) != 4: sys.exit(__doc__)
+    if len(sys.argv) not in (4, 5): sys.exit(__doc__)
     main(sys.argv[1:])

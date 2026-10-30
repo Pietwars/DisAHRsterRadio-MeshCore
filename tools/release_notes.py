@@ -25,6 +25,6 @@ Standalone: `firmware.bin` als Update an **0x10000 ohne Löschen**; `factory.bin
 
 Jedes Paket enthält `…-factory.bin` (komplett an **0x0** flashen, z. B. mit https://espressif.github.io/esptool-js/), die Einzelteile (`firmware.bin` für das Update an **0x10000**), `SHA256SUMS` und eine deutsche `ANLEITUNG.md`. **Antenne zuerst anschrauben!**
 
-In den WLAN/BLE-Varianten zeigt das Display das DisAHRsterRadio-Logo, die Akku-Zeile und den Knopf „Advert senden“ (Flood-Advert); Nachrichten und Einstellungen über die MeshCore-App (Bluetooth mit PIN, die PIN steht nur während der Kopplung auf dem Display) und die Weboberfläche im offenen WLAN. Verbrauch und Restlaufzeit sind Schätzungen; keines der beiden Boards misst Akkustrom.
+T-Deck Plus und T-Watch S3 zeigen das DisAHRsterRadio-Logo, die Akku-Zeile und den Knopf „Advert senden“ (Flood-Advert). Das T3-S3-OLED zeigt WLAN-Name, Browseradresse und Nachrichtenanzahl; bei einer Bluetooth-Kopplung wacht es automatisch auf und zeigt die Geräte-PIN. Nachrichten über die MeshCore-App und die Weboberfläche im offenen WLAN; Bluetooth-Status und Kopplungshilfe stehen im Reiter Gerät. Verbrauch und Restlaufzeit sind Schätzungen.
 
 Automatisch gebaut vom Workflow „Release“ aus dem Tag `v{version}` ({repo}); vor der Veröffentlichung auf Vollständigkeit, Prüfsummen, Flash-Header, Partitionen und Speichergrenzen geprüft. Markdown-/JSON-Speicherberichte liegen in jedem ZIP.""")

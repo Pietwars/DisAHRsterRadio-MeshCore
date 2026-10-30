@@ -11,8 +11,10 @@ if (d/'.offsets').exists():
         if len(f)<6: f+=['-'+f[0],'teile-'+f[0]]
         off[f[0]]=(f[1],f[2],f[3],f[4],f[5])
 files=sorted(str(p.relative_to(d)) for p in d.rglob('*') if p.is_file() and not p.name.startswith('.'))
-NAMES={'LilyGo_TDeck':'LILYGO T-Deck Plus','LilyGo_TWatchS3':'LILYGO T-Watch S3'}
+NAMES={'LilyGo_TDeck':'LILYGO T-Deck Plus','LilyGo_TWatchS3':'LILYGO T-Watch S3','LilyGo_T3S3_sx1262':'LILYGO T3-S3 v1.3 SX1262 (868 MHz)'}
 hardware_status = ('Akku-Anzeige der Testversion 0.9.4-test vom Nutzer erfolgreich erprobt; eine vollständige Hardwareabnahme der finalen Release-Dateien ist nicht dokumentiert.' if ver == '0.9.4' else f'Version {ver} ist **noch nicht auf echter Hardware getestet** (getestet wurde 0.9.2).')
+if dev == 'LilyGo_T3S3_sx1262':
+    hardware_status = f'Der Betreiber bestätigt am 30.10.2026 die Funktion des vorherigen OLED-Testpakets. Eine vollständige Hardwareabnahme der neu gebauten Release-Dateien {ver} ist nicht dokumentiert.'
 L=[f'# DisAHRsterRadio-MeshCore {ver} für {NAMES.get(dev,dev)}','','> Offenes WLAN ohne Passwort, MeshCore-Bluetooth mit PIN-Kopplung (die PIN steht während der Kopplung auf dem Display). Komplett an **0x0** flashen. Alte Kopplungen vorher am Handy entfernen.','',f'Chip: **{e["chip"]}** · Web-Oberfläche: **{"ja" if e["webui"] else "nein – ohne Web-Oberfläche"}** · https://github.com/Pietwars/DisAHRsterRadio-MeshCore','',
 *(['> 🧪 **TEST-Version '+ver+' – kein Release.** Nur zum Ausprobieren; Rückmeldung an Peter.',''] if '-test' in ver else []),'> ⚠️ Kein zertifiziertes Notrufsystem. In Lebensgefahr immer **112** wählen. '+(('Version 0.9.2 wurde auf diesem Gerät auf echter Hardware getestet (18.10.2026).' if ver=='0.9.2' else hardware_status) if dev in NAMES else 'Dieses Gerät ist **nicht auf echter Hardware getestet**.'),'',
 '**Antenne anschrauben, bevor das Gerät Strom bekommt.** Funkprofil: MeshCore-Standard EU/UK 869,618 MHz, 62,5 kHz, SF8, CR 4/8 – auf allen Geräten gleich einstellen.','']
@@ -43,6 +45,11 @@ BRAND={
   'Das Display zeigt nur ein Bild des Ahrtals bei Nacht mit dem Schriftzug DisAHRsterRadio, darunter eine Akku-Zeile und den Knopf **„Advert senden“**. Keine weiteren Seiten, keine Nachrichten am Gerät (Nachrichten und Einstellungen über MeshCore-App und Weboberfläche).','',
   '| Bedienung | Wirkung |','|---|---|','| Seitentaste kurz | Display an/aus (bei ausgeschalteter Uhr: einschalten) |','| Seitentaste ca. **2 s** halten | Flood-Advert senden |','| Seitentaste ca. **6 s** halten | Uhr ausschalten (Power-Chip) |','| Knopf „Advert senden“ antippen | Flood-Advert senden |','| Antippen bei dunklem Display | nur aufwecken |',''],
 }
+if dev == 'LilyGo_T3S3_sx1262':
+    L += ['## T3-S3 v1.3: Web und Bluetooth', '',
+          'Das OLED zeigt WLAN-Name und Browseradresse. Beim Koppeln in der MeshCore-App wacht es automatisch auf und zeigt die sechsstellige Geräte-PIN groß an. Nach Erfolg, Abbruch oder spätestens 60 Sekunden verschwindet sie. Meldungen und Seitenwechsel verdecken die PIN nicht.', '',
+          'Weboberfläche und App funktionieren gleichzeitig. Unter Gerät stehen Bluetooth-Status und Kopplungshilfe. Die PIN selbst wird nicht im WLAN angezeigt. Nur für SX1262, nicht für SX1276 oder SX1280.', '',
+          'Der Betreiber hat die Funktion des zuvor bereitgestellten OLED-Testpakets am 30.10.2026 bestätigt. Die neu gebauten Release-Dateien benötigen weiterhin eigene Gerätetests; eine vollständige Hardwareabnahme wird nicht behauptet.', '']
 if dev in BRAND:
     AKKU={'LilyGo_TDeck':'**Akku-Zeile (T-Deck Plus):** Symbol, Ladestand „ca. NN %“ (aus der Spannung geschätzt) und Spannung. Das T-Deck misst nur die Akkuspannung – keinen Strom und nicht, ob es lädt. Rechts der **geschätzte Verbrauch**: Abfall des Ladestands in %/h und Restlaufzeit, berechnet aus dem Spannungsverlauf der letzten bis zu 60 min (erst nach 20 min, vorher „Verbrauch: Messung, noch N min“). Steigt die Spannung (Ladegerät), steht dort „Spannung steigt (Laden?)“.',
           'LilyGo_TWatchS3':'**Akku-Zeile (T-Watch S3):** Symbol, Ladestand in % (Ladestandsanzeige des Power-Chips AXP2101) und Spannung; darunter „USB: Laden“ bzw. „USB: kein Laden“ oder der **geschätzte Verbrauch**: Abfall des Ladestands in %/h und Restlaufzeit aus dem Spannungsverlauf der letzten bis zu 60 min (erst nach 20 min ohne USB). Der AXP2101 misst keinen Strom; ein gemessener Verbrauch in mA ist daher nicht verfügbar.'}

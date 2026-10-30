@@ -63,8 +63,10 @@ class MemoryValidation(unittest.TestCase):
     def test_supported_boards(self):
         for board in json.loads(v.BOARDS.read_text()).values():
             with self.subTest(board=board['env']):
-                report = self.validate(board=board)
-                self.assertEqual(report['flash_unused_bytes'], 12 * 1024 * 1024)
+                size_code = board['flash_bytes'].bit_length() - 21
+                report = self.validate(board=board, firmware=image(size_code=size_code),
+                                       bootloader=image(b'boot', size_code=size_code))
+                self.assertEqual(report['flash_unused_bytes'], board['flash_bytes'] - 4 * 1024 * 1024)
                 self.assertEqual(report['memory']['ram']['free'], 167428)
 
     def test_bad_headers(self):
@@ -174,6 +176,8 @@ class MemoryValidation(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             d = Path(directory)
             for device, board in json.loads(v.BOARDS.read_text()).items():
+                size_code = board['flash_bytes'].bit_length() - 21
+                self.firmware, self.boot = image(size_code=size_code), image(b'boot', size_code=size_code)
                 name = f'DisAHRsterRadio-MeshCore-0.9.3-{device}'
                 boot_app = b'ota'
                 factory = bytearray(b'\xff' * (0x310000 + len(self.fs)))
@@ -202,7 +206,7 @@ class MemoryValidation(unittest.TestCase):
                 write_zip()
                 subprocess.run(command, check=True, capture_output=True)
                 # All ZIP checksums still match: the binary validation must reject this.
-                files['teile/bootloader.bin'] = image(size_code=2)
+                files['teile/bootloader.bin'] = image(size_code=4 if size_code == 2 else 2)
                 write_zip()
                 bad = subprocess.run(command, capture_output=True, text=True)
                 self.assertNotEqual(bad.returncode, 0)

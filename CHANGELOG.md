@@ -1,5 +1,13 @@
 # Änderungen
 
+## 0.9.8 – T3-S3 v1.3 mit Weboberfläche und OLED-Kopplung
+
+- LILYGO T3-S3 v1.3 mit SX1262 (868 MHz) als reguläres WLAN/BLE-Release-Paket, einschließlich Factory-Abbild, Update-Datei, Anleitung und Flash-/RAM-Prüfung für 4 MB Flash.
+- OLED wacht beim Koppeln mit der MeshCore-App automatisch auf und zeigt die sechsstellige Geräte-PIN groß an. Meldungen und Seitenwechsel verdecken sie nicht. Nach Kopplungsende, Abbruch oder spätestens 60 Sekunden verschwindet die PIN.
+- T3-S3-Startseite mit WLAN-Name, Browseradresse und Nachrichtenanzahl statt dauerhafter PIN-Anzeige und wechselnder WLAN-Popups.
+- Weboberfläche mit Bluetooth-Status und Kopplungsanleitung. Die PIN wird weder im WLAN noch in den eigenen Bluetooth-Debugmeldungen ausgegeben.
+- Der Betreiber bestätigt am 30.10.2026, dass das zuvor bereitgestellte T3-S3-OLED-Testpaket funktioniert. Diese Rückmeldung ist ein Funktionstest, keine protokollierte vollständige Abnahme der neu gebauten Release-Dateien. Vorhandene Prüfgrenzen für T-Deck Plus und T-Watch S3 bleiben bestehen.
+
 ## 0.9.6 – öffentlicher Release
 
 - WLAN/BLE und Standalone verwenden denselben ursprünglichen MeshCore-Sendeweg, freie treibergültige Funkparameter und den gespeicherten Airtime-Faktor. Frische Einstellungen starten mit EU/UK Narrow; die zusätzliche DAR-Leistungsgrenze und Neustartsperre entfallen in beiden Companion-Varianten. Gespeicherte Einstellungen bleiben erhalten.
