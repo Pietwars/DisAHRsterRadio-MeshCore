@@ -90,7 +90,7 @@ Privilegierte Web-Einstellungen sind im offenen HTTP-Portal gesperrt. Standalone
 
 **Weiterhin enthalten:** Akku-Anzeige am Gerät und automatische Flash-/Speicherprüfungen für alle drei WLAN/BLE-Release-Boards. Messwerte und offene Hardwaretests: [Flash- und RAM-Prüfung](docs/SPEICHER.md).
 
-**[Release v0.9.8](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.8)** vom 30.10.2026. Neu ist das T3-S3-v1.3-Paket für SX1262 mit automatischer OLED-Kopplungsanzeige. Nachrichten werden zwischen Weboberfläche und MeshCore-App geteilt. Der Standalone-Build bedient Chat, Privat, Meldung, Brett, Karte, Standort und Gerät direkt am T-Deck; er enthält kein WLAN/Webportal. [Hardwarestatus und Prüfungen](docs/RELEASE-0.9.8.md).
+**[Release v0.9.9](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.9)** vom 30.10.2026. Jedes Board erhält automatisch seinen eigenen stabilen WLAN-Namen. Das T3-S3-v1.3-Paket für SX1262 enthält die automatische OLED-Kopplungsanzeige. Nachrichten werden zwischen Weboberfläche und MeshCore-App geteilt. Der Standalone-Build bedient Chat, Privat, Meldung, Brett, Karte, Standort und Gerät direkt am T-Deck; er enthält kein WLAN/Webportal. [Hardwarestatus und Prüfungen](docs/RELEASE-0.9.9.md).
 
 [![Release](https://img.shields.io/github/v/release/Pietwars/DisAHRsterRadio-MeshCore?label=Release)](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/latest)
 [![Live-Demo](https://img.shields.io/badge/Live--Demo-online-2ea44f)](https://pietwars.github.io/DisAHRsterRadio-MeshCore/)
@@ -163,7 +163,7 @@ Jeder Advert ist ein **Flood-Advert**; danach steht kurz „Advert gesendet“ i
 Beim Koppeln mit der MeshCore-App wacht das OLED automatisch auf und zeigt
 die Geräte-PIN. [T3-S3-Anleitung und Hardwareprüfung](docs/T3-S3-V1.3.md).
 
-1. **Flashen:** das passende 0.9.6-ZIP oben herunterladen und nach seiner ANLEITUNG.md flashen. Der [Web-Flasher](https://pietwars.github.io/DisAHRsterRadio-MeshCore/flasher/) bietet nach erfolgreicher Veröffentlichung dieselben geprüften Release-Dateien für **T-Deck Plus WLAN/BLE**, **T-Deck Plus Standalone** und **T-Watch S3**. Variante ausdrücklich auswählen: Update schreibt nur die Firmware an **0x10000**, Neuinstallation schreibt das Factory-Abbild an **0x0** und löscht alle Daten. [Anleitung Flashen](docs/FLASHEN.md).
+1. **Flashen:** das passende 0.9.9-ZIP oben herunterladen und nach seiner ANLEITUNG.md flashen. Der [Web-Flasher](https://pietwars.github.io/DisAHRsterRadio-MeshCore/flasher/) bietet nach erfolgreicher Veröffentlichung dieselben geprüften Release-Dateien für **T-Deck Plus WLAN/BLE**, **T-Deck Plus Standalone** und **T-Watch S3**. Variante ausdrücklich auswählen: Update schreibt nur die Firmware an **0x10000**, Neuinstallation schreibt das Factory-Abbild an **0x0** und löscht alle Daten. [Anleitung Flashen](docs/FLASHEN.md).
 2. **Verbinden:** Handy mit dem offenen WLAN `DisAHRsterRadio-XXXXXXXXXXXX` verbinden, **http://192.168.4.1** öffnen – kein Passwort, höchstens 4 Handys.
 3. **MeshCore-App (optional):** per Bluetooth koppeln; die PIN zeigt das Display nur während der Kopplung an. Danach in der App eine eigene PIN setzen. Details: [Offener Zugang](docs/OFFENER_ZUGANG.md)
 
