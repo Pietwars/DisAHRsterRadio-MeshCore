@@ -1,6 +1,6 @@
-# Standalone 0.9.8: aktuelle Vorschauen
+# Standalone 0.9.9: aktuelle Vorschauen
 
-Echte Firmware-Layouts mit Demodaten. Hardwareabnahme dieser Version offen. [Bedienung](STANDALONE_TOUCH.md) · [Release-Status](RELEASE-0.9.8.md)
+Echte Firmware-Layouts mit Demodaten. Hardwareabnahme dieser Version offen. [Bedienung](STANDALONE_TOUCH.md) · [Release-Status](RELEASE-0.9.9.md)
 
 ## Bootmotiv
 

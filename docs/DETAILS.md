@@ -25,8 +25,8 @@ T-Deck-SD-Zugriff mit 800 kHz, getrennte Karten-/Archivzustände, Rücklesen nac
 
 ## Pakete und Flashen
 
-- `DisAHRsterRadio-MeshCore-0.9.8-LilyGo_TDeck.zip`
-- `DisAHRsterRadio-MeshCore-0.9.8-LilyGo_TWatchS3.zip`
+- `DisAHRsterRadio-MeshCore-0.9.9-LilyGo_TDeck.zip`
+- `DisAHRsterRadio-MeshCore-0.9.9-LilyGo_TWatchS3.zip`
 - `DisAHRsterRadio-MeshCore-0.9.6-LilyGo_TDeck_standalone-test6.zip`
 
 Der [Webflasher](https://pietwars.github.io/DisAHRsterRadio-MeshCore/flasher/) trennt Update und Neuinstallation. Update schreibt nur Firmware an `0x10000`; Neuinstallation verwendet das Factory-Abbild an `0x0` und löscht Gerätedaten. [Flash-Anleitung](FLASHEN.md), [Speicherprüfung](SPEICHER.md).

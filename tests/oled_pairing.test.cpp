@@ -1,4 +1,5 @@
 #include "../examples/companion_radio/ui-new/PairingScreen.h"
+#include "../examples/companion_radio/ui-new/PortalHomeScreen.h"
 #include <cassert>
 #include <string>
 #include <vector>
@@ -44,4 +45,16 @@ int main() {
   OledDisplay invalid;
   renderPairingScreen(invalid, 1000000u);
   assert(invalid.text.empty());
+  const uint8_t mac[6] = {0x24, 0x6f, 0x28, 0x12, 0x34, 0x56};
+  char ssid[33];
+  assert(disaster::formatPortalSsid(ssid, mac));
+  for (uint32_t messages : {0u, 64u, UINT32_MAX}) {
+    for (bool bluetooth : {false, true}) {
+      OledDisplay home;
+      renderPortalHomeScreen(home, ssid, "255.255.255.255", messages, bluetooth);
+      assert(home.text.size()==4);
+      assert(home.text[0].value + home.text[1].value == ssid);
+      assert(home.text[1].value == "246F28123456");
+    }
+  }
 }

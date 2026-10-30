@@ -51,4 +51,6 @@ https://espressif.github.io/esptool-js/ in Chrome/Edge öffnen → **Connect** �
 
 ## Danach
 
-Das Display zeigt das Ahrtal-Bild mit dem Schriftzug DisAHRsterRadio die Akku-Zeile und den Knopf **„Advert senden“** (Tasten siehe [README](../README.md#anzeige-am-gerät)). Offenes WLAN `DisAHRsterRadio-XXXXXX` wählen (ohne Passwort) und **http://192.168.4.1** öffnen. MeshCore-App per Bluetooth koppeln: die PIN steht nur während der Kopplung auf dem Display. Details: [Offener Zugang](OFFENER_ZUGANG.md) und die `ANLEITUNG.md` im Paket.
+T-Deck Plus und T-Watch S3 zeigen das Ahrtal-Bild mit dem Schriftzug DisAHRsterRadio die Akku-Zeile und den Knopf **„Advert senden“** (Tasten siehe [README](../README.md#anzeige-am-gerät)). Offenes WLAN `DisAHRsterRadio-XXXXXXXXXXXX` wählen (ohne Passwort) und **http://192.168.4.1** öffnen. MeshCore-App per Bluetooth koppeln: die PIN steht nur während der Kopplung auf dem Display. Details: [Offener Zugang](OFFENER_ZUGANG.md) und die `ANLEITUNG.md` im Paket.
+
+Ab 0.9.9 enthält der WLAN-Name die vollständige Hardwarekennung: verschiedene Boards haben unterschiedliche Namen. Der T3-S3 zeigt den vollständigen Namen auf zwei OLED-Zeilen. Nach dem Update am Handy das neue WLAN auswählen.

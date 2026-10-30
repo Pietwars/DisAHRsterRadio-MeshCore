@@ -10,6 +10,9 @@
 #if defined(ENABLE_WIFI_INTERFACE) || defined(DISASTER_PORTAL)
   #include <WiFi.h>
 #endif
+#ifdef DISASTER_PORTAL
+  #include "PortalHomeScreen.h"
+#endif
 
 #ifndef AUTO_OFF_MILLIS
   #define AUTO_OFF_MILLIS     15000   // 15 seconds
@@ -285,16 +288,8 @@ public:
 
     if (_page == HomePage::FIRST) {
 #ifdef DISASTER_PORTAL
-      display.setColor(UIColor::primary_txt);
-      display.setTextSize(1);
-      display.drawTextEllipsized(0, 22, display.width(), WiFi.softAPSSID().c_str());
-      snprintf(tmp, sizeof(tmp), "Web: %s", WiFi.softAPIP().toString().c_str());
-      display.drawTextCentered(display.width() / 2, 34, tmp);
-      snprintf(tmp, sizeof(tmp), "MSG: %d", _task->getMsgCount());
-      display.drawTextCentered(display.width() / 2, 45, tmp);
-      display.drawTextCentered(display.width() / 2, 56,
-        !_task->isBluetoothEnabled() ? "Bluetooth aus" :
-        "App: BT koppeln");
+      renderPortalHomeScreen(display, WiFi.softAPSSID().c_str(), WiFi.softAPIP().toString().c_str(),
+                             _task->getMsgCount(), _task->isBluetoothEnabled());
 #else
       display.setColor(UIColor::primary_txt);
       #ifdef ENABLE_WIFI_INTERFACE
