@@ -36,9 +36,12 @@ int main() {
     OledDisplay display;
     renderPairingScreen(display, pin);
     assert(display.text.size() == 4);
-    char expected[7]; snprintf(expected, sizeof(expected), "%06lu", (unsigned long)pin);
+    char expected[11]; snprintf(expected, sizeof(expected), "%06lu", (unsigned long)pin);
     assert(display.text[2].value == expected && display.text[2].size == 2);
     assert(display.text.front().value == "MeshCore-App koppeln");
     assert(display.text.back().value == "Am Handy eingeben");
   }
+  OledDisplay invalid;
+  renderPairingScreen(invalid, 1000000u);
+  assert(invalid.text.empty());
 }

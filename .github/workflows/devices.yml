@@ -30,7 +30,7 @@ jobs:
       - id: m
         env:
           VOLL: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.alle == 'true' }}
-          KERN: LilyGo_TDeck LilyGo_TWatchS3
+          KERN: LilyGo_TDeck LilyGo_TWatchS3 LilyGo_T3S3_sx1262
         run: |
           python3 - <<'PY' >> "$GITHUB_OUTPUT"
           import json, os
