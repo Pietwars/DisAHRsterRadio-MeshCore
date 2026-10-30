@@ -17,7 +17,11 @@ ersetzt keine vollständige Abnahme der neu gebauten Release-Dateien.
 
 [Release v0.9.8](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.8) ·
 [T3-S3-Anleitung](docs/T3-S3-V1.3.md) · [Hardwarestatus](docs/RELEASE-0.9.8.md) ·
-[Live-Demo und Oberfläche](https://pietwars.github.io/DisAHRsterRadio-MeshCore/)
+[Live-Demo und Oberfläche](https://pietwars.github.io/DisAHRsterRadio-MeshCore/) ·
+[Web-Flasher](https://pietwars.github.io/DisAHRsterRadio-MeshCore/flasher/)
+
+<details>
+<summary>Frühere Versionen: Optimierungen und Standalone-Einführung</summary>
 
 ## Bisheriger Stand: 0.9.7-cleanup-opt – Optimization & Cleanup Pass
 
@@ -54,7 +58,9 @@ Privilegierte Web-Einstellungen sind im offenen HTTP-Portal gesperrt. Standalone
 
 [Touch-Bedienung](docs/STANDALONE_TOUCH.md) · [0.9.6-Release und Hardwarestatus](docs/RELEASE-0.9.6.md) · [Release und Downloads](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.6)
 
-## WLAN und Bluetooth in 0.9.6
+</details>
+
+## WLAN und Bluetooth in 0.9.8
 
 **DisAHRsterRadio mit MeshCore fürs Ahrtal: Weboberfläche MeshAhrtal im offenen WLAN und gleichzeitig die offizielle MeshCore-App per Bluetooth – Chat, Brett und Offlinekarten ohne Internet.**
 
@@ -69,9 +75,9 @@ Privilegierte Web-Einstellungen sind im offenen HTTP-Portal gesperrt. Standalone
 
 **Version 0.9.8** · MeshCore 1.18.0 · Weboberfläche MeshAhrtal · 868 MHz · Firmwarekennung `v1.18.0-dar0.9.8`
 
-**Weiterhin enthalten (seit 0.9.4):** Akku-Zeile am Gerät und automatische Flash-/Speicherprüfungen für beide Release-Boards. Messwerte und offene Hardwaretests: [Flash- und RAM-Prüfung](docs/SPEICHER.md).
+**Weiterhin enthalten:** Akku-Anzeige am Gerät und automatische Flash-/Speicherprüfungen für alle drei WLAN/BLE-Release-Boards. Messwerte und offene Hardwaretests: [Flash- und RAM-Prüfung](docs/SPEICHER.md).
 
-**[Release v0.9.6](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.6)** vom 24.10.2026. Nachrichten werden zwischen Weboberfläche und MeshCore-App geteilt. Der Standalone-Build bedient Chat, Privat, Meldung, Brett, Karte, Standort und Gerät direkt am T-Deck; er enthält kein WLAN/Webportal. [Hardwarestatus und Prüfungen](docs/RELEASE-0.9.6.md).
+**[Release v0.9.8](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.8)** vom 30.10.2026. Neu ist das T3-S3-v1.3-Paket für SX1262 mit automatischer OLED-Kopplungsanzeige. Nachrichten werden zwischen Weboberfläche und MeshCore-App geteilt. Der Standalone-Build bedient Chat, Privat, Meldung, Brett, Karte, Standort und Gerät direkt am T-Deck; er enthält kein WLAN/Webportal. [Hardwarestatus und Prüfungen](docs/RELEASE-0.9.8.md).
 
 [![Release](https://img.shields.io/github/v/release/Pietwars/DisAHRsterRadio-MeshCore?label=Release)](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/latest)
 [![Live-Demo](https://img.shields.io/badge/Live--Demo-online-2ea44f)](https://pietwars.github.io/DisAHRsterRadio-MeshCore/)

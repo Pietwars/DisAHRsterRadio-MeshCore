@@ -59,7 +59,7 @@ const server = http.createServer((req, res) => {
       });
       assert.equal(verified, sha); fault = '';
     }
-    assert.equal(downloads, 6);
+    assert.equal(downloads, Object.keys(manifests).length);
     for (const bad of ['manifest', 'download', 'corrupt']) {
       fault = bad; await page.goto(base);
       await page.locator('button[data-prepare="manifest-tdeck-update.json"]').click();
@@ -71,6 +71,6 @@ const server = http.createServer((req, res) => {
       await page.locator('esp-web-install-button[data-manifest="manifest-tdeck-update.json"]').waitFor({state: 'visible'});
     }
     await page.close();
-    console.log('PASS: browser blocks installation until verification, all six modes, immutable snapshots and failed-download retry');
+    console.log('PASS: browser blocks installation until verification, all configured modes, immutable snapshots and failed-download retry');
   } finally {await browser.close(); server.close();}
 })().catch(error => {console.error(error); server.close(); process.exitCode = 1;});
