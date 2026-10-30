@@ -13,6 +13,8 @@
 #include <Preferences.h>
 #include <esp_system.h>
 #include <esp_timer.h>
+#include <esp_mac.h>
+#include "PortalIdentity.h"
 #include "PortalPage.h"
 #ifndef HEAP_WARN_BYTES
 #define HEAP_WARN_BYTES 40960  // Warnschwelle freier Heap (Weboberfläche rot, serielles [HEAP]-Log mit WARNUNG)
@@ -140,8 +142,12 @@ public:
     // Remove old AP credentials and the former web-admin password (removed in 0.9.1) on upgrade.
     prefs.remove("ap-pass");prefs.remove("admin-salt");prefs.remove("admin-hash");
     prefs.end();
-    uint64_t mac=ESP.getEfuseMac(); char suffix[7]; snprintf(suffix,sizeof(suffix),"%06X",(unsigned)(mac&0xffffff));
-    apName=String("DisAHRsterRadio-")+suffix;
+    uint8_t mac[6]{}; char name[33];
+    if (esp_efuse_mac_get_default(mac) != ESP_OK || !disaster::formatPortalSsid(name, mac)) {
+      Serial.println("[WLAN] Keine gueltige Hardwarekennung; Zugangspunkt bleibt aus");
+      return;
+    }
+    apName=name;
     WiFi.mode(WIFI_AP); WiFi.setSleep(false);
 #ifdef DISASTER_WIFI_TX
     WiFi.setTxPower(DISASTER_WIFI_TX); Serial.println("[WLAN] reduzierte Sendeleistung"); Serial.flush(); delay(200);
@@ -191,6 +197,7 @@ public:
       s+=",\"diagnostics\":{\"firmware\":\""+String(FIRMWARE_VERSION)+"\",\"uptimeSeconds\":"+String((uint32_t)(esp_timer_get_time()/1000000ULL));
       s+=",\"resetReason\":"+String((int)esp_reset_reason())+",\"minHeapBytes\":"+String(ESP.getMinFreeHeap())+",\"largestHeapBlockBytes\":"+String(ESP.getMaxAllocHeap())+",\"heapWarn\":"+String((unsigned)HEAP_WARN_BYTES);
       s+=",\"wifiClients\":"+String(WiFi.softAPgetStationNum())+",\"txFlood\":"+String(txFlood)+",\"txDirect\":"+String(txDirect)+",\"rxFlood\":"+String(rxFlood)+",\"rxDirect\":"+String(rxDirect);
+      s+=",\"wifiSsid\":\""+apName+"\"";  // Fixed prefix and hexadecimal hardware bytes only.
       s+=",\"bleEnabled\":"+String(bleEnabled?"true":"false")+",\"bleConnected\":"+String(bleConnected?"true":"false")+",\"blePairing\":"+String(blePairing?"true":"false");
       s+=",\"txAirMs\":"+String(txAirMs)+",\"rxAirMs\":"+String(rxAirMs)+",\"txBudgetMs\":"+String(txBudgetMs)+",\"txBudgetWaiting\":"+String(txBudgetWaiting?"true":"false")+",\"txBudgetWaitEvents\":"+String(txBudgetWaitEvents)+",\"txBudgetWaitSeconds\":"+String(txBudgetWaitSeconds)+",\"txQueuePackets\":"+String(txQueuePackets);
       s+=",\"txStartupWaitSeconds\":"+String(txStartupWaitSeconds)+",\"txStorageBlocked\":"+String(txStorageBlocked?"true":"false")+",\"txProfileBlocked\":"+String(txProfileBlocked?"true":"false")+"}";
@@ -312,6 +319,7 @@ public:
     http.begin();
   }
   bool startAP() {
+    if(!apName.length())return false;
     bool ok=WiFi.softAP(apName.c_str(),nullptr,1,false,4);
 #ifdef DISASTER_WIFI_TX
     WiFi.setTxPower(DISASTER_WIFI_TX);

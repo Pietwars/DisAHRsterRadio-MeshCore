@@ -13,6 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Unique stable WLAN names for boards sharing the same vendor prefix
+        run: |
+          g++ -std=c++11 -Wall -Wextra -Werror -fsanitize=address,undefined tests/portal_identity.test.cpp -o /tmp/portal-identity-test
+          /tmp/portal-identity-test
       - name: T3-S3 OLED pairing screen fits all six PIN digits
         run: |
           g++ -std=c++11 -Wall -Wextra -Werror -Wno-unused-parameter -fsanitize=address,undefined -I src tests/oled_pairing.test.cpp -o /tmp/oled-pairing-test

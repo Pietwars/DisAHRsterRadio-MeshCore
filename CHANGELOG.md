@@ -1,5 +1,12 @@
 # Änderungen
 
+## 0.9.9 – eindeutige WLAN-Namen je Board
+
+- Fehler behoben: Die bisher verwendeten unteren 24 Bit von `ESP.getEfuseMac()` enthalten durch die Byte-Reihenfolge den Herstellerpräfix. Mehrere Boards desselben Herstellers konnten deshalb denselben WLAN-Namen erhalten.
+- Der WLAN-Name verwendet jetzt alle sechs Bytes der unveränderlichen Hardwareadresse in lesbarer Reihenfolge: `DisAHRsterRadio-246F28123456`. Dieselbe Firmware erzeugt dadurch für unterschiedliche Boards unterschiedliche Namen; Neustart und erneutes Flashen ändern den Namen desselben Boards nicht.
+- OLED zeigt den vollständigen WLAN-Namen auf zwei Zeilen, einschließlich der gesamten Gerätekennung. Im Web-Reiter Gerät steht ebenfalls der aktuelle WLAN-Name.
+- Automatisierte Tests prüfen 256 Boards mit gleichem Herstellerpräfix, Stabilität, unterschiedliche Hersteller und die vollständige lesbare OLED-Anzeige. Bestehende Bluetooth-PINs und MeshCore-Identitäten werden durch die Namenskorrektur nicht geändert.
+
 ## 0.9.8 – T3-S3 v1.3 mit Weboberfläche und OLED-Kopplung
 
 - LILYGO T3-S3 v1.3 mit SX1262 (868 MHz) als reguläres WLAN/BLE-Release-Paket, einschließlich Factory-Abbild, Update-Datei, Anleitung und Flash-/RAM-Prüfung für 4 MB Flash.
