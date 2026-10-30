@@ -1,4 +1,14 @@
 {
+  "LilyGo_T3S3_sx1262": {
+    "env": "disaster_t3s3_sx1262_wifi",
+    "chip": "esp32s3",
+    "chip_id": 9,
+    "flash_bytes": 4194304,
+    "ram_bytes": 327680,
+    "app_offset": 65536,
+    "partition_offset": 32768,
+    "boot_offset": 0
+  },
   "LilyGo_TDeck": {
     "env": "dar_LilyGo_TDeck_wifi",
     "chip": "esp32s3",

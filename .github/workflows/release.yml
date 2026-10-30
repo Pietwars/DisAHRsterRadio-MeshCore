@@ -1,5 +1,5 @@
 name: Release
-# Baut bei jedem Versions-Tag v* die Release-Geräte LILYGO T-Deck Plus und LILYGO T-Watch S3
+# Baut die WLAN/BLE-Release-Geräte T-Deck Plus, T-Watch S3 und T3-S3 SX1262 sowie T-Deck Standalone.
 # (tools/build_device.sh LilyGo_TDeck / LilyGo_TWatchS3), prüft jedes Paket (Vollständigkeit, Prüfsummen, Version) und
 # veröffentlicht das GitHub-Release „DisAHRsterRadio-MeshCore v<Version>“. Übrige Boards bleiben im Code, sind aber nicht im Release.
 # Gibt es das Release zum Tag schon (z. B. mit den auf Hardware getesteten Paketen), wird nichts hochgeladen oder ersetzt;
@@ -50,7 +50,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_candidate_package.py' -v
       - id: m
         run: |
-          echo 'devices=["LilyGo_TDeck","LilyGo_TWatchS3"]' >> "$GITHUB_OUTPUT"
+          echo 'devices=["LilyGo_TDeck","LilyGo_TWatchS3","LilyGo_T3S3_sx1262"]' >> "$GITHUB_OUTPUT"
   devices:
     needs: check
     runs-on: ubuntu-latest
@@ -140,14 +140,14 @@ jobs:
       - name: Pakete prüfen (Vollständigkeit, Prüfsummen, Version)
         run: |
           V=$(python3 tools/version.py --get)
-          python3 tools/verify_devices.py dist "$V" LilyGo_TDeck LilyGo_TWatchS3
+          python3 tools/verify_devices.py dist "$V" LilyGo_TDeck LilyGo_TWatchS3 LilyGo_T3S3_sx1262
           python3 tools/prepare_standalone_candidate.py --release --check dist/DisAHRsterRadio-MeshCore-$V-LilyGo_TDeck_standalone-test6.zip
           (cd dist && sha256sum *.zip > SHA256SUMS-DisAHRsterRadio-MeshCore-$V.txt)
           ls dist | wc -l
       - name: Release-Text erzeugen
         run: |
           python3 tools/release_notes.py "$(python3 tools/version.py --get)" "${{ github.repository }}" DisAHRsterRadio-MeshCore \
-            "LilyGo_TDeck=LILYGO T-Deck Plus" "LilyGo_TWatchS3=LILYGO T-Watch S3" | tee notes.md
+            "LilyGo_TDeck=LILYGO T-Deck Plus" "LilyGo_TWatchS3=LILYGO T-Watch S3" "LilyGo_T3S3_sx1262=LILYGO T3-S3 v1.3 SX1262 (868 MHz)" | tee notes.md
       - name: Release veröffentlichen
         if: env.TAG != '' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
         env:

@@ -13,6 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: T3-S3 OLED pairing screen fits all six PIN digits
+        run: |
+          g++ -std=c++11 -Wall -Wextra -Werror -Wno-unused-parameter -fsanitize=address,undefined -I src tests/oled_pairing.test.cpp -o /tmp/oled-pairing-test
+          /tmp/oled-pairing-test
       - name: Compile and run transport and command-boundary tests
         run: |
           g++ -std=c++17 -Wall -Wextra -Werror -fsanitize=address,undefined -I tests/open_access_fakes tests/open_access.test.cpp -o /tmp/open-access-test

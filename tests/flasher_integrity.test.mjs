@@ -69,10 +69,11 @@ assert.equal(readFileSync(new URL('../docs/flasher/integrity.mjs', import.meta.u
 for (const folder of ['docs/flasher', 'tools/flasher-next']) {
   const html = readFileSync(new URL(`../${folder}/index.html`, import.meta.url), 'utf8');
   const specs = JSON.parse(html.match(/<script id="flasher-integrity" type="application\/json">(.*?)<\/script>/s)[1]);
-  assert.equal(Object.keys(specs).length, 6);
-  assert.equal((html.match(/<esp-web-install-button hidden data-manifest=/g) || []).length, 6);
-  assert.equal((html.match(/<button disabled slot="activate"/g) || []).length, 6);
-  assert.equal((html.match(/data-prepare=/g) || []).length, 6);
+  const modeCount = config.devices.reduce((n, d) => n + Object.keys(d.modes).length, 0);
+  assert.equal(Object.keys(specs).length, modeCount);
+  assert.equal((html.match(/<esp-web-install-button hidden data-manifest=/g) || []).length, modeCount);
+  assert.equal((html.match(/<button disabled slot="activate"/g) || []).length, modeCount);
+  assert.equal((html.match(/data-prepare=/g) || []).length, modeCount);
   for (const device of config.devices) for (const [mode, manifest] of Object.entries(device.modes)) {
     const file = `manifest-${device.id}-${mode}.json`;
     assert.deepEqual(specs[file], {file, manifest, sha256: device.files[mode].sha256});

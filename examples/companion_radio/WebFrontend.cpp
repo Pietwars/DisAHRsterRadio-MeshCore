@@ -12,6 +12,11 @@
 
 DisasterPortal disaster_portal;
 
+#if defined(BLE_PIN_CODE)
+  #include <helpers/esp32/SerialBLEInterface.h>
+  extern SerialBLEInterface bluetooth_interface;
+#endif
+
 #ifdef DISPLAY_CLASS
   #include "UITask.h"
   extern UITask ui_task;
@@ -51,8 +56,12 @@ void frontend::sensorsReady() {
 }
 
 void frontend::loop() {
+#if defined(BLE_PIN_CODE)
+  disaster_portal.setBluetoothState(bluetooth_interface.isEnabled(),
+    bluetooth_interface.isConnected(), ble_pairing_active());
+#endif
   disaster_portal.serviceAP();
-#ifdef DISPLAY_CLASS
+#if defined(DISPLAY_CLASS) && !defined(LILYGO_T3S3)
   {
     static unsigned long lastOled = 0; static bool showPw = false;
     if (millis() - lastOled > 15000) {  // abwechselnd WLAN-Name und offener Zugang auf dem OLED

@@ -18,6 +18,11 @@ assert.match(vm.runInContext('txGuard({txStartupWaitSeconds:3600,txStorageBlocke
 assert.match(vm.runInContext('txGuard({txStorageBlocked:true})',guardContext),/gesperrt.*Empfang/);
 assert.match(vm.runInContext('txGuard({txBudgetWaiting:true})',guardContext),/Sendebudget.*Empfang/);
 assert.equal(vm.runInContext('txGuard({txStartupWaitSeconds:0})',guardContext),'');
+assert.match(vm.runInContext('bluetoothStatus({})',guardContext),/nicht verfügbar/);
+assert.equal(vm.runInContext('bluetoothStatus({bleEnabled:false})',guardContext),'Ausgeschaltet');
+assert.equal(vm.runInContext('bluetoothStatus({bleEnabled:true,bleConnected:true})',guardContext),'App verbunden');
+assert.match(vm.runInContext('bluetoothStatus({bleEnabled:true,blePairing:true})',guardContext),/PIN auf dem Gerätedisplay/);
+assert.match(vm.runInContext('bluetoothStatus({bleEnabled:true,blePairing:false,bleConnected:false})',guardContext),/Bereit zum Koppeln/);
 const info={textContent:''};
 const ctx=vm.createContext({Map,Response,DecompressionStream,JSON,fetch:async url=>({ok:true,headers:{get:()=> 'application/json'},json:async()=>({name:url,l:[['r',10,20,2,3]],bbox:[7,50,8,51]})}),$:()=>info,DEMO:false,me:null,fit:()=>{},marks:{},drawMap:()=>{}});
 vm.runInContext('const MAPS=new Map();let M=null,mapRequest=0;'+script.slice(script.indexOf('async function getMap('),script.indexOf('function size()')),ctx);

@@ -2,7 +2,24 @@
 
 <img src="logo/disahrsterradio-display.png" width="420" alt="DisAHRsterRadio – MeshCore-Funknetz fürs Ahrtal">
 
-## 0.9.7-cleanup-opt – Optimization & Cleanup Pass
+## 0.9.8: T3-S3 v1.3 mit Weboberfläche und Bluetooth-PIN am OLED
+
+**Neu als reguläres Release-Gerät: LILYGO T3-S3 v1.3 mit SX1262 für 868 MHz.**
+Weboberfläche im WLAN und MeshCore-App per Bluetooth funktionieren gleichzeitig.
+Beim Koppeln wacht das OLED automatisch auf und zeigt die sechsstellige Geräte-PIN
+groß an. Nach Kopplungsende, Abbruch oder spätestens 60 Sekunden verschwindet sie.
+Die Startseite zeigt WLAN-Name, Browseradresse und Nachrichtenanzahl.
+
+Im Web-Reiter **Gerät** stehen jetzt Bluetooth-Status und Kopplungsanleitung.
+Die PIN selbst bleibt am Gerät. Der Betreiber hat die Funktion des zuvor
+bereitgestellten OLED-Testpakets am 30.10.2026 bestätigt; diese Rückmeldung
+ersetzt keine vollständige Abnahme der neu gebauten Release-Dateien.
+
+[Release v0.9.8](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.8) ·
+[T3-S3-Anleitung](docs/T3-S3-V1.3.md) · [Hardwarestatus](docs/RELEASE-0.9.8.md) ·
+[Live-Demo und Oberfläche](https://pietwars.github.io/DisAHRsterRadio-MeshCore/)
+
+## Bisheriger Stand: 0.9.7-cleanup-opt – Optimization & Cleanup Pass
 
 **Optimized Standalone for T-Deck Plus with all TODO resolutions and performance improvements.**
 
@@ -48,9 +65,9 @@ Privilegierte Web-Einstellungen sind im offenen HTTP-Portal gesperrt. Standalone
 <img src="docs/images/vorschau-karte.jpg" width="250" alt="MeshAhrtal: Offlinekarte">
 </p>
 
-<sub>Aufnahmen der [Live-Demo](https://pietwars.github.io/DisAHRsterRadio-MeshCore/) in Handygröße, Stand 0.9.6; alle Daten simuliert.</sub>
+<sub>Aufnahmen der [Live-Demo](https://pietwars.github.io/DisAHRsterRadio-MeshCore/) in Handygröße, Stand 0.9.8; alle Daten simuliert.</sub>
 
-**Version 0.9.6** · MeshCore 1.18.0 · Weboberfläche MeshAhrtal · 868 MHz · Firmwarekennung `v1.18.0-dar0.9.6`
+**Version 0.9.8** · MeshCore 1.18.0 · Weboberfläche MeshAhrtal · 868 MHz · Firmwarekennung `v1.18.0-dar0.9.8`
 
 **Weiterhin enthalten (seit 0.9.4):** Akku-Zeile am Gerät und automatische Flash-/Speicherprüfungen für beide Release-Boards. Messwerte und offene Hardwaretests: [Flash- und RAM-Prüfung](docs/SPEICHER.md).
 
@@ -77,14 +94,15 @@ Im **WLAN/BLE-Build** laufen Nachrichten, Kontakte und Einstellungen über Webob
 
 ## Unterstützte Geräte
 
-| Board | Paket (Release v0.9.6) |
+| Board | Paket (Release v0.9.8) |
 |---|---|
-| **LILYGO T-Deck Plus** (ESP32-S3, SX1262, 868 MHz) | [DisAHRsterRadio-MeshCore-0.9.6-LilyGo_TDeck.zip](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/download/v0.9.6/DisAHRsterRadio-MeshCore-0.9.6-LilyGo_TDeck.zip) |
-| **LILYGO T-Watch S3** (ESP32-S3, SX1262, 868 MHz) | [DisAHRsterRadio-MeshCore-0.9.6-LilyGo_TWatchS3.zip](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/download/v0.9.6/DisAHRsterRadio-MeshCore-0.9.6-LilyGo_TWatchS3.zip) |
+| **LILYGO T3-S3 v1.3** (ESP32-S3, SX1262, 868 MHz, OLED) | [DisAHRsterRadio-MeshCore-0.9.8-LilyGo_T3S3_sx1262.zip](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/download/v0.9.8/DisAHRsterRadio-MeshCore-0.9.8-LilyGo_T3S3_sx1262.zip) |
+| **LILYGO T-Deck Plus** (ESP32-S3, SX1262, 868 MHz) | [DisAHRsterRadio-MeshCore-0.9.8-LilyGo_TDeck.zip](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/download/v0.9.8/DisAHRsterRadio-MeshCore-0.9.8-LilyGo_TDeck.zip) |
+| **LILYGO T-Watch S3** (ESP32-S3, SX1262, 868 MHz) | [DisAHRsterRadio-MeshCore-0.9.8-LilyGo_TWatchS3.zip](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/download/v0.9.8/DisAHRsterRadio-MeshCore-0.9.8-LilyGo_TWatchS3.zip) |
 
-**T-Deck Plus Standalone (ohne WLAN/Web):** [DisAHRsterRadio-MeshCore-0.9.6-LilyGo_TDeck_standalone-test6.zip](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/download/v0.9.6/DisAHRsterRadio-MeshCore-0.9.6-LilyGo_TDeck_standalone-test6.zip). Firmwarekennung `v1.18.0-dar0.9.6-standalone-test6`; eigene Bedienung, Anleitung, Commitmanifest und Vorschauen im ZIP. Die Hardwareabnahme für 0.9.6 ist offen; frühere Testergebnisse gelten nicht als Nachweis für diese Dateien.
+**T-Deck Plus Standalone (ohne WLAN/Web):** [DisAHRsterRadio-MeshCore-0.9.8-LilyGo_TDeck_standalone-test6.zip](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/download/v0.9.8/DisAHRsterRadio-MeshCore-0.9.8-LilyGo_TDeck_standalone-test6.zip). Firmwarekennung `v1.18.0-dar0.9.8-standalone-test6`; eigene Bedienung, Anleitung, Commitmanifest und Vorschauen im ZIP. Die Hardwareabnahme für 0.9.8 ist offen; frühere Testergebnisse gelten nicht als Nachweis für diese Dateien.
 
-Die beiden WLAN/BLE-Pakete enthalten `…-factory.bin` (komplett an **0x0**), `…-firmware.bin` (Update an **0x10000**), die Einzelteile, `SHA256SUMS`, Flash-/RAM-Berichte und eine deutsche `ANLEITUNG.md`.
+Die drei WLAN/BLE-Pakete enthalten `…-factory.bin` (komplett an **0x0**), `…-firmware.bin` (Update an **0x10000**), die Einzelteile, `SHA256SUMS`, Flash-/RAM-Berichte und eine deutsche `ANLEITUNG.md`.
 
 ## Anzeige am Gerät im WLAN/BLE-Build
 
@@ -121,6 +139,11 @@ Jeder Advert ist ein **Flood-Advert**; danach steht kurz „Advert gesendet“ i
 
 ## Schnellstart: WLAN/BLE
 
+**LILYGO T3-S3 v1.3 mit SX1262 (868 MHz):** Das Profil
+`disaster_t3s3_sx1262_wifi` bietet Weboberfläche und Bluetooth gleichzeitig.
+Beim Koppeln mit der MeshCore-App wacht das OLED automatisch auf und zeigt
+die Geräte-PIN. [T3-S3-Anleitung und Hardwareprüfung](docs/T3-S3-V1.3.md).
+
 1. **Flashen:** das passende 0.9.6-ZIP oben herunterladen und nach seiner ANLEITUNG.md flashen. Der [Web-Flasher](https://pietwars.github.io/DisAHRsterRadio-MeshCore/flasher/) bietet nach erfolgreicher Veröffentlichung dieselben geprüften Release-Dateien für **T-Deck Plus WLAN/BLE**, **T-Deck Plus Standalone** und **T-Watch S3**. Variante ausdrücklich auswählen: Update schreibt nur die Firmware an **0x10000**, Neuinstallation schreibt das Factory-Abbild an **0x0** und löscht alle Daten. [Anleitung Flashen](docs/FLASHEN.md).
 2. **Verbinden:** Handy mit dem offenen WLAN `DisAHRsterRadio-XXXXXX` verbinden, **http://192.168.4.1** öffnen – kein Passwort, höchstens 4 Handys.
 3. **MeshCore-App (optional):** per Bluetooth koppeln; die PIN zeigt das Display nur während der Kopplung an. Danach in der App eine eigene PIN setzen. Details: [Offener Zugang](docs/OFFENER_ZUGANG.md)
@@ -134,7 +157,7 @@ MeshCore-Preset **EU/UK (Narrow): 869,618 MHz**, 62,5 kHz, SF8, CR 4/8 (SRD-Teil
 
 | Repository | Inhalt | Funk | Version | Demo · Download · Flyer |
 |---|---|---|---|---|
-| [Pietwars/DisAHRsterRadio-MeshCore](https://github.com/Pietwars/DisAHRsterRadio-MeshCore) | MeshCore 1.18 mit kompakter MeshAhrtal-Oberfläche per WLAN plus Bluetooth für die MeshCore-App; Firmware für LILYGO T-Deck Plus und T-Watch S3 (Ahrtal) | MeshCore | 0.9.6 | [Live-Demo](https://pietwars.github.io/DisAHRsterRadio-MeshCore/) · [Release v0.9.6](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.6) · Flyer [Druck](https://pietwars.github.io/DisAHRsterRadio-MeshCore/flyer/DisAHRsterRadio-MeshCore-Flyer.pdf) / [digital](https://pietwars.github.io/DisAHRsterRadio-MeshCore/flyer/DisAHRsterRadio-MeshCore-Flyer-digital.pdf) |
+| [Pietwars/DisAHRsterRadio-MeshCore](https://github.com/Pietwars/DisAHRsterRadio-MeshCore) | MeshCore 1.18 mit kompakter MeshAhrtal-Oberfläche per WLAN plus Bluetooth für die MeshCore-App; Firmware für LILYGO T-Deck Plus und T-Watch S3 (Ahrtal) | MeshCore | 0.9.8 | [Live-Demo](https://pietwars.github.io/DisAHRsterRadio-MeshCore/) · [Release v0.9.6](https://github.com/Pietwars/DisAHRsterRadio-MeshCore/releases/tag/v0.9.6) · Flyer [Druck](https://pietwars.github.io/DisAHRsterRadio-MeshCore/flyer/DisAHRsterRadio-MeshCore-Flyer.pdf) / [digital](https://pietwars.github.io/DisAHRsterRadio-MeshCore/flyer/DisAHRsterRadio-MeshCore-Flyer-digital.pdf) |
 | [Pietwars/DisAHRsterRadio](https://github.com/Pietwars/DisAHRsterRadio) | Ohne MeshCore: modernisiertes disaster-radio (LoRaLayer2, RadioLib) mit kompakter MeshAhrtal-Oberfläche; Firmware für LILYGO T-Deck Plus und T-Watch S3 (Ahrtal) | LoRaLayer2 | 0.9.2 | [Live-Demo](https://pietwars.github.io/DisAHRsterRadio/) · [Release v0.9.2](https://github.com/Pietwars/DisAHRsterRadio/releases/tag/v0.9.2) · Flyer [Druck](https://pietwars.github.io/DisAHRsterRadio/flyer/DisAHRsterRadio-Flyer.pdf) / [digital](https://pietwars.github.io/DisAHRsterRadio/flyer/DisAHRsterRadio-Flyer-digital.pdf) |
 | [Pietwars/HaldenFunk](https://github.com/Pietwars/HaldenFunk) | Regionalvariante von DisAHRsterRadio für Sangerhausen / Mansfelder Land, ohne MeshCore; Firmware für LILYGO T-Deck Plus und T-Watch S3 | LoRaLayer2 | 0.9.2 | [Live-Demo](https://pietwars.github.io/HaldenFunk/) · [Release v0.9.2](https://github.com/Pietwars/HaldenFunk/releases/tag/v0.9.2) · Flyer [Druck](https://pietwars.github.io/HaldenFunk/flyer/HaldenFunk-Flyer.pdf) / [digital](https://pietwars.github.io/HaldenFunk/flyer/HaldenFunk-Flyer-digital.pdf) |
 | [Pietwars/HaldenFunk-MeshCore](https://github.com/Pietwars/HaldenFunk-MeshCore) | Regionalvariante von DisAHRsterRadio-MeshCore für das Mansfelder Land: MeshCore 1.18, WLAN + Bluetooth; Firmware für LILYGO T-Deck Plus und T-Watch S3 | MeshCore | 0.9.2 | [Live-Demo](https://pietwars.github.io/HaldenFunk-MeshCore/) · [Release v0.9.2](https://github.com/Pietwars/HaldenFunk-MeshCore/releases/tag/v0.9.2) · Flyer [Druck](https://pietwars.github.io/HaldenFunk-MeshCore/flyer/HaldenFunk-MeshCore-Flyer.pdf) / [digital](https://pietwars.github.io/HaldenFunk-MeshCore/flyer/HaldenFunk-MeshCore-Flyer-digital.pdf) |

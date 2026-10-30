@@ -28,6 +28,7 @@ class DisasterPortal : public LocalCompanion {
   bool txBudgetWaiting=false, txStorageBlocked=false, txProfileBlocked=false;
   uint32_t txStartupWaitSeconds=0;
   bool gpsEnabled=false,gpsFix=false;double gpsLat=0,gpsLon=0;
+  bool bleEnabled=false, bleConnected=false, blePairing=false;
   uint32_t txBudgetWaitEvents=0, txBudgetWaitSeconds=0;
   int txQueuePackets=0;
   struct ClientBudget { char id[16]; uint32_t lastMs=0, windowStart=0; uint8_t count=0; bool used=false; };
@@ -115,6 +116,9 @@ class DisasterPortal : public LocalCompanion {
     f.close(); http.sendContent("");
   }
 public:
+  void setBluetoothState(bool enabled, bool connected, bool pairing) {
+    bleEnabled=enabled;bleConnected=connected;blePairing=pairing;
+  }
   // Snapshot existing MeshCore counters; does not issue Companion commands.
   void setGps(bool enabled,bool fix,double lat,double lon){gpsEnabled=enabled;gpsFix=fix&&(lat!=0||lon!=0);gpsLat=lat;gpsLon=lon;}
   void setRadioDiagnostics(uint32_t tf, uint32_t td, uint32_t rf, uint32_t rd,
@@ -187,6 +191,7 @@ public:
       s+=",\"diagnostics\":{\"firmware\":\""+String(FIRMWARE_VERSION)+"\",\"uptimeSeconds\":"+String((uint32_t)(esp_timer_get_time()/1000000ULL));
       s+=",\"resetReason\":"+String((int)esp_reset_reason())+",\"minHeapBytes\":"+String(ESP.getMinFreeHeap())+",\"largestHeapBlockBytes\":"+String(ESP.getMaxAllocHeap())+",\"heapWarn\":"+String((unsigned)HEAP_WARN_BYTES);
       s+=",\"wifiClients\":"+String(WiFi.softAPgetStationNum())+",\"txFlood\":"+String(txFlood)+",\"txDirect\":"+String(txDirect)+",\"rxFlood\":"+String(rxFlood)+",\"rxDirect\":"+String(rxDirect);
+      s+=",\"bleEnabled\":"+String(bleEnabled?"true":"false")+",\"bleConnected\":"+String(bleConnected?"true":"false")+",\"blePairing\":"+String(blePairing?"true":"false");
       s+=",\"txAirMs\":"+String(txAirMs)+",\"rxAirMs\":"+String(rxAirMs)+",\"txBudgetMs\":"+String(txBudgetMs)+",\"txBudgetWaiting\":"+String(txBudgetWaiting?"true":"false")+",\"txBudgetWaitEvents\":"+String(txBudgetWaitEvents)+",\"txBudgetWaitSeconds\":"+String(txBudgetWaitSeconds)+",\"txQueuePackets\":"+String(txQueuePackets);
       s+=",\"txStartupWaitSeconds\":"+String(txStartupWaitSeconds)+",\"txStorageBlocked\":"+String(txStorageBlocked?"true":"false")+",\"txProfileBlocked\":"+String(txProfileBlocked?"true":"false")+"}";
       // Optional board GPS: position only when the module reports a valid fix.
