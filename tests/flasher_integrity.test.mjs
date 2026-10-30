@@ -6,6 +6,7 @@ const clone = value => JSON.parse(JSON.stringify(value));
 const image = new Uint8Array(64); image[0] = 0xe9; image[12] = 9;
 const sha = async bytes => Buffer.from(await webcrypto.subtle.digest('SHA-256', bytes)).toString('hex');
 const config = JSON.parse(readFileSync(new URL('../docs/flasher/flasher.json', import.meta.url)));
+assert.deepEqual(config.devices.map(d => d.id).sort(), ['tdeck', 'twatch', 'tdeck-standalone', 't3s3-sx1262'].sort());
 const base = 'https://example.test/flasher/';
 let count = 0;
 function harness(spec, {mutateManifest, bytes = image, failStatus, failDigest, failURL} = {}) {
@@ -79,4 +80,4 @@ for (const folder of ['docs/flasher', 'tools/flasher-next']) {
     assert.deepEqual(specs[file], {file, manifest, sha256: device.files[mode].sha256});
   }
 }
-console.log('PASS: all six flasher modes; SHA mismatch, wrong target/offset/erase, failed downloads and immutable verified bytes');
+console.log('PASS: all configured flasher modes; SHA mismatch, wrong target/offset/erase, failed downloads and immutable verified bytes');
