@@ -56,6 +56,8 @@ void frontend::sensorsReady() {
 }
 
 void frontend::loop() {
+  const NodePrefs* prefs=the_mesh.getNodePrefs();
+  disaster_portal.setDeviceInfo(prefs->node_name,prefs->freq,prefs->bw,prefs->sf,prefs->cr,prefs->tx_power_dbm);
 #if defined(BLE_PIN_CODE)
   disaster_portal.setBluetoothState(bluetooth_interface.isEnabled(),
     bluetooth_interface.isConnected(), ble_pairing_active());

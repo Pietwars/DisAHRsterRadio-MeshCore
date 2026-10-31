@@ -1,5 +1,13 @@
 # Änderungen
 
+## 0.9.10 – Geräteübersicht auf einen Blick
+
+- Der Web-Reiter Gerät zeigt Gerätename, vollständigen WLAN-Namen, Bluetooth-Verbindung und aktuelles Funkprofil gemeinsam in einer übersichtlichen Karte. Weitere Gerätedaten sind einklappbar.
+- Frequenz, Bandbreite, SF, Coding Rate und Sendeleistung stammen aus den aktuellen Einstellungen. Bekannte Profile werden erkannt; abweichende Einstellungen heißen Eigenes Profil. Fehlende Daten werden nicht als Standardprofil ausgegeben.
+- Das T3-S3-OLED unterscheidet Bluetooth bereit, verbunden und aus. Eine offene Web-Verbindung wird dabei nicht mit einer verbundenen MeshCore-App verwechselt.
+- Gerätenamen mit Umlauten oder Sonderzeichen werden sicher angezeigt. PINs und Schlüssel bleiben außerhalb der Statusdaten.
+- Der Betreiber bestätigt für 0.9.9 den Zwei-Board-Testplan mit paralleler App/Web-Nutzung, Nachrichten und Neustarts ohne beobachtete Abbrüche. Diese Rückmeldung gilt für 0.9.9; die neue Übersicht benötigt ihren eigenen Gerätetest.
+
 ## 0.9.9 – eindeutige WLAN-Namen je Board
 
 - Fehler behoben: Die bisher verwendeten unteren 24 Bit von `ESP.getEfuseMac()` enthalten durch die Byte-Reihenfolge den Herstellerpräfix. Mehrere Boards desselben Herstellers konnten deshalb denselben WLAN-Namen erhalten.

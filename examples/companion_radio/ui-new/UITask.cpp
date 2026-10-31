@@ -289,7 +289,7 @@ public:
     if (_page == HomePage::FIRST) {
 #ifdef DISASTER_PORTAL
       renderPortalHomeScreen(display, WiFi.softAPSSID().c_str(), WiFi.softAPIP().toString().c_str(),
-                             _task->getMsgCount(), _task->isBluetoothEnabled());
+                             _task->getMsgCount(), _task->isBluetoothEnabled(), _task->isBluetoothConnected());
 #else
       display.setColor(UIColor::primary_txt);
       #ifdef ENABLE_WIFI_INTERFACE

@@ -1,6 +1,6 @@
 {
-  "version": "0.9.9",
-  "firmware": "v1.18.0-dar0.9.9-standalone-test6",
+  "version": "0.9.10",
+  "firmware": "v1.18.0-dar0.9.10-standalone-test6",
   "kind": "real-layout-demo-data",
   "hardware_approved": false,
   "images": [
@@ -65,7 +65,7 @@
       "caption": "Geraeteinfo und Akku",
       "width": 320,
       "height": 240,
-      "sha256": "04a05ec2f6f2f6fb0992b0601ab149020771dacb301c5cb2aa08783a8b356f4c"
+      "sha256": "031b2aedbc3f314f339a352f4fb450c142d8ead4c939aabc2ee26e0c6b4c80a1"
     },
     {
       "file": "vorschau-hauptmenue.png",
@@ -149,7 +149,7 @@
     "examples/companion_radio/ui-brand/MapView.h": "240f32b7b56cf555543ba9cb7bfdb43fbfd3f828df2bcbf404e9cd4ff11e107a",
     "tools/standalone_preview.cpp": "c8b2a5c468503b8daf1cdaa3fae8c9429960ffcc5fb43bdfa4a019187242e6e5",
     "tests/ui_fakes/FakeApi.h": "c1d6940c99edcfb0a648dcfa994bdd6933e8a3323264e37d52fe1c98795c72ab",
-    "platformio.standalone.ini": "d8a202f13e74b87e5c294279c0c8cd84cc2a4f678c404368cd35026cdba298f7",
+    "platformio.standalone.ini": "efe5ee8f1c4499b67a9db82391c531a31c16c390ac824f47ae272da929c3d575",
     "examples/companion_radio/DarRadioPolicy.h": "f5791bac7848ec5816a480ee24eb282b4c0927392c34dae3d1727bcaf1746f8d",
     "src/CompanionRadioMode.h": "0d682df815c380021e8e36ffc2b7fd7fd453c034594dcdf8f286945ac11b7d62"
   }

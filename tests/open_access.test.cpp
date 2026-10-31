@@ -71,6 +71,9 @@ int main() {
   assert(mux.addInterface(InterfaceType::USB,&usb));
   assert(mux.addInterface(InterfaceType::Portal,&portal));
   mux.enable();
+  assert(mux.isBluetoothConnected());
+  ble.on=false; assert(mux.isConnected() && !mux.isBluetoothConnected());
+  ble.on=true;
   ble.authenticated=true; ble.queued=1; mux.checkRecvFrame(frame);
   assert(mux.isAuthenticatedBluetoothFrame());
   ble.authenticated=false; assert(!mux.isAuthenticatedBluetoothFrame());

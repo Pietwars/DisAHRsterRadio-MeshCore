@@ -23,6 +23,20 @@ assert.equal(vm.runInContext('bluetoothStatus({bleEnabled:false})',guardContext)
 assert.equal(vm.runInContext('bluetoothStatus({bleEnabled:true,bleConnected:true})',guardContext),'App verbunden');
 assert.match(vm.runInContext('bluetoothStatus({bleEnabled:true,blePairing:true})',guardContext),/PIN auf dem Gerätedisplay/);
 assert.match(vm.runInContext('bluetoothStatus({bleEnabled:true,blePairing:false,bleConnected:false})',guardContext),/Bereit zum Koppeln/);
+const overview=vm.createContext({TextDecoder,Uint8Array});
+vm.runInContext('const dec=new TextDecoder();'+script.slice(script.indexOf('function bytes('),script.indexOf('function u32('))+script.slice(script.indexOf('function deviceName('),script.indexOf('function renderDeviceOverview(')),overview);
+overview.nameHex=Buffer.from('Gerät "A" <b> & \\').toString('hex');
+assert.equal(vm.runInContext('deviceName({nodeNameHex:nameHex})',overview),'Gerät "A" <b> & \\');
+assert.match(vm.runInContext('deviceName({})',overview),/nicht verfügbar/);
+assert.equal(vm.runInContext('deviceName({nodeNameHex:""})',overview),'Unbenannt');
+assert.match(vm.runInContext('deviceName({nodeNameHex:"zz"})',overview),/nicht verfügbar/);
+for(const [name,frequencyMHz,bandwidthKhz,sf,cr] of [['EU/UK Narrow',869.618,62.5,8,8],['Nah',869.525,250,7,5],['Mittel',869.525,250,9,5],['Fern',869.525,250,11,5],['Eigenes Profil',869.618,62.5,9,8]]){
+ overview.radio={frequencyMHz,bandwidthKhz,sf,cr,powerDbm:17};
+ assert.equal(vm.runInContext('radioOverview(radio).name',overview),name);
+ assert.match(vm.runInContext('radioOverview(radio).details',overview),/17 dBm/);
+}
+assert.match(vm.runInContext('radioOverview(null).name',overview),/keine Funkdaten/);
+assert.match(vm.runInContext('radioOverview({frequencyMHz:NaN}).name',overview),/keine Funkdaten/);
 const info={textContent:''};
 const ctx=vm.createContext({Map,Response,DecompressionStream,JSON,fetch:async url=>({ok:true,headers:{get:()=> 'application/json'},json:async()=>({name:url,l:[['r',10,20,2,3]],bbox:[7,50,8,51]})}),$:()=>info,DEMO:false,me:null,fit:()=>{},marks:{},drawMap:()=>{}});
 vm.runInContext('const MAPS=new Map();let M=null,mapRequest=0;'+script.slice(script.indexOf('async function getMap('),script.indexOf('function size()')),ctx);

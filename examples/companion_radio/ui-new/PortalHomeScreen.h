@@ -3,7 +3,7 @@
 #include "../PortalIdentity.h"
 
 inline void renderPortalHomeScreen(DisplayDriver& display, const char* ssid,
-                                   const char* ip, uint32_t messages, bool bluetooth) {
+                                   const char* ip, uint32_t messages, bool bluetooth, bool connected=false) {
   display.setColor(UIColor::primary_txt);
   display.setTextSize(1);
   if (strlen(ssid) == disaster::PORTAL_SSID_PREFIX_LENGTH + 12 &&
@@ -18,6 +18,6 @@ inline void renderPortalHomeScreen(DisplayDriver& display, const char* ssid,
   snprintf(line, sizeof(line), "Web: %s", ip);
   display.drawTextCentered(display.width() / 2, 45, line);
   snprintf(line, sizeof(line), "MSG: %lu%s BT:%s", (unsigned long)(messages > 99999 ? 99999 : messages),
-           messages > 99999 ? "+" : "", bluetooth ? "an" : "aus");
+           messages > 99999 ? "+" : "", !bluetooth ? "aus" : connected ? "verb." : "bereit");
   display.drawTextCentered(display.width() / 2, 56, line);
 }

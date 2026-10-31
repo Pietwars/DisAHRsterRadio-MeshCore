@@ -14,6 +14,7 @@
 #include <esp_system.h>
 #include <esp_timer.h>
 #include <esp_mac.h>
+#include <math.h>
 #include "PortalIdentity.h"
 #include "PortalPage.h"
 #ifndef HEAP_WARN_BYTES
@@ -31,6 +32,9 @@ class DisasterPortal : public LocalCompanion {
   uint32_t txStartupWaitSeconds=0;
   bool gpsEnabled=false,gpsFix=false;double gpsLat=0,gpsLon=0;
   bool bleEnabled=false, bleConnected=false, blePairing=false;
+  char deviceName[32]{}; size_t deviceNameLength=0; String deviceNameHex;
+  float radioFrequency=0, radioBandwidth=0;
+  uint8_t radioSf=0, radioCr=0; int8_t radioPower=0;
   uint32_t txBudgetWaitEvents=0, txBudgetWaitSeconds=0;
   int txQueuePackets=0;
   struct ClientBudget { char id[16]; uint32_t lastMs=0, windowStart=0; uint8_t count=0; bool used=false; };
@@ -118,6 +122,15 @@ class DisasterPortal : public LocalCompanion {
     f.close(); http.sendContent("");
   }
 public:
+  void setDeviceInfo(const char (&name)[32], float frequency, float bandwidth,
+                     uint8_t sf, uint8_t cr, int8_t power) {
+    const size_t length=strnlen(name,sizeof(deviceName));
+    if(length!=deviceNameLength || memcmp(deviceName,name,length)!=0) {
+      memcpy(deviceName,name,length); deviceNameLength=length;
+      deviceNameHex=hex((const uint8_t*)deviceName,length);
+    }
+    radioFrequency=frequency;radioBandwidth=bandwidth;radioSf=sf;radioCr=cr;radioPower=power;
+  }
   void setBluetoothState(bool enabled, bool connected, bool pairing) {
     bleEnabled=enabled;bleConnected=connected;blePairing=pairing;
   }
@@ -192,12 +205,17 @@ public:
       http.sendContent("],\"privateHistoryFloor\":"+String(privateHistoryFloor)+",\"privateHistoryPersistent\":"+String(privateHistoryPersistent?"true":"false")+",\"contacts\":["); bool first=true;
       for(unsigned i=0;i<contactCount();++i){String c=contactHex(i);if(c.length()){http.sendContent((first?"\"":",\"")+c+"\"");first=false;}}
       s+="],\"archive\":"+String(archive.ready()?"true":"false")+",\"queueReady\":"+String(delivery.ready()?"true":"false")+",\"queueStorage\":"+String(delivery.storageOK()?"true":"false")+",\"room\":{\"target\":\""+roomTarget+"\",\"rights\":"+String(roomRights)+",\"pending\":"+String(roomPending?"true":"false")+"}}";
-      // Fixed keys and numeric values only; no passwords, contacts or chat texts.
+      // Diagnostic snapshots only; never PINs, keys or chat texts.
       s.remove(s.length()-1);
       s+=",\"diagnostics\":{\"firmware\":\""+String(FIRMWARE_VERSION)+"\",\"uptimeSeconds\":"+String((uint32_t)(esp_timer_get_time()/1000000ULL));
       s+=",\"resetReason\":"+String((int)esp_reset_reason())+",\"minHeapBytes\":"+String(ESP.getMinFreeHeap())+",\"largestHeapBlockBytes\":"+String(ESP.getMaxAllocHeap())+",\"heapWarn\":"+String((unsigned)HEAP_WARN_BYTES);
       s+=",\"wifiClients\":"+String(WiFi.softAPgetStationNum())+",\"txFlood\":"+String(txFlood)+",\"txDirect\":"+String(txDirect)+",\"rxFlood\":"+String(rxFlood)+",\"rxDirect\":"+String(rxDirect);
       s+=",\"wifiSsid\":\""+apName+"\"";  // Fixed prefix and hexadecimal hardware bytes only.
+      // Hex preserves quotes/control bytes in user names without interpolating them into JSON.
+      s+=",\"nodeNameHex\":\""+deviceNameHex+"\"";
+      if(isfinite(radioFrequency)&&isfinite(radioBandwidth)&&radioFrequency>0&&radioFrequency<1000000&&radioBandwidth>0&&radioBandwidth<1000000&&radioSf>=5&&radioSf<=12&&radioCr>=5&&radioCr<=8)
+        s+=",\"radio\":{\"frequencyMHz\":"+String(radioFrequency,3)+",\"bandwidthKhz\":"+String(radioBandwidth,3)+",\"sf\":"+String(radioSf)+",\"cr\":"+String(radioCr)+",\"powerDbm\":"+String((int)radioPower)+"}";
+      else s+=",\"radio\":null";
       s+=",\"bleEnabled\":"+String(bleEnabled?"true":"false")+",\"bleConnected\":"+String(bleConnected?"true":"false")+",\"blePairing\":"+String(blePairing?"true":"false");
       s+=",\"txAirMs\":"+String(txAirMs)+",\"rxAirMs\":"+String(rxAirMs)+",\"txBudgetMs\":"+String(txBudgetMs)+",\"txBudgetWaiting\":"+String(txBudgetWaiting?"true":"false")+",\"txBudgetWaitEvents\":"+String(txBudgetWaitEvents)+",\"txBudgetWaitSeconds\":"+String(txBudgetWaitSeconds)+",\"txQueuePackets\":"+String(txQueuePackets);
       s+=",\"txStartupWaitSeconds\":"+String(txStartupWaitSeconds)+",\"txStorageBlocked\":"+String(txStorageBlocked?"true":"false")+",\"txProfileBlocked\":"+String(txProfileBlocked?"true":"false")+"}";
