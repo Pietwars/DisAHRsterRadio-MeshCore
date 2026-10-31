@@ -44,7 +44,7 @@ def main(zips):
         for art, f in d['files'].items(): print(d['id'], art, f['member'].split('/')[-1], f['sha256'])
 
 def html(cfg, ver):
-    hardware_hint = f"{'Pre-Release' if '-' in ver else 'Release'} {ver}: Der Betreiber bestätigt die Funktion des vorherigen T3-S3-OLED-Testpakets sowie frühere T-Deck-Tests. Die neu gebauten Release-Dateien benötigen eigene Gerätetests."
+    hardware_hint = f"{'Pre-Release' if '-' in ver else 'Release'} {ver}: Der Betreiber bestätigt für 0.9.9 den Zwei-Board-Test mit Web und App, Nachrichten und Neustarts ohne beobachtete Abbrüche. Die neu gebauten Release-Dateien benötigen eigene Gerätetests."
     rel = f"https://github.com/{cfg['repo']}/releases/tag/{cfg['tag']}"
     karten = []
     for d in cfg['devices']:
