@@ -57,4 +57,7 @@ int main() {
       assert(home.text[1].value == "246F28123456");
     }
   }
+  OledDisplay connected;
+  renderPortalHomeScreen(connected,ssid,"192.168.4.1",64,true,true);
+  assert(connected.text.back().value.find("BT:verb.")!=std::string::npos);
 }

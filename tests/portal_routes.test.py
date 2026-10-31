@@ -24,7 +24,8 @@ assert 'if(!requireAdmin())return;' in handler('/api/history-wipe')
 # Weboberfläche: kein Admin-Bereich, alle Bedienelemente im Reiter Gerät
 for gone in ('id="admin"', 'id="apass"', 'id="alogin"', 'id="admbtn"', 'adminToken', 'X-Disaster-Admin', 'admin/'):
     assert gone not in html, gone
-for need in ('id="nname"', 'id="setname"', "act('name'", 'id="rpreset"', "act('radio'", 'id="cslot"', 'id="setch"', "act('channel'", 'id="wipe"', "act('history-wipe')", 'confirm('):
+for need in ('id="nname"', 'id="setname"', "act('name'", 'id="cslot"', 'id="setch"', "act('channel'", 'id="wipe"', "act('history-wipe')", 'confirm('):
     assert need in html, need
-assert set(re.findall(r'<option value="([a-z-]+)"(?: selected)?>[^<]*MHz', html)) == {'nah', 'mittel', 'fern'}
+assert 'id="rpreset"' not in html and "act('radio'" not in html
+assert 'Das aktuelle Funkprofil steht oben' in html
 print('portal_routes.test.py: ok')

@@ -16,6 +16,14 @@ Bluetooth-PIN bleiben bei einem Firmware-Update ohne Löschen erhalten. Nach dem
 Update muss am Handy das neue WLAN ausgewählt werden.
 
 Die automatisierten Prüfungen decken gleiche Herstellerpräfixe, stabile Namen,
-ungültige Hardwarekennungen und die OLED-Grenzen ab. Ein physischer Zwei-Board-Test
-der neu gebauten Version 0.9.9 ist noch offen. Die bisherigen Hardware-Rückmeldungen
-sind in [0.9.8](RELEASE-0.9.8.md) dokumentiert.
+ungültige Hardwarekennungen und die OLED-Grenzen ab.
+
+**Geräterückmeldung am 31.10.2026:** Der Betreiber bestätigt, dass 0.9.9 läuft und
+die Boards anhand ihrer WLAN-Namen unterscheidbar sind. Anschließend bestätigt er
+den vorgeschlagenen Zwei-Board-Testplan mit Weboberfläche und MeshCore-App parallel,
+Kanal- und Privatnachrichten sowie Neustarts mit erhaltenen Kontakten, PIN, Verlauf
+und WLAN-Namen. Dabei wurden keine Verbindungsabbrüche festgestellt. Eine genaue
+Laufzeit wurde nicht protokolliert. Diese Rückmeldung bezieht sich auf 0.9.9;
+spätere Firmware-Dateien benötigen eigene Gerätetests.
+
+Die bisherigen Hardware-Rückmeldungen sind in [0.9.8](RELEASE-0.9.8.md) dokumentiert.
