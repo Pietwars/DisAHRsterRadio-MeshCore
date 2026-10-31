@@ -16,6 +16,7 @@
 #include <esp_mac.h>
 #include <math.h>
 #include "PortalIdentity.h"
+#include "DarRadioPolicy.h"
 #include "PortalPage.h"
 #ifndef HEAP_WARN_BYTES
 #define HEAP_WARN_BYTES 40960  // Warnschwelle freier Heap (Weboberfläche rot, serielles [HEAP]-Log mit WARNUNG)
@@ -214,7 +215,7 @@ public:
       // Hex preserves quotes/control bytes in user names without interpolating them into JSON.
       s+=",\"nodeNameHex\":\""+deviceNameHex+"\"";
       if(isfinite(radioFrequency)&&isfinite(radioBandwidth)&&radioFrequency>0&&radioFrequency<1000000&&radioBandwidth>0&&radioBandwidth<1000000&&radioSf>=5&&radioSf<=12&&radioCr>=5&&radioCr<=8)
-        s+=",\"radio\":{\"frequencyMHz\":"+String(radioFrequency,3)+",\"bandwidthKhz\":"+String(radioBandwidth,3)+",\"sf\":"+String(radioSf)+",\"cr\":"+String(radioCr)+",\"powerDbm\":"+String((int)radioPower)+"}";
+        s+=",\"radio\":{\"frequencyMHz\":"+String(radioFrequency,6)+",\"bandwidthKhz\":"+String(radioBandwidth,6)+",\"sf\":"+String(radioSf)+",\"cr\":"+String(radioCr)+",\"powerDbm\":"+String((int)radioPower)+",\"profileIndex\":"+String(disaster::radioProfileIndex(radioFrequency,radioBandwidth,radioSf,radioCr))+"}";
       else s+=",\"radio\":null";
       s+=",\"bleEnabled\":"+String(bleEnabled?"true":"false")+",\"bleConnected\":"+String(bleConnected?"true":"false")+",\"blePairing\":"+String(blePairing?"true":"false");
       s+=",\"txAirMs\":"+String(txAirMs)+",\"rxAirMs\":"+String(rxAirMs)+",\"txBudgetMs\":"+String(txBudgetMs)+",\"txBudgetWaiting\":"+String(txBudgetWaiting?"true":"false")+",\"txBudgetWaitEvents\":"+String(txBudgetWaitEvents)+",\"txBudgetWaitSeconds\":"+String(txBudgetWaitSeconds)+",\"txQueuePackets\":"+String(txQueuePackets);

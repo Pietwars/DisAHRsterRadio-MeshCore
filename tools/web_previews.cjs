@@ -14,7 +14,7 @@ const assert = require('node:assert/strict');
     await page.waitForFunction(()=>document.getElementById('device-name').textContent.includes('Heimersheim'));
     assert.equal(await page.locator('#device-wifi').innerText(),'DisAHRsterRadio-246F28123456');
     assert.equal(await page.locator('#device-profile').innerText(),'EU/UK Narrow');
-    await page.evaluate(()=>{state.diagnostics.nodeNameHex=hx(enc.encode('<img src=x onerror=alert(1)>'));state.diagnostics.bleConnected=true;state.diagnostics.radio={frequencyMHz:869.618,bandwidthKhz:62.5,sf:9,cr:8,powerDbm:17};renderInfo()});
+    await page.evaluate(()=>{state.diagnostics.nodeNameHex=hx(enc.encode('<img src=x onerror=alert(1)>'));state.diagnostics.bleConnected=true;state.diagnostics.radio={frequencyMHz:869.618,bandwidthKhz:62.5,sf:9,cr:8,powerDbm:17,profileIndex:-1};renderInfo()});
     assert.equal(await page.locator('#device-name img').count(),0);
     assert.match(await page.locator('#device-name').innerText(),/<img/);
     assert.equal(await page.locator('#device-profile').innerText(),'Eigenes Profil');
